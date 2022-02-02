@@ -378,7 +378,23 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             Container(
               margin: const EdgeInsets.all(10),
-              child: TextField(
+              child: TextField(onChanged: (text) {
+                      setState(() {
+                        switch (radioButtonId) {
+                          case 1:
+                            configurationJson = setting1Json();
+                            break;
+                          case 2:
+                            configurationJson = setting2Json();
+                            break;
+                          case 3:
+                            configurationJson = setting3Json();
+                            break;
+                          default:
+                            break;
+                        }
+                      });
+                    },
                 controller: accessKeyController,
                 decoration:
                 const InputDecoration(
@@ -389,7 +405,23 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Container(
               margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-              child: TextField(
+              child: TextField(onChanged: (text) {
+                      setState(() {
+                        switch (radioButtonId) {
+                          case 1:
+                            configurationJson = setting1Json();
+                            break;
+                          case 2:
+                            configurationJson = setting2Json();
+                            break;
+                          case 3:
+                            configurationJson = setting3Json();
+                            break;
+                          default:
+                            break;
+                        }
+                      });
+                    },
                 controller: campaignKeyController,
                 decoration:
                 const InputDecoration(
