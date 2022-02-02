@@ -6,5 +6,5 @@ target 'Runner' do
   use_frameworks!
 
   # Pods for Runner
-  pod 'ShopLive', '1.2.0'
+  pod 'ShopLive', '1.2.1'
 end
