@@ -1,4 +1,4 @@
-# flutter-sdk-sample
+# Shoplive SDK sample for Flutter
 
 + [iOS Guide](https://github.com/shoplive/ios-sdk-sample)
 
