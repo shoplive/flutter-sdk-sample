@@ -250,7 +250,7 @@ class MainActivity: FlutterActivity() {
                         callback.couponResult(isDownloadSuccess, message, popupStatus, alertType)
                     }
 
-                    override fun error(errorCode: String?, errorMessage: String?, errorDetails: Any?) {
+                    override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
                         Log.i("DOWNLOAD_COUPON", "error: $errorCode, $errorMessage, $errorDetails")
                     }
 
@@ -332,7 +332,7 @@ class MainActivity: FlutterActivity() {
                         }
                     }
 
-                    override fun error(errorCode: String?, errorMessage: String?, errorDetails: Any?) {
+                    override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
                         Log.i("SHARE", "error: $errorCode, $errorMessage, $errorDetails")
                     }
 
@@ -358,7 +358,7 @@ class MainActivity: FlutterActivity() {
                         callback.customActionResult(isDownloadSuccess, message, popupStatus, alertType)
                     }
 
-                    override fun error(errorCode: String?, errorMessage: String?, errorDetails: Any?) {
+                    override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
                         Log.i("CUSTOM_ACTION", "error: $errorCode, $errorMessage, $errorDetails")
                     }
 
