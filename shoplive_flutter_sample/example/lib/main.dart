@@ -169,6 +169,14 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
     );
   }
 
+  @override
+  void dispose() {
+    _accessKeyController.dispose();
+    _campaignKeyController.dispose();
+    _shareSchemeUrlController.dispose();
+    super.dispose();
+  }
+
   void _showToast(String text) {
     Log.log(text);
 
