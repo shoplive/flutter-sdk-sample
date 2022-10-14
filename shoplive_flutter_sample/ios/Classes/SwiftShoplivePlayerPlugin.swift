@@ -84,7 +84,7 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
                 eventHandleDownloadCoupon.flutterEventSink = events
                 break
             case EVENT_CHANGE_CAMPAIGN_STATUS :
-                eventChangedPlayerStatus.flutterEventSink = events
+                eventChangeCampaignStatus.flutterEventSink = events
                 break
             case EVENT_CAMPAIGN_INFO :
                 eventCampaignInfo.flutterEventSink = events
@@ -622,9 +622,30 @@ extension SwiftShoplivePlayerPlugin: ShopLiveSDKDelegate {
     }
     
     public func handleCommand(_ command: String, with payload: Any?) {
-        guard let payload = payload as? Dictionary<String, Any> else {
+        guard let payload = (payload ?? [String: Any]()) as? Dictionary<String, Any> else {
             return
         }
+        var changedPlayerStatus: ChangedPlayerStatus?
+        switch(command) {
+        case "willShopLiveOn" :
+            changedPlayerStatus = ChangedPlayerStatus(isPipMode: false, state: "CREATE")
+            break
+        case "willShopLiveOff" :
+            changedPlayerStatus = ChangedPlayerStatus(isPipMode: (payload["accessKey"] as? Int == 2) ? true : false, state: "DESTROY")
+            break
+        default:
+            changedPlayerStatus = nil
+            break
+        }
+        
+        if let status = changedPlayerStatus {
+            if let json = try? JSONEncoder().encode(status) {
+                if let eventSink = SwiftShoplivePlayerPlugin.eventChangedPlayerStatus.flutterEventSink {
+                    eventSink(String(data: json, encoding: .utf8))
+                }
+            }
+        }
+        
         if let json = try? JSONEncoder().encode(ReceivedCommand(command: command, data: payload)) {
             if let eventSink = SwiftShoplivePlayerPlugin.eventReceivedCommand.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
@@ -641,7 +662,7 @@ extension SwiftShoplivePlayerPlugin: ShopLiveSDKDelegate {
     }
     
     public func handleReceivedCommand(_ command: String, with payload: Any?) {
-        guard let payload = payload as? Dictionary<String, Any> else {
+        guard let payload = (payload ?? [String: Any]()) as? Dictionary<String, Any> else {
             return
         }
         
