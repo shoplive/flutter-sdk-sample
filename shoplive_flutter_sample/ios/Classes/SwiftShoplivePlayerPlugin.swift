@@ -628,10 +628,10 @@ extension SwiftShoplivePlayerPlugin: ShopLiveSDKDelegate {
         var changedPlayerStatus: ChangedPlayerStatus?
         switch(command) {
         case "willShopLiveOn" :
-            changedPlayerStatus = ChangedPlayerStatus(isPipMode: false, state: "CREATE")
+            changedPlayerStatus = ChangedPlayerStatus(isPipMode: false, state: "CREATED")
             break
         case "willShopLiveOff" :
-            changedPlayerStatus = ChangedPlayerStatus(isPipMode: (payload["accessKey"] as? Int == 2) ? true : false, state: "DESTROY")
+            changedPlayerStatus = ChangedPlayerStatus(isPipMode: (payload["accessKey"] as? Int == 2) ? true : false, state: "DESTROYED")
             break
         default:
             changedPlayerStatus = nil
