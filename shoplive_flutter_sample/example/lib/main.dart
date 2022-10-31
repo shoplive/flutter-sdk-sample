@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:shoplive_player/shoplive_player.dart';
 
 void main() {
@@ -36,9 +37,13 @@ class ShopLiveTestPage extends StatefulWidget {
 }
 
 class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
+  final CompositeSubscription _compositeSubscription = CompositeSubscription();
+
+  final String _accessKey = "";
+  final String _campaignKey = "";
   late final _shopLivePlayerPlugin = ShopLivePlayer();
-  late final _accessKeyController = TextEditingController(text: ""); // For testing AccessKey
-  late final _campaignKeyController = TextEditingController(text: ""); // For testing CampaignKey
+  late final _accessKeyController = TextEditingController(text: _accessKey); // For testing AccessKey
+  late final _campaignKeyController = TextEditingController(text: _campaignKey); // For testing CampaignKey
   late final _shareSchemeUrlController = TextEditingController(text: "http://google.com");
 
   @override
@@ -59,42 +64,42 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
   void initListener() {
     _shopLivePlayerPlugin.handleNavigation.listen((data) {
       _showToast("handleNavigation : ${data.url}");
-    });
+    }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.handleDownloadCoupon.listen((data) {
       _showToast("handleDownloadCoupon : ${data.couponId}");
-    });
+    }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.changeCampaignStatus.listen((data) {
       _showToast("changeCampaignStatus : ${data.campaignStatus}");
-    });
+    }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.campaignInfo.listen((data) {
       _showToast(
           "campaignInfo : ${const JsonEncoder().convert(data.campaignInfo)}");
-    });
+    }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.handleCustomAction.listen((data) {
       _showToast(
           "handleCustomAction : ${data.id}, ${data.type}, ${data.payload}");
-    });
+    }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.changedPlayerStatus.listen((data) {
-      _showToast("changedPlayerStatus: ${data.isPipMode}, ${data.state}");
-    });
+      _showToast("changedPlayerStatus: ${data.isPipMode}, ${data.status}");
+    }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.userInfo.listen((data) {
       _showToast("userInfo : ${const JsonEncoder().convert(data.userInfo)}");
-    });
+    }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.error.listen((data) {
       _showToast("error : ${data.code}, ${data.message}");
-    });
+    }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.receivedCommand.listen((data) {
       _showToast(
           "receivedCommand : ${data.command}, ${const JsonEncoder().convert(data.data)}");
-    });
+    }).addTo(_compositeSubscription);
   }
 
   @override
@@ -174,6 +179,7 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
     _accessKeyController.dispose();
     _campaignKeyController.dispose();
     _shareSchemeUrlController.dispose();
+    _compositeSubscription.dispose();
     super.dispose();
   }
 

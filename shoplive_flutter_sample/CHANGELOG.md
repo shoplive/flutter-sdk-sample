@@ -1,3 +1,6 @@
+## 1.3.0+4
+* Change PlayerStatus to enum status. 
+
 ## 1.3.0+3
 * Change CREATE to CREATED. Change CREATE to CREATED.
 

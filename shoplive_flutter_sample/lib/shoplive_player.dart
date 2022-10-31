@@ -51,11 +51,10 @@ class ShopLivePlayer {
           .map((jsonString) => const JsonDecoder().convert(jsonString))
           .map((json) => ChangedPlayerStatus.fromJson(json));
 
-  late final Stream<UserInfo> userInfo =
-      const EventChannel(EVENT_SET_USER_NAME)
-          .receiveBroadcastStream()
-          .map((jsonString) => const JsonDecoder().convert(jsonString))
-          .map((json) => UserInfo.fromJson(json));
+  late final Stream<UserInfo> userInfo = const EventChannel(EVENT_SET_USER_NAME)
+      .receiveBroadcastStream()
+      .map((jsonString) => const JsonDecoder().convert(jsonString))
+      .map((json) => UserInfo.fromJson(json));
 
   late final Stream<Error> error = const EventChannel(EVENT_ERROR)
       .receiveBroadcastStream()
@@ -276,17 +275,29 @@ class HandleCustomAction {
 
 class ChangedPlayerStatus {
   final bool isPipMode;
-  final String state;
+  final ShopLivePlayStatus status;
 
-  ChangedPlayerStatus({required this.isPipMode, required this.state});
+  ChangedPlayerStatus({required this.isPipMode, required this.status});
 
   factory ChangedPlayerStatus.fromJson(Map<String, dynamic> json) {
+    String? stateString = json['state'];
+    ShopLivePlayStatus status;
+    if (stateString == 'CREATED') {
+      status = ShopLivePlayStatus.created;
+    } else if (stateString == 'DESTROYED') {
+      status = ShopLivePlayStatus.destroyed;
+    } else {
+      status = ShopLivePlayStatus.destroyed;
+    }
+
     return ChangedPlayerStatus(
       isPipMode: json['isPipMode'],
-      state: json['state'],
+      status: status,
     );
   }
 }
+
+enum ShopLivePlayStatus { created, destroyed }
 
 class UserInfo {
   final Map<String, dynamic> userInfo;
