@@ -1,3 +1,7 @@
+## 1.3.0+5
+* Fix a user parameter.
+* Change Future<void> to void function.
+
 ## 1.3.0+4
 * Change PlayerStatus to enum status. 
 

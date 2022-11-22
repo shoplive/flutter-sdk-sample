@@ -24,78 +24,79 @@ abstract class ShoplivePlayerPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<void> setAccessKey({
+  void setAccessKey({
     required String accessKey,
   }) {
     throw UnimplementedError('play() has not been implemented.');
   }
 
-  Future<void> play({required String campaignKey, bool? keepWindowStateOnPlayExecuted}) {
+  void play({required String campaignKey, bool? keepWindowStateOnPlayExecuted}) {
     throw UnimplementedError('play() has not been implemented.');
   }
 
-  Future<void> close() {
+  void close() {
     throw UnimplementedError('play() has not been implemented.');
   }
 
-  Future<void> setUser({
+  void setUser({
     String? userId,
     String? userName,
     int? age,
     ShopLiveGender? gender,
     int? userScore,
+    Map<String, String>? parameters = null
   }) {
     throw UnimplementedError('play() has not been implemented.');
   }
 
-  Future<void> setAuthToken({
+  void setAuthToken({
     required String authToken,
   }) {
     throw UnimplementedError('play() has not been implemented.');
   }
 
-  Future<void> resetUser() {
+  void resetUser() {
     throw UnimplementedError('play() has not been implemented.');
   }
 
-  Future<void> setShareScheme({
+  void setShareScheme({
     required String shareSchemeUrl,
   }) {
     throw UnimplementedError('play() has not been implemented.');
   }
 
-  Future<void> setEndpoint({
+  void setEndpoint({
     required String endpoint,
   }) {
     throw UnimplementedError('play() has not been implemented.');
   }
 
-  Future<void> setNextActionOnHandleNavigation({
+  void setNextActionOnHandleNavigation({
     required ShopLiveActionType type,
   }) {
     throw UnimplementedError('play() has not been implemented.');
   }
 
-  Future<void> setEnterPipModeOnBackPressed({
+  void setEnterPipModeOnBackPressed({
     required bool isEnterPipMode,
   }) {
     throw UnimplementedError('play() has not been implemented.');
   }
 
-  Future<void> setMuteWhenPlayStart({
+  void setMuteWhenPlayStart({
     required bool isMute,
   }) {
     throw UnimplementedError('play() has not been implemented.');
   }
 
-  Future<void> addParameter({
+  void addParameter({
     required String key,
     required String? value,
   }) {
     throw UnimplementedError('play() has not been implemented.');
   }
 
-  Future<void> removeParameter({
+  void removeParameter({
     required String key,
   }) {
     throw UnimplementedError('play() has not been implemented.');

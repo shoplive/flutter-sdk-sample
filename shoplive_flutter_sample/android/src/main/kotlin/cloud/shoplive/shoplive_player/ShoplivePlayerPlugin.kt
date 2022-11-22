@@ -100,6 +100,7 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
                 call.argument<Int>("age"),
                 call.argument<String>("gender"),
                 call.argument<Int>("userScore"),
+                call.argument<Map<String, String>>("parameters"),
             )
             "setAuthToken" -> setAuthToken(
                 call.argument<String>("authToken"),
@@ -154,7 +155,8 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
         userName: String?,
         age: Int?,
         gender: String?,
-        userScore: Int?
+        userScore: Int?,
+        parameters: Map<String, String>? = null
     ) {
         ShopLive.setUser(ShopLiveUser().apply {
             setUserId(userId)
@@ -168,6 +170,9 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
                 }
             )
             setUserScore(userScore ?: 0)
+            parameters?.forEach { (key, value) ->
+                addCustomParameter(key, value)
+            }
         })
     }
 
@@ -237,7 +242,12 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
             eventHandleDownloadCoupon.get()
                 ?.success(Gson().toJson(HandleDownloadCoupon(couponId)))
 
-            callback.couponResult(true, "Success", ShopLive.CouponPopupStatus.HIDE, ShopLive.CouponPopupResultAlertType.TOAST)
+            callback.couponResult(
+                true,
+                "Success",
+                ShopLive.CouponPopupStatus.HIDE,
+                ShopLive.CouponPopupResultAlertType.TOAST
+            )
         }
 
         override fun onChangeCampaignStatus(context: Context, campaignStatus: String) {
@@ -260,7 +270,12 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
             eventHandleCustomAction.get()
                 ?.success(Gson().toJson(HandleCustomAction(id, type, payload)))
 
-            callback.couponResult(true, "Success", ShopLive.CouponPopupStatus.HIDE, ShopLive.CouponPopupResultAlertType.TOAST)
+            callback.couponResult(
+                true,
+                "Success",
+                ShopLive.CouponPopupStatus.HIDE,
+                ShopLive.CouponPopupResultAlertType.TOAST
+            )
         }
 
         override fun handleShare(context: Context?, url: String?) {

@@ -67,13 +67,13 @@ class ShopLivePlayer {
           .map((jsonString) => const JsonDecoder().convert(jsonString))
           .map((json) => ReceivedCommand.fromJson(json));
 
-  Future<void> setAccessKey({
+  void setAccessKey({
     required String accessKey,
   }) {
     return ShoplivePlayerPlatform.instance.setAccessKey(accessKey: accessKey);
   }
 
-  Future<void> play(
+  void play(
       {required String campaignKey, bool? keepWindowStateOnPlayExecuted}) {
     return ShoplivePlayerPlatform.instance.play(
       campaignKey: campaignKey,
@@ -81,73 +81,75 @@ class ShopLivePlayer {
     );
   }
 
-  Future<void> close() {
+  void close() {
     return ShoplivePlayerPlatform.instance.close();
   }
 
-  Future<void> setUser(
+  void setUser(
       {String? userId,
       String? userName,
       int? age,
       ShopLiveGender? gender,
-      int? userScore}) {
+      int? userScore,
+      Map<String, String>? parameters = null}) {
     return ShoplivePlayerPlatform.instance.setUser(
         userId: userId,
         userName: userName,
         age: age,
         gender: gender,
-        userScore: userScore);
+        userScore: userScore,
+        parameters: parameters);
   }
 
-  Future<void> setAuthToken({required String authToken}) {
+  void setAuthToken({required String authToken}) {
     return ShoplivePlayerPlatform.instance.setAuthToken(authToken: authToken);
   }
 
-  Future<void> resetUser() {
+  void resetUser() {
     return ShoplivePlayerPlatform.instance.resetUser();
   }
 
-  Future<void> setShareScheme({
+  void setShareScheme({
     required String shareSchemeUrl,
   }) {
     return ShoplivePlayerPlatform.instance
         .setShareScheme(shareSchemeUrl: shareSchemeUrl);
   }
 
-  Future<void> setEndpoint({
+  void setEndpoint({
     required String endpoint,
   }) {
     return ShoplivePlayerPlatform.instance.setEndpoint(endpoint: endpoint);
   }
 
-  Future<void> setNextActionOnHandleNavigation({
+  void setNextActionOnHandleNavigation({
     required ShopLiveActionType type,
   }) {
     return ShoplivePlayerPlatform.instance
         .setNextActionOnHandleNavigation(type: type);
   }
 
-  Future<void> setEnterPipModeOnBackPressed({
+  void setEnterPipModeOnBackPressed({
     required bool isEnterPipMode,
   }) {
     return ShoplivePlayerPlatform.instance
         .setEnterPipModeOnBackPressed(isEnterPipMode: isEnterPipMode);
   }
 
-  Future<void> setMuteWhenPlayStart({
+  void setMuteWhenPlayStart({
     required bool isMute,
   }) {
     return ShoplivePlayerPlatform.instance.setMuteWhenPlayStart(isMute: isMute);
   }
 
-  Future<void> addParameter({
+  void addParameter({
     required String key,
     required String? value,
   }) {
     return ShoplivePlayerPlatform.instance.addParameter(key: key, value: value);
   }
 
-  Future<void> removeParameter({
+  void removeParameter({
     required String key,
   }) {
     return ShoplivePlayerPlatform.instance.removeParameter(key: key);

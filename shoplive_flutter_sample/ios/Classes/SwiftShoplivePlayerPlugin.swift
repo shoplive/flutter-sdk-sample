@@ -127,7 +127,7 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
             )
             break
         case "setUser" :
-            setUser(userId: args["userId"] as? String, userName: args["userName"] as? String, age: args["age"] as? Int, gender: args["gender"] as? String, userScore: args["userScore"] as? Int)
+            setUser(userId: args["userId"] as? String, userName: args["userName"] as? String, age: args["age"] as? Int, gender: args["gender"] as? String, userScore: args["userScore"] as? Int, parameters: args["parameters"] as? [String, String])
             break
         case "setAuthToken" :
             setAuthToken(authToken: args["authToken"] as? String)
@@ -154,7 +154,7 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
             close()
             break
         case "addParameter" :
-            addParameter(key: args["key"] as? String, letue: args["letue"] as? String)
+            addParameter(key: args["key"] as? String, value: args["value"] as? String)
             break
         case "removeParameter" :
             removeParameter(key: args["key"] as? String)
@@ -182,7 +182,8 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
         userName: String?,
         age: Int?,
         gender: String?,
-        userScore: Int?
+        userScore: Int?,
+        parameters: [String : String]?
     ) {
         let user = ShopLiveSDK.ShopLiveUser()
         user.id = userId
@@ -202,6 +203,14 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
         }
         user.gender = _gender
         user.add(["userScore": userScore])
+        
+        guard let parameters = (parameters ?? [String: String]()) as? Dictionary<String, String> else {
+            return
+        }
+        
+        for (key, value) in interestingNumbers {
+            user.addCustomParameter(key, value)
+        }
         ShopLive.user = user
     }
     
@@ -261,12 +270,12 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
         ShopLive.close()
     }
     
-    private func addParameter(key: String?, letue: String?) {
+    private func addParameter(key: String?, value: String?) {
         guard let key = key else {
             return
         }
         let user = ShopLive.user
-        user?.add([key : letue])
+        user?.add([key : value])
         ShopLive.user = user
     }
     
