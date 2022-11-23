@@ -1,3 +1,6 @@
+## 1.3.0+6
+* Fix ios user parameter.
+
 ## 1.3.0+5
 * Fix a user parameter.
 * Change Future<void> to void function.

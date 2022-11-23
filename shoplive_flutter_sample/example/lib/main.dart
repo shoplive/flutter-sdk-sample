@@ -42,9 +42,12 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
   final String _accessKey = "";
   final String _campaignKey = "";
   late final _shopLivePlayerPlugin = ShopLivePlayer();
-  late final _accessKeyController = TextEditingController(text: _accessKey); // For testing AccessKey
-  late final _campaignKeyController = TextEditingController(text: _campaignKey); // For testing CampaignKey
-  late final _shareSchemeUrlController = TextEditingController(text: "http://google.com");
+  late final _accessKeyController =
+      TextEditingController(text: _accessKey); // For testing AccessKey
+  late final _campaignKeyController =
+      TextEditingController(text: _campaignKey); // For testing CampaignKey
+  late final _shareSchemeUrlController =
+      TextEditingController(text: "http://google.com");
 
   @override
   void initState() {
@@ -58,7 +61,8 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
         userId: "userId",
         userScore: 0,
         gender: ShopLiveGender.neutral,
-        age: 20);
+        age: 20,
+        parameters: {"key": "value"});
   }
 
   void initListener() {

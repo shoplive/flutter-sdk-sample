@@ -127,7 +127,7 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
             )
             break
         case "setUser" :
-            setUser(userId: args["userId"] as? String, userName: args["userName"] as? String, age: args["age"] as? Int, gender: args["gender"] as? String, userScore: args["userScore"] as? Int, parameters: args["parameters"] as? [String, String])
+            setUser(userId: args["userId"] as? String, userName: args["userName"] as? String, age: args["age"] as? Int, gender: args["gender"] as? String, userScore: args["userScore"] as? Int, parameters: args["parameters"] as? Dictionary<String, String>)
             break
         case "setAuthToken" :
             setAuthToken(authToken: args["authToken"] as? String)
@@ -183,7 +183,7 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
         age: Int?,
         gender: String?,
         userScore: Int?,
-        parameters: [String : String]?
+        parameters: Dictionary<String, String>?
     ) {
         let user = ShopLiveSDK.ShopLiveUser()
         user.id = userId
@@ -204,13 +204,9 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
         user.gender = _gender
         user.add(["userScore": userScore])
         
-        guard let parameters = (parameters ?? [String: String]()) as? Dictionary<String, String> else {
-            return
-        }
+        let parameters = parameters ?? [String: String]()
         
-        for (key, value) in interestingNumbers {
-            user.addCustomParameter(key, value)
-        }
+        user.add(parameters)
         ShopLive.user = user
     }
     
