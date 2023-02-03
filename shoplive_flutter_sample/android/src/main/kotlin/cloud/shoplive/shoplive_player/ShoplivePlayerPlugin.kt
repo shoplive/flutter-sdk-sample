@@ -13,7 +13,6 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.atomic.AtomicReference
 
@@ -297,7 +296,7 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
         }
 
         override fun onSetUserName(jsonObject: JSONObject) {
-            eventSetUserName.get()?.success(Gson().toJson(UserInfo(jsonObject)))
+            eventSetUserName.get()?.success(Gson().toJson(UserInfo(jsonObject.toMap())))
         }
 
         override fun onReceivedCommand(context: Context, command: String, data: JSONObject) {
@@ -336,7 +335,7 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
     )
 
     private data class ChangedPlayerStatus(val isPipMode: Boolean, val state: String)
-    private data class UserInfo(val userInfo: JSONObject)
+    private data class UserInfo(val userInfo: Map<String, Any?>)
     private data class ReceivedCommand(
         val command: String,
         val data: Map<String, Any?>

@@ -1,3 +1,6 @@
+## 1.3.1+2
+* Fix a parsing issue
+
 ## 1.3.1+1
 * Fix a parsing issue
 
