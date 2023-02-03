@@ -21,9 +21,10 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
   }
 
   @override
-  void play(
-      {required String campaignKey,
-      bool? keepWindowStateOnPlayExecuted}) async {
+  void play({
+    required String campaignKey,
+    bool? keepWindowStateOnPlayExecuted,
+  }) async {
     return await methodChannel.invokeMethod<void>('play', <String, dynamic>{
       'campaignKey': campaignKey,
       'keepWindowStateOnPlayExecuted': keepWindowStateOnPlayExecuted
@@ -36,13 +37,14 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
   }
 
   @override
-  void setUser(
-      {String? userId,
-      String? userName,
-      int? age,
-      ShopLiveGender? gender,
-      int? userScore,
-      Map<String, String>? parameters = null}) async {
+  void setUser({
+    String? userId,
+    String? userName,
+    int? age,
+    ShopLiveGender? gender,
+    int? userScore,
+    Map<String, String>? parameters,
+  }) async {
     return await methodChannel.invokeMethod<void>('setUser', <String, dynamic>{
       'userId': userId,
       'userName': userName,

@@ -13,6 +13,7 @@ const String EVENT_HANDLE_CUSTOM_ACTION = "event_handle_custom_action";
 const String EVENT_CHANGED_PLAYER_STATUS = "event_changed_player_status";
 const String EVENT_SET_USER_NAME = "event_set_user_name";
 const String EVENT_RECEIVED_COMMAND = "event_received_command";
+const String EVENT_LOG = "event_log";
 
 class ShopLivePlayer {
   late final Stream<HandleNavigation> handleNavigation =
@@ -62,10 +63,16 @@ class ShopLivePlayer {
       .map((json) => Error.fromJson(json));
 
   late final Stream<ReceivedCommand> receivedCommand =
-      const EventChannel(EVENT_RECEIVED_COMMAND)
-          .receiveBroadcastStream()
-          .map((jsonString) => const JsonDecoder().convert(jsonString))
-          .map((json) => ReceivedCommand.fromJson(json));
+  const EventChannel(EVENT_RECEIVED_COMMAND)
+      .receiveBroadcastStream()
+      .map((jsonString) => const JsonDecoder().convert(jsonString))
+      .map((json) => ReceivedCommand.fromJson(json));
+
+  late final Stream<ShopLiveLog> log =
+  const EventChannel(EVENT_LOG)
+      .receiveBroadcastStream()
+      .map((jsonString) => const JsonDecoder().convert(jsonString))
+      .map((json) => ShopLiveLog.fromJson(json));
 
   void setAccessKey({
     required String accessKey,
@@ -73,8 +80,10 @@ class ShopLivePlayer {
     return ShoplivePlayerPlatform.instance.setAccessKey(accessKey: accessKey);
   }
 
-  void play(
-      {required String campaignKey, bool? keepWindowStateOnPlayExecuted}) {
+  void play({
+    required String campaignKey,
+    bool? keepWindowStateOnPlayExecuted,
+  }) {
     return ShoplivePlayerPlatform.instance.play(
       campaignKey: campaignKey,
       keepWindowStateOnPlayExecuted: keepWindowStateOnPlayExecuted,
@@ -85,13 +94,14 @@ class ShopLivePlayer {
     return ShoplivePlayerPlatform.instance.close();
   }
 
-  void setUser(
-      {String? userId,
-      String? userName,
-      int? age,
-      ShopLiveGender? gender,
-      int? userScore,
-      Map<String, String>? parameters = null}) {
+  void setUser({
+    String? userId,
+    String? userName,
+    int? age,
+    ShopLiveGender? gender,
+    int? userScore,
+    Map<String, String>? parameters,
+  }) {
     return ShoplivePlayerPlatform.instance.setUser(
         userId: userId,
         userName: userName,
@@ -317,12 +327,38 @@ class ReceivedCommand {
   final String command;
   final Map<String, dynamic> data;
 
-  ReceivedCommand({required this.command, required this.data});
+  ReceivedCommand({
+    required this.command,
+    required this.data,
+  });
 
   factory ReceivedCommand.fromJson(Map<String, dynamic> json) {
     return ReceivedCommand(
       command: json['command'],
       data: json['data'],
+    );
+  }
+}
+
+class ShopLiveLog {
+  final String name;
+  final String feature;
+  final String campaignKey;
+  final Map<String, dynamic> parameter;
+
+  ShopLiveLog({
+    required this.name,
+    required this.feature,
+    required this.campaignKey,
+    required this.parameter,
+  });
+
+  factory ShopLiveLog.fromJson(Map<String, dynamic> json) {
+    return ShopLiveLog(
+      name: json['name'],
+      feature: json['feature'],
+      campaignKey: json['campaignKey'],
+      parameter: json['parameter'],
     );
   }
 }

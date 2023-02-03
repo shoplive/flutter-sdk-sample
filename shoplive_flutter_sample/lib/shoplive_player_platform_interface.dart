@@ -30,7 +30,10 @@ abstract class ShoplivePlayerPlatform extends PlatformInterface {
     throw UnimplementedError('play() has not been implemented.');
   }
 
-  void play({required String campaignKey, bool? keepWindowStateOnPlayExecuted}) {
+  void play({
+    required String campaignKey,
+    bool? keepWindowStateOnPlayExecuted,
+  }) {
     throw UnimplementedError('play() has not been implemented.');
   }
 
@@ -44,7 +47,7 @@ abstract class ShoplivePlayerPlatform extends PlatformInterface {
     int? age,
     ShopLiveGender? gender,
     int? userScore,
-    Map<String, String>? parameters = null
+    Map<String, String>? parameters,
   }) {
     throw UnimplementedError('play() has not been implemented.');
   }

@@ -13,6 +13,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.atomic.AtomicReference
 
@@ -28,6 +29,7 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
         private const val EVENT_CHANGED_PLAYER_STATUS = "event_changed_player_status"
         private const val EVENT_SET_USER_NAME = "event_set_user_name"
         private const val EVENT_RECEIVED_COMMAND = "event_received_command"
+        private const val EVENT_LOG = "event_log"
     }
 
     /// The MethodChannel that will the communication between Flutter and native Android
@@ -46,6 +48,7 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
     private val eventChangedPlayerStatus = AtomicReference<EventChannel.EventSink?>(null)
     private val eventSetUserName = AtomicReference<EventChannel.EventSink?>(null)
     private val eventReceivedCommand = AtomicReference<EventChannel.EventSink?>(null)
+    private val eventLog = AtomicReference<EventChannel.EventSink?>(null)
 
     private val eventPairs = listOf(
         EVENT_HANDLE_NAVIGATION to eventHandleNavigation,
@@ -56,10 +59,11 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
         EVENT_HANDLE_CUSTOM_ACTION to eventHandleCustomAction,
         EVENT_CHANGED_PLAYER_STATUS to eventChangedPlayerStatus,
         EVENT_SET_USER_NAME to eventSetUserName,
-        EVENT_RECEIVED_COMMAND to eventReceivedCommand
+        EVENT_RECEIVED_COMMAND to eventReceivedCommand,
+        EVENT_LOG to eventLog
     )
 
-    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         context = flutterPluginBinding.applicationContext
         eventPairs.forEach { (eventName, eventSink) ->
             initializeEvent(flutterPluginBinding.binaryMessenger, eventName, eventSink)
@@ -256,7 +260,7 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
         }
 
         override fun onCampaignInfo(campaignInfo: JSONObject) {
-            eventCampaignInfo.get()?.success(Gson().toJson(CampaignInfo(campaignInfo)))
+            eventCampaignInfo.get()?.success(Gson().toJson(CampaignInfo(campaignInfo.toMap())))
         }
 
         override fun onError(context: Context, code: String, message: String) {
@@ -297,15 +301,33 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
         }
 
         override fun onReceivedCommand(context: Context, command: String, data: JSONObject) {
-            eventReceivedCommand.get()
-                ?.success(Gson().toJson(ReceivedCommand(command, data)))
+            if (command == "EVENT_LOG") {
+                eventLog.get()
+                    ?.success(
+                        Gson().toJson(
+                            ShopliveLog(
+                                if (data.has("name")) data.getString("name") else "",
+                                if (data.has("feature")) data.getString("feature") else "",
+                                if (data.has("campaignKey")) data.getString("campaignKey") else "",
+                                if (data.has("parameter")) {
+                                    data.getJSONObject("parameter").toMap()
+                                } else {
+                                    emptyMap()
+                                }
+                            )
+                        )
+                    )
+            } else {
+                eventReceivedCommand.get()
+                    ?.success(Gson().toJson(ReceivedCommand(command, data.toMap())))
+            }
         }
     }
 
     private data class HandleNavigation(val url: String)
     private data class HandleDownloadCoupon(val couponId: String)
     private data class ChangeCampaignStatus(val campaignStatus: String)
-    private data class CampaignInfo(val campaignInfo: JSONObject)
+    private data class CampaignInfo(val campaignInfo: Map<String, Any?>)
     private data class Error(val code: String, val message: String)
     private data class HandleCustomAction(
         val id: String,
@@ -317,7 +339,14 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
     private data class UserInfo(val userInfo: JSONObject)
     private data class ReceivedCommand(
         val command: String,
-        val data: JSONObject
+        val data: Map<String, Any?>
+    )
+
+    private data class ShopliveLog(
+        val name: String,
+        val feature: String,
+        val campaignKey: String,
+        val parameter: Map<String, Any?>?
     )
 
     private fun setOption() {
@@ -339,4 +368,8 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
 
         })
     }
+}
+
+private fun JSONObject.toMap(): Map<String, Any?> {
+    return Gson().fromJson<Map<String, Any?>>(this.toString(), HashMap::class.java) ?: emptyMap()
 }

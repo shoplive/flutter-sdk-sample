@@ -22,6 +22,7 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
     private static let EVENT_CHANGED_PLAYER_STATUS = "event_changed_player_status"
     private static let EVENT_SET_USER_NAME = "event_set_user_name"
     private static let EVENT_RECEIVED_COMMAND = "event_received_command"
+    private static let EVENT_LOG = "event_log"
     
     public static var eventHandleNavigation = ShopliveEventData(eventName: EVENT_HANDLE_NAVIGATION, flutterEventSink: nil)
     public static var eventHandleDownloadCoupon = ShopliveEventData(eventName: EVENT_HANDLE_DOWNLOAD_COUPON, flutterEventSink: nil)
@@ -32,6 +33,7 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
     public static var eventChangedPlayerStatus = ShopliveEventData(eventName: EVENT_CHANGED_PLAYER_STATUS, flutterEventSink: nil)
     public static var eventSetUserName = ShopliveEventData(eventName: EVENT_SET_USER_NAME, flutterEventSink: nil)
     public static var eventReceivedCommand = ShopliveEventData(eventName: EVENT_RECEIVED_COMMAND, flutterEventSink: nil)
+    public static var eventLog = ShopliveEventData(eventName: EVENT_LOG, flutterEventSink: nil)
     
     
     private static let eventPairs = [
@@ -43,7 +45,8 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
         EVENT_HANDLE_CUSTOM_ACTION,
         EVENT_CHANGED_PLAYER_STATUS,
         EVENT_SET_USER_NAME,
-        EVENT_RECEIVED_COMMAND
+        EVENT_RECEIVED_COMMAND,
+        EVENT_LOG
     ]
     
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -103,6 +106,9 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
                 break
             case EVENT_RECEIVED_COMMAND :
                 eventReceivedCommand.flutterEventSink = events
+                break
+            case EVENT_LOG :
+                eventLog.flutterEventSink = events
                 break
             default: return nil
             }
@@ -379,6 +385,40 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
             try container.encode(data, forKey: .data)
         }
     }
+        
+    private struct ShopliveLog : Codable {
+        let name: String
+        let feature: String
+        let campaignKey: String
+        let parameter: [String : Any]
+
+        init(name: String, feature: String, campaignKey: String, parameter: [String : Any]) {
+            self.name = name
+            self.feature = feature
+            self.campaignKey = campaignKey
+            self.parameter = parameter
+        }
+        
+        enum CodingKeys: String, CodingKey {
+            case name, feature, campaignKey, parameter
+        }
+        
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.name = try container.decode(String.self, forKey: .name)
+            self.feature = try container.decode(String.self, forKey: .feature)
+            self.campaignKey = try container.decode(String.self, forKey: .campaignKey)
+            self.parameter = try container.decode([String : Any].self, forKey: .parameter)
+        }
+        
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(name, forKey: .name)
+            try container.encode(feature, forKey: .feature)
+            try container.encode(campaignKey, forKey: .campaignKey)
+            try container.encode(parameter, forKey: .parameter)
+        }
+    }
     
     private func setOption() {
         // tablet 화면 비율
@@ -544,7 +584,7 @@ private extension UnkeyedEncodingContainer {
 extension SwiftShoplivePlayerPlugin: ShopLiveSDKDelegate {
     
     public func handleNavigation(with url: URL) {
-        if let json = try? JSONEncoder().encode(HandleNavigation(url: url.path)) {
+        if let json = try? JSONEncoder().encode(HandleNavigation(url: url.absoluteString)) {
             if let eventSink = SwiftShoplivePlayerPlugin.eventHandleNavigation.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
@@ -673,6 +713,16 @@ extension SwiftShoplivePlayerPlugin: ShopLiveSDKDelegate {
         
         if let json = try? JSONEncoder().encode(ReceivedCommand(command: command, data: payload)) {
             if let eventSink = SwiftShoplivePlayerPlugin.eventReceivedCommand.flutterEventSink {
+                eventSink(String(data: json, encoding: .utf8))
+            }
+        }
+    }
+
+    public func log(name: String, feature: ShopLiveLog.Feature, campaign: String, parameter: [String : String]) {
+        let eventLog = ShopLiveLog(name: name, feature: feature, campaign: campaign, parameter: parameter)
+
+        if let json = try? JSONEncoder().encode(ShopliveLog(name: name, feature: feature.name, campaignKey: campaign, parameter: parameter)) {
+            if let eventSink = SwiftShoplivePlayerPlugin.eventLog.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }

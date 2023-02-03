@@ -104,6 +104,11 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
       _showToast(
           "receivedCommand : ${data.command}, ${const JsonEncoder().convert(data.data)}");
     }).addTo(_compositeSubscription);
+
+    _shopLivePlayerPlugin.log.listen((data) {
+      _showToast(
+          "Shoplive Log : ${data.name}, ${data.feature}, ${data.campaignKey}, ${const JsonEncoder().convert(data.parameter)}");
+    }).addTo(_compositeSubscription);
   }
 
   @override
