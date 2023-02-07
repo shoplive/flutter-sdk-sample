@@ -1,3 +1,6 @@
+## 1.3.1+3
+* Fix a android parsing issue
+
 ## 1.3.1+2
 * Fix a parsing issue
 

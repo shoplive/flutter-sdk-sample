@@ -5,7 +5,8 @@ import android.os.Handler
 import android.os.Looper
 import androidx.annotation.NonNull
 import cloud.shoplive.sdk.*
-import com.google.gson.Gson
+import com.google.gson.*
+import com.google.gson.reflect.TypeToken
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
@@ -14,7 +15,10 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import org.json.JSONObject
+import java.lang.reflect.Type
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.math.ceil
+
 
 /** ShoplivePlayerPlugin */
 class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
@@ -370,5 +374,46 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
 }
 
 private fun JSONObject.toMap(): Map<String, Any?> {
-    return Gson().fromJson<Map<String, Any?>>(this.toString(), HashMap::class.java) ?: emptyMap()
+    return kotlin.runCatching {
+        GsonBuilder().registerTypeAdapter(Map::class.java, MapDeserializer()).create()
+            .fromJson<Map<String, Any?>>(
+                this.toString(),
+                object : TypeToken<Map<String, Any?>>() {}.type
+            ) ?: emptyMap()
+    }.getOrElse { emptyMap() }
+}
+
+private class MapDeserializer : JsonDeserializer<Map<String, Any?>> {
+    @Throws(JsonParseException::class)
+    override fun deserialize(
+        json: JsonElement, typeOfT: Type?,
+        context: JsonDeserializationContext?
+    ): Map<String, Any?>? {
+        return read(json) as? Map<String, Any?>
+    }
+
+    fun read(jsonElement: JsonElement): Any? {
+        if (jsonElement.isJsonArray) {
+            val arr = jsonElement.asJsonArray
+            return arr.map { read(it) }
+        } else if (jsonElement.isJsonObject) {
+            val obj = jsonElement.asJsonObject
+            val entitySet = obj.entrySet()
+            return entitySet.associate { it.key to read(it.value) }
+        } else if (jsonElement.isJsonPrimitive) {
+            val prim = jsonElement.asJsonPrimitive
+            if (prim.isBoolean) {
+                return prim.asBoolean
+            } else if (prim.isString) {
+                return prim.asString
+            } else if (prim.isNumber) {
+                val num = prim.asNumber
+                return if (ceil(num.toDouble()) == num.toLong().toDouble())
+                    num.toLong() else {
+                    num.toDouble()
+                }
+            }
+        }
+        return null
+    }
 }
