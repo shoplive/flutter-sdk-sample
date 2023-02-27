@@ -156,6 +156,12 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
         case "setMuteWhenPlayStart" :
             setMuteWhenPlayStart(isMute: args["isMute"] as? Bool)
             break
+        case "setMixWithOthers" :
+            setMixWithOthers(isMixAudio: args["isMixAudio"] as? Bool)
+            break
+        case "useCloseButton" :
+            useCloseButton(use: args["canUse"] as? Bool)
+            break
         case "close" :
             close()
             break
@@ -267,7 +273,21 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
         }
         ShopLive.setMuteWhenPlayStart(isMute)
     }
-    
+            
+    private func setMixWithOthers(isMixAudio: Bool?) {
+        guard let isMixAudio = isMixAudio else {
+            return
+        }
+        ShopLive.setMixWithOthers(isMixAudio: isMixAudio)
+    }
+            
+    private func useCloseButton(use: Bool?) {
+        guard let use = use else {
+            return
+        }
+        ShopLive.useCloseButton(use)
+    }
+            
     private func close() {
         ShopLive.close()
     }
@@ -334,10 +354,9 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
     }
     
     private struct ChangedPlayerStatus: Codable {
-        let isPipMode: Bool
-        let state: String
-        
+        let status: String
     }
+    
     private struct UserInfo : Codable {
         var userInfo: [String : Any]
         
@@ -390,17 +409,17 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
         let name: String
         let feature: String
         let campaignKey: String
-        let parameter: [String : Any]
+        let payload: [String : Any]
 
-        init(name: String, feature: String, campaignKey: String, parameter: [String : Any]) {
+        init(name: String, feature: String, campaignKey: String, payload: [String : Any]) {
             self.name = name
             self.feature = feature
             self.campaignKey = campaignKey
-            self.parameter = parameter
+            self.payload = payload
         }
         
         enum CodingKeys: String, CodingKey {
-            case name, feature, campaignKey, parameter
+            case name, feature, campaignKey, payload
         }
         
         init(from decoder: Decoder) throws {
@@ -408,7 +427,7 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
             self.name = try container.decode(String.self, forKey: .name)
             self.feature = try container.decode(String.self, forKey: .feature)
             self.campaignKey = try container.decode(String.self, forKey: .campaignKey)
-            self.parameter = try container.decode([String : Any].self, forKey: .parameter)
+            self.payload = try container.decode([String : Any].self, forKey: .payload)
         }
         
         func encode(to encoder: Encoder) throws {
@@ -416,7 +435,7 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
             try container.encode(name, forKey: .name)
             try container.encode(feature, forKey: .feature)
             try container.encode(campaignKey, forKey: .campaignKey)
-            try container.encode(parameter, forKey: .parameter)
+            try container.encode(payload, forKey: .payload)
         }
     }
     
@@ -670,26 +689,6 @@ extension SwiftShoplivePlayerPlugin: ShopLiveSDKDelegate {
         guard let payload = (payload ?? [String: Any]()) as? Dictionary<String, Any> else {
             return
         }
-        var changedPlayerStatus: ChangedPlayerStatus?
-        switch(command) {
-        case "willShopLiveOn" :
-            changedPlayerStatus = ChangedPlayerStatus(isPipMode: false, state: "CREATED")
-            break
-        case "willShopLiveOff" :
-            changedPlayerStatus = ChangedPlayerStatus(isPipMode: (payload["accessKey"] as? Int == 2) ? true : false, state: "DESTROYED")
-            break
-        default:
-            changedPlayerStatus = nil
-            break
-        }
-        
-        if let status = changedPlayerStatus {
-            if let json = try? JSONEncoder().encode(status) {
-                if let eventSink = SwiftShoplivePlayerPlugin.eventChangedPlayerStatus.flutterEventSink {
-                    eventSink(String(data: json, encoding: .utf8))
-                }
-            }
-        }
         
         if let json = try? JSONEncoder().encode(ReceivedCommand(command: command, data: payload)) {
             if let eventSink = SwiftShoplivePlayerPlugin.eventReceivedCommand.flutterEventSink {
@@ -717,11 +716,19 @@ extension SwiftShoplivePlayerPlugin: ShopLiveSDKDelegate {
             }
         }
     }
+    
+    public func handleChangedPlayerStatus(status: String) {
+        if let json = try? JSONEncoder().encode(ChangedPlayerStatus(status: status)) {
+            if let eventSink = SwiftShoplivePlayerPlugin.eventChangedPlayerStatus.flutterEventSink {
+                eventSink(String(data: json, encoding: .utf8))
+            }
+        }
+    }
 
-    public func log(name: String, feature: ShopLiveLog.Feature, campaign: String, parameter: [String : String]) {
-        let eventLog = ShopLiveLog(name: name, feature: feature, campaign: campaign, parameter: parameter)
+    public func log(name: String, feature: ShopLiveLog.Feature, campaign: String, payload: [String: Any]) {
+        let eventLog = ShopLiveLog(name: name, feature: feature, campaign: campaign, payload: payload)
 
-        if let json = try? JSONEncoder().encode(ShopliveLog(name: name, feature: feature.name, campaignKey: campaign, parameter: parameter)) {
+        if let json = try? JSONEncoder().encode(ShopliveLog(name: name, feature: feature.name, campaignKey: campaign, payload: payload)) {
             if let eventSink = SwiftShoplivePlayerPlugin.eventLog.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }

@@ -89,7 +89,7 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
     }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.changedPlayerStatus.listen((data) {
-      _showToast("changedPlayerStatus: ${data.isPipMode}, ${data.status}");
+      _showToast("changedPlayerStatus: ${data.status}");
     }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.userInfo.listen((data) {
@@ -107,7 +107,7 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
 
     _shopLivePlayerPlugin.log.listen((data) {
       _showToast(
-          "Shoplive Log : ${data.name}, ${data.feature}, ${data.campaignKey}, ${const JsonEncoder().convert(data.parameter)}");
+          "clickLog : ${data.name}, ${data.feature}, ${data.campaignKey}, ${const JsonEncoder().convert(data.payload)}");
     }).addTo(_compositeSubscription);
   }
 
@@ -165,6 +165,8 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
                       return;
                     }
 
+                    _shopLivePlayerPlugin.setMixWithOthers(isMixAudio: true);
+                    _shopLivePlayerPlugin.useCloseButton(canUse: true);
                     _shopLivePlayerPlugin.setShareScheme(
                         shareSchemeUrl:
                             _shareSchemeUrlController.text.isNotEmpty

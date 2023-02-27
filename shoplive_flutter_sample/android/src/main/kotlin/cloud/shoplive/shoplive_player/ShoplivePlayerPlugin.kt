@@ -128,6 +128,12 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
             "setMuteWhenPlayStart" -> setMuteWhenPlayStart(
                 call.argument<Boolean>("isMute"),
             )
+            "setMixWithOthers" -> setMuteWhenPlayStart(
+                call.argument<Boolean>("isMixAudio"),
+            )
+            "useCloseButton" -> setMuteWhenPlayStart(
+                call.argument<Boolean>("canUse"),
+            )
             "close" -> close()
             "addParameter" -> addParameter(
                 call.argument<String>("key"),
@@ -221,6 +227,15 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
         ShopLive.setMuteWhenPlayStart(isMute)
     }
 
+    private fun setMixWithOthers(isMixAudio: Boolean?) {
+        isMixAudio ?: return
+        ShopLive.setMixWithOthers(isMixAudio)
+    }
+
+    private fun useCloseButton(use: Boolean?) {
+        // Do nothing
+    }
+
     private fun close() {
         ShopLive.close()
     }
@@ -296,7 +311,7 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
             state: ShopLive.PlayerLifecycle
         ) {
             eventChangedPlayerStatus.get()
-                ?.success(Gson().toJson(ChangedPlayerStatus(isPipMode, state.getText())))
+                ?.success(Gson().toJson(ChangedPlayerStatus(state.getText())))
         }
 
         override fun onSetUserName(jsonObject: JSONObject) {
@@ -338,7 +353,7 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
         val payload: String
     )
 
-    private data class ChangedPlayerStatus(val isPipMode: Boolean, val state: String)
+    private data class ChangedPlayerStatus(val status: String)
     private data class UserInfo(val userInfo: Map<String, Any?>)
     private data class ReceivedCommand(
         val command: String,
@@ -349,7 +364,7 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
         val name: String,
         val feature: String,
         val campaignKey: String,
-        val parameter: Map<String, Any?>?
+        val payload: Map<String, Any?>?
     )
 
     private fun setOption() {

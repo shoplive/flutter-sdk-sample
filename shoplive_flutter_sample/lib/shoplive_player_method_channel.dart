@@ -21,6 +21,26 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
   }
 
   @override
+  void setMixWithOthers({
+    required bool isMixAudio,
+  }) async {
+    return await methodChannel
+        .invokeMethod<void>('setMixWithOthers', <String, dynamic>{
+      'isMixAudio': isMixAudio,
+    });
+  }
+
+  @override
+  void useCloseButton({
+    required bool canUse,
+  }) async {
+    return await methodChannel
+        .invokeMethod<void>('useCloseButton', <String, dynamic>{
+      'canUse': canUse,
+    });
+  }
+
+  @override
   void play({
     required String campaignKey,
     bool? keepWindowStateOnPlayExecuted,

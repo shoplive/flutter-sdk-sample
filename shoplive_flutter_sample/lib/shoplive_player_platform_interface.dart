@@ -30,6 +30,18 @@ abstract class ShoplivePlayerPlatform extends PlatformInterface {
     throw UnimplementedError('play() has not been implemented.');
   }
 
+  void setMixWithOthers({
+    required bool isMixAudio,
+  }) {
+    throw UnimplementedError('play() has not been implemented.');
+  }
+
+  void useCloseButton({
+    required bool canUse,
+  }) {
+    throw UnimplementedError('play() has not been implemented.');
+  }
+
   void play({
     required String campaignKey,
     bool? keepWindowStateOnPlayExecuted,

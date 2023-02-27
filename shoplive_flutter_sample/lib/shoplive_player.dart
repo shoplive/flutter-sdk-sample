@@ -63,13 +63,12 @@ class ShopLivePlayer {
       .map((json) => Error.fromJson(json));
 
   late final Stream<ReceivedCommand> receivedCommand =
-  const EventChannel(EVENT_RECEIVED_COMMAND)
-      .receiveBroadcastStream()
-      .map((jsonString) => const JsonDecoder().convert(jsonString))
-      .map((json) => ReceivedCommand.fromJson(json));
+      const EventChannel(EVENT_RECEIVED_COMMAND)
+          .receiveBroadcastStream()
+          .map((jsonString) => const JsonDecoder().convert(jsonString))
+          .map((json) => ReceivedCommand.fromJson(json));
 
-  late final Stream<ShopLiveLog> log =
-  const EventChannel(EVENT_LOG)
+  late final Stream<ShopLiveLog> log = const EventChannel(EVENT_LOG)
       .receiveBroadcastStream()
       .map((jsonString) => const JsonDecoder().convert(jsonString))
       .map((json) => ShopLiveLog.fromJson(json));
@@ -78,6 +77,18 @@ class ShopLivePlayer {
     required String accessKey,
   }) {
     return ShoplivePlayerPlatform.instance.setAccessKey(accessKey: accessKey);
+  }
+
+  void setMixWithOthers({
+    required bool isMixAudio,
+  }) {
+    return ShoplivePlayerPlatform.instance.setMixWithOthers(isMixAudio: isMixAudio);
+  }
+
+  void useCloseButton({
+    required bool canUse,
+  }) {
+    return ShoplivePlayerPlatform.instance.useCloseButton(canUse: canUse);
   }
 
   void play({
@@ -286,13 +297,12 @@ class HandleCustomAction {
 }
 
 class ChangedPlayerStatus {
-  final bool isPipMode;
   final ShopLivePlayStatus status;
 
-  ChangedPlayerStatus({required this.isPipMode, required this.status});
+  ChangedPlayerStatus({required this.status});
 
   factory ChangedPlayerStatus.fromJson(Map<String, dynamic> json) {
-    String? stateString = json['state'];
+    String? stateString = json['status'];
     ShopLivePlayStatus status;
     if (stateString == 'CREATED') {
       status = ShopLivePlayStatus.created;
@@ -303,7 +313,6 @@ class ChangedPlayerStatus {
     }
 
     return ChangedPlayerStatus(
-      isPipMode: json['isPipMode'],
       status: status,
     );
   }
@@ -344,13 +353,13 @@ class ShopLiveLog {
   final String name;
   final String feature;
   final String campaignKey;
-  final Map<String, dynamic> parameter;
+  final Map<String, dynamic> payload;
 
   ShopLiveLog({
     required this.name,
     required this.feature,
     required this.campaignKey,
-    required this.parameter,
+    required this.payload,
   });
 
   factory ShopLiveLog.fromJson(Map<String, dynamic> json) {
@@ -358,7 +367,7 @@ class ShopLiveLog {
       name: json['name'],
       feature: json['feature'],
       campaignKey: json['campaignKey'],
-      parameter: json['parameter'],
+      payload: json['payload'],
     );
   }
 }
