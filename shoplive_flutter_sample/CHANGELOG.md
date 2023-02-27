@@ -1,3 +1,7 @@
+## 1.3.3
+* Add to feature setMixWithOthers, feature useCloseButton
+* Fix a player status
+
 ## 1.3.1+4
 * Fix a android parsing issue
 
