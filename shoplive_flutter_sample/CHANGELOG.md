@@ -1,3 +1,6 @@
+## 1.4.0
+* Version bump v1.4.0
+
 ## 1.3.3
 * Add to feature setMixWithOthers, feature useCloseButton
 * Fix a player status
