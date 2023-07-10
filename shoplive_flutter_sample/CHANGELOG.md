@@ -1,3 +1,6 @@
+## 1.4.3
+* Version bump v1.4.3
+* 
 ## 1.4.2
 * Version bump v1.4.2
 * Fix to crash ios 13.x 
