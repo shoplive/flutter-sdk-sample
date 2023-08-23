@@ -172,17 +172,16 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
         parameters: Map<String, String>? = null
     ) {
         ShopLive.setUser(ShopLiveUser().apply {
-            setUserId(userId)
-            setUserName(userName)
-            setAge(age ?: 0)
-            setGender(
+            this.userId = userId
+            this.userName = userName
+            this.age = age ?: 0
+            this.gender =
                 when (gender) {
                     "m" -> ShopLiveUserGender.Male
                     "f" -> ShopLiveUserGender.Female
                     else -> ShopLiveUserGender.Neutral
                 }
-            )
-            setUserScore(userScore ?: 0)
+            this.userScore = userScore ?: 0
             parameters?.forEach { (key, value) ->
                 addCustomParameter(key, value)
             }

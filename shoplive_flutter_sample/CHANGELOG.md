@@ -1,3 +1,6 @@
+## 1.4.7
+* Version bump v1.4.7
+
 ## 1.4.6
 * Version bump v1.4.6
 
