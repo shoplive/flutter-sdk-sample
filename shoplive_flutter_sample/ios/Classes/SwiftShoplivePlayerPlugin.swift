@@ -442,6 +442,7 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
     private func setOption() {
         // tablet 화면 비율
         ShopLive.setKeepAspectOnTabletPortrait(true)
+        ShopLive.setEnabledPipSwipeOut(true)
     }
 }
 
