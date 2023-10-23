@@ -3,6 +3,7 @@ package cloud.shoplive.shoplive_player
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import androidx.annotation.Keep
 import androidx.annotation.NonNull
 import cloud.shoplive.sdk.*
 import com.google.gson.*
@@ -341,24 +342,32 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
+    @Keep
     private data class HandleNavigation(val url: String)
+    @Keep
     private data class HandleDownloadCoupon(val couponId: String)
+    @Keep
     private data class ChangeCampaignStatus(val campaignStatus: String)
+    @Keep
     private data class CampaignInfo(val campaignInfo: Map<String, Any?>)
+    @Keep
     private data class Error(val code: String, val message: String)
+    @Keep
     private data class HandleCustomAction(
         val id: String,
         val type: String,
         val payload: String
     )
-
+    @Keep
     private data class ChangedPlayerStatus(val status: String)
+    @Keep
     private data class UserInfo(val userInfo: Map<String, Any?>)
+    @Keep
     private data class ReceivedCommand(
         val command: String,
         val data: Map<String, Any?>
     )
-
+    @Keep
     private data class ShopliveLog(
         val name: String,
         val feature: String,
