@@ -117,7 +117,7 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
                 call.argument<String>("shareSchemeUrl"),
             )
             "setEndpoint" -> setEndpoint(
-                call.argument<String>("endpoint"),
+                call.argument<String?>("endpoint"),
             )
             "setNextActionOnHandleNavigation" -> setNextActionOnHandleNavigation(
                 call.argument<Int>("type"),

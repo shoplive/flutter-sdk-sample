@@ -138,7 +138,7 @@ class ShopLivePlayer {
   }
 
   void setEndpoint({
-    required String endpoint,
+    required String? endpoint,
   }) {
     return ShoplivePlayerPlatform.instance.setEndpoint(endpoint: endpoint);
   }

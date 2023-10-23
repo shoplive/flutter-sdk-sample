@@ -81,7 +81,7 @@ abstract class ShoplivePlayerPlatform extends PlatformInterface {
   }
 
   void setEndpoint({
-    required String endpoint,
+    required String? endpoint,
   }) {
     throw UnimplementedError('play() has not been implemented.');
   }

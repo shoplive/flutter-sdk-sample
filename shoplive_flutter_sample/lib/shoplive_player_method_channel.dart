@@ -100,7 +100,7 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
 
   @override
   void setEndpoint({
-    required String endpoint,
+    required String? endpoint,
   }) async {
     return await methodChannel
         .invokeMethod<void>('setEndpoint', <String, dynamic>{
