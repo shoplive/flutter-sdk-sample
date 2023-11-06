@@ -1,6 +1,7 @@
 import Flutter
 import UIKit
 import ShopLiveSDK
+import ShopliveSDKCommon
 
 public struct ShopliveEventData {
     let eventName: String
@@ -197,28 +198,27 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
         userScore: Int?,
         parameters: Dictionary<String, String>?
     ) {
-        let user = ShopLiveSDK.ShopLiveUser()
-        user.id = userId
+        let user = ShopLiveCommonUser(userId: userId ?? "")
         user.name = userName
         user.age = age ?? 0
-        var _gender = ShopLiveSDK.ShopLiveUser.Gender.unknown
+        var _gender = ShopliveSDKCommon.ShopliveCommonUserGender.netural
         switch (gender) {
         case "m" :
-            _gender = ShopLiveSDK.ShopLiveUser.Gender.male
+            _gender = ShopliveSDKCommon.ShopliveCommonUserGender.male
             break
         case "f" :
-            _gender = ShopLiveSDK.ShopLiveUser.Gender.female
+            _gender = ShopliveSDKCommon.ShopliveCommonUserGender.female
             break
         default :
-            _gender = ShopLiveSDK.ShopLiveUser.Gender.neutral
+            _gender = ShopliveSDKCommon.ShopliveCommonUserGender.netural
             break
         }
         user.gender = _gender
-        user.add(["userScore": userScore])
+        user.userScore = userScore
         
         let parameters = parameters ?? [String: String]()
         
-        user.add(parameters)
+        user.custom = parameters
         ShopLive.user = user
     }
     
@@ -296,18 +296,17 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
         guard let key = key else {
             return
         }
-        let user = ShopLive.user
-        user?.add([key : value])
-        ShopLive.user = user
+        guard let value = value else {
+            return
+        }
+        ShopLive.addParameter(key: key, value: value)
     }
     
     private func removeParameter(key: String?) {
         guard let key = key else {
             return
         }
-        let user = ShopLive.user
-        user?.remove(key: key)
-        ShopLive.user = user
+        ShopLive.removeParameter(key: key)
     }
     // endregion
     

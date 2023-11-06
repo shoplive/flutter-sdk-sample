@@ -1,3 +1,6 @@
+## 1.5.1
+* Version bump v1.5.1
+
 ## 1.5.0+1
 * Add a keep annotation
 
