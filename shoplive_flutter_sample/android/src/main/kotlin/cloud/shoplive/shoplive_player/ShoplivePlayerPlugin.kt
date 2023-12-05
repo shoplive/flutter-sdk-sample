@@ -1,6 +1,7 @@
 package cloud.shoplive.shoplive_player
 
 import android.content.Context
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.Keep
@@ -98,10 +99,12 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
             "setAccessKey" -> setAccessKey(
                 call.argument<String>("accessKey"),
             )
+
             "play" -> play(
                 call.argument<String>("campaignKey"),
                 call.argument<Boolean>("keepWindowStateOnPlayExecuted"),
             )
+
             "setUser" -> setUser(
                 call.argument<String>("userId"),
                 call.argument<String>("userName"),
@@ -110,39 +113,50 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
                 call.argument<Int>("userScore"),
                 call.argument<Map<String, String>>("parameters"),
             )
+
             "setAuthToken" -> setAuthToken(
                 call.argument<String>("authToken"),
             )
+
             "resetUser" -> resetUser()
             "setShareScheme" -> setShareScheme(
                 call.argument<String>("shareSchemeUrl"),
             )
+
             "setEndpoint" -> setEndpoint(
                 call.argument<String?>("endpoint"),
             )
+
             "setNextActionOnHandleNavigation" -> setNextActionOnHandleNavigation(
                 call.argument<Int>("type"),
             )
+
             "setEnterPipModeOnBackPressed" -> setEnterPipModeOnBackPressed(
                 call.argument<Boolean>("isEnterPipMode"),
             )
+
             "setMuteWhenPlayStart" -> setMuteWhenPlayStart(
                 call.argument<Boolean>("isMute"),
             )
+
             "setMixWithOthers" -> setMuteWhenPlayStart(
                 call.argument<Boolean>("isMixAudio"),
             )
+
             "useCloseButton" -> setMuteWhenPlayStart(
                 call.argument<Boolean>("canUse"),
             )
+
             "close" -> close()
             "addParameter" -> addParameter(
                 call.argument<String>("key"),
                 call.argument<String>("value"),
             )
+
             "removeParameter" -> removeParameter(
                 call.argument<String>("key"),
             )
+
             else -> result.notImplemented()
         }
     }
@@ -213,8 +227,13 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
     }
 
     private fun setNextActionOnHandleNavigation(type: Int?) {
-        type ?: return
-        ShopLive.setNextActionOnHandleNavigation(ShopLive.ActionType.getType(type))
+        val action = when (type) {
+            ShopLive.ActionType.KEEP.ordinal -> ShopLive.ActionType.KEEP
+            ShopLive.ActionType.CLOSE.ordinal -> ShopLive.ActionType.CLOSE
+            ShopLive.ActionType.PIP.ordinal -> ShopLive.ActionType.PIP
+            else -> ShopLive.ActionType.PIP
+        }
+        ShopLive.setNextActionOnHandleNavigation(action)
     }
 
     private fun setEnterPipModeOnBackPressed(isEnterPipMode: Boolean?) {
@@ -251,7 +270,7 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
     }
     // endregion
 
-    private val shopLiveHandler = object : ShopLiveHandler {
+    private val shopLiveHandler = object : ShopLiveHandler() {
         override fun handleNavigation(context: Context, url: String) {
             eventHandleNavigation.get()?.success(Gson().toJson(HandleNavigation(url)))
         }
@@ -300,7 +319,7 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
             )
         }
 
-        override fun handleShare(context: Context?, url: String?) {
+        override fun handleShare(context: Context, url: String) {
             Handler(Looper.getMainLooper()).postDelayed({
                 super.handleShare(context, url)
             }, 100)
@@ -311,7 +330,7 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
             state: ShopLive.PlayerLifecycle
         ) {
             eventChangedPlayerStatus.get()
-                ?.success(Gson().toJson(ChangedPlayerStatus(state.getText())))
+                ?.success(Gson().toJson(ChangedPlayerStatus(state.name)))
         }
 
         override fun onSetUserName(jsonObject: JSONObject) {
@@ -344,29 +363,38 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler {
 
     @Keep
     private data class HandleNavigation(val url: String)
+
     @Keep
     private data class HandleDownloadCoupon(val couponId: String)
+
     @Keep
     private data class ChangeCampaignStatus(val campaignStatus: String)
+
     @Keep
     private data class CampaignInfo(val campaignInfo: Map<String, Any?>)
+
     @Keep
     private data class Error(val code: String, val message: String)
+
     @Keep
     private data class HandleCustomAction(
         val id: String,
         val type: String,
         val payload: String
     )
+
     @Keep
     private data class ChangedPlayerStatus(val status: String)
+
     @Keep
     private data class UserInfo(val userInfo: Map<String, Any?>)
+
     @Keep
     private data class ReceivedCommand(
         val command: String,
         val data: Map<String, Any?>
     )
+
     @Keep
     private data class ShopliveLog(
         val name: String,

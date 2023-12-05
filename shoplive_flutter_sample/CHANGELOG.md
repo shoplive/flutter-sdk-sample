@@ -1,42 +1,45 @@
+## 1.5.2
+* Bump version to v1.5.2
+
 ## 1.5.1
-* Version bump v1.5.1
+* Bump version to v1.5.1
 
 ## 1.5.0+1
 * Add a keep annotation
 
 ## 1.5.0
-* Version bump v1.5.0
+* Bump version to v1.5.0
 
 ## 1.4.9
-* Version bump v1.4.9
+* Bump version to v1.4.9
 
 ## 1.4.8
-* Version bump v1.4.8
+* Bump version to v1.4.8
 
 ## 1.4.7
-* Version bump v1.4.7
+* Bump version to v1.4.7
 
 ## 1.4.6
-* Version bump v1.4.6
+* Bump version to v1.4.6
 
 ## 1.4.5
-* Version bump v1.4.5
+* Bump version to v1.4.5
 
 ## 1.4.4
-* Version bump v1.4.4
+* Bump version to v1.4.4
 
 ## 1.4.3
-* Version bump v1.4.3
+* Bump version to v1.4.3
 
 ## 1.4.2
-* Version bump v1.4.2
+* Bump version to v1.4.2
 * Fix to crash ios 13.x 
 
 ## 1.4.1
-* Version bump v1.4.1
+* Bump version to v1.4.1
 
 ## 1.4.0
-* Version bump v1.4.0
+* Bump version to v1.4.0
 
 ## 1.3.3
 * Add to feature setMixWithOthers, feature useCloseButton
