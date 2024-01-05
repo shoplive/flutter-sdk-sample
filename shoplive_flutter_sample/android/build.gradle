@@ -10,7 +10,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.4'
+        classpath 'com.android.tools.build:gradle:7.2.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.21.0"
     }
@@ -55,5 +55,12 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.google.code.gson:gson:2.9.1'
 
-    implementation 'cloud.shoplive:shoplive-sdk:1.5.2'
+    def shoplive_sdk_version = "1.5.2"
+    def shoplive_exoplayer_version = "2.19.1.8"
+
+    implementation "cloud.shoplive:shoplive-common:$shoplive_sdk_version" // must required
+    implementation "cloud.shoplive:shoplive-exoplayer:$shoplive_exoplayer_version" // must required
+    implementation "cloud.shoplive:shoplive-sdk-core:$shoplive_sdk_version" // for live player
+    implementation "cloud.shoplive:shoplive-network:$shoplive_sdk_version" // for shot-form player && editor
+    implementation "cloud.shoplive:shoplive-short-form:$shoplive_sdk_version" // for short-form player
 }
