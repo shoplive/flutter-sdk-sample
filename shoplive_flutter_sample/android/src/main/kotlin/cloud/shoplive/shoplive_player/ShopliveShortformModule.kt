@@ -106,7 +106,7 @@ class ShopliveShortformModule : ShopliveBaseModule() {
 
         override fun getOnClickBannerListener(): ShopLiveShortformUrlListener {
             return ShopLiveShortformUrlListener { _, url ->
-                eventClickBanner.get()?.success(ShopliveShortformUrlData(url))
+                eventClickBanner.get()?.success(Gson().toJson(ShopliveShortformUrlData(url)))
             }
         }
     }
