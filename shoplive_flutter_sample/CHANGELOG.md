@@ -1,3 +1,7 @@
+## 1.5.2+1
+* Add a shortform
+* Migration player api
+
 ## 1.5.2
 * Bump version to v1.5.2
 
