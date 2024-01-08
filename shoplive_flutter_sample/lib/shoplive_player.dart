@@ -4,85 +4,87 @@ import 'package:flutter/services.dart';
 
 import 'shoplive_player_platform_interface.dart';
 
-const String EVENT_HANDLE_NAVIGATION = "event_handle_navigation";
-const String EVENT_HANDLE_DOWNLOAD_COUPON = "event_handle_download_coupon";
-const String EVENT_CHANGE_CAMPAIGN_STATUS = "event_change_campaign_status";
-const String EVENT_CAMPAIGN_INFO = "event_campaign_info";
-const String EVENT_ERROR = "event_error";
-const String EVENT_HANDLE_CUSTOM_ACTION = "event_handle_custom_action";
-const String EVENT_CHANGED_PLAYER_STATUS = "event_changed_player_status";
-const String EVENT_SET_USER_NAME = "event_set_user_name";
-const String EVENT_RECEIVED_COMMAND = "event_received_command";
-const String EVENT_LOG = "event_log";
+const String _EVENT_PLAYER_HANDLE_NAVIGATION = "event_player_handle_navigation";
+const String _EVENT_PLAYER_HANDLE_DOWNLOAD_COUPON =
+    "event_player_handle_download_coupon";
+const String _EVENT_PLAYER_CHANGE_CAMPAIGN_STATUS =
+    "event_player_change_campaign_status";
+const String _EVENT_PLAYER_CAMPAIGN_INFO = "event_player_campaign_info";
+const String _EVENT_PLAYER_ERROR = "event_player_error";
+const String _EVENT_PLAYER_HANDLE_CUSTOM_ACTION =
+    "event_player_handle_custom_action";
+const String _EVENT_PLAYER_CHANGED_PLAYER_STATUS =
+    "event_player_changed_player_status";
+const String _EVENT_PLAYER_SET_USER_NAME = "event_player_set_user_name";
+const String _EVENT_PLAYER_RECEIVED_COMMAND = "event_player_received_command";
+const String _EVENT_PLAYER_LOG = "event_player_log";
 
 class ShopLivePlayer {
-  late final Stream<HandleNavigation> handleNavigation =
-      const EventChannel(EVENT_HANDLE_NAVIGATION)
+  late final Stream<ShopLiveHandleNavigation> handleNavigation =
+      const EventChannel(_EVENT_PLAYER_HANDLE_NAVIGATION)
           .receiveBroadcastStream()
           .map((jsonString) => const JsonDecoder().convert(jsonString))
-          .map((json) => HandleNavigation.fromJson(json));
+          .map((json) => ShopLiveHandleNavigation.fromJson(json));
 
-  late final Stream<HandleDownloadCoupon> handleDownloadCoupon =
-      const EventChannel(EVENT_HANDLE_DOWNLOAD_COUPON)
+  late final Stream<ShopLiveHandleDownloadCoupon> handleDownloadCoupon =
+      const EventChannel(_EVENT_PLAYER_HANDLE_DOWNLOAD_COUPON)
           .receiveBroadcastStream()
           .map((jsonString) => const JsonDecoder().convert(jsonString))
-          .map((json) => HandleDownloadCoupon.fromJson(json));
+          .map((json) => ShopLiveHandleDownloadCoupon.fromJson(json));
 
-  late final Stream<ChangeCampaignStatus> changeCampaignStatus =
-      const EventChannel(EVENT_CHANGE_CAMPAIGN_STATUS)
+  late final Stream<ShopLiveChangeCampaignStatus> changeCampaignStatus =
+      const EventChannel(_EVENT_PLAYER_CHANGE_CAMPAIGN_STATUS)
           .receiveBroadcastStream()
           .map((jsonString) => const JsonDecoder().convert(jsonString))
-          .map((json) => ChangeCampaignStatus.fromJson(json));
+          .map((json) => ShopLiveChangeCampaignStatus.fromJson(json));
 
-  late final Stream<CampaignInfo> campaignInfo =
-      const EventChannel(EVENT_CAMPAIGN_INFO)
+  late final Stream<ShopLiveCampaignInfo> campaignInfo =
+      const EventChannel(_EVENT_PLAYER_CAMPAIGN_INFO)
           .receiveBroadcastStream()
           .map((jsonString) => const JsonDecoder().convert(jsonString))
-          .map((json) => CampaignInfo.fromJson(json));
+          .map((json) => ShopLiveCampaignInfo.fromJson(json));
 
-  late final Stream<HandleCustomAction> handleCustomAction =
-      const EventChannel(EVENT_HANDLE_CUSTOM_ACTION)
+  late final Stream<ShopLiveHandleCustomAction> handleCustomAction =
+      const EventChannel(_EVENT_PLAYER_HANDLE_CUSTOM_ACTION)
           .receiveBroadcastStream()
           .map((jsonString) => const JsonDecoder().convert(jsonString))
-          .map((json) => HandleCustomAction.fromJson(json));
+          .map((json) => ShopLiveHandleCustomAction.fromJson(json));
 
-  late final Stream<ChangedPlayerStatus> changedPlayerStatus =
-      const EventChannel(EVENT_CHANGED_PLAYER_STATUS)
+  late final Stream<ShopLiveChangedPlayerStatus> changedPlayerStatus =
+      const EventChannel(_EVENT_PLAYER_CHANGED_PLAYER_STATUS)
           .receiveBroadcastStream()
           .map((jsonString) => const JsonDecoder().convert(jsonString))
-          .map((json) => ChangedPlayerStatus.fromJson(json));
+          .map((json) => ShopLiveChangedPlayerStatus.fromJson(json));
 
-  late final Stream<UserInfo> userInfo = const EventChannel(EVENT_SET_USER_NAME)
-      .receiveBroadcastStream()
-      .map((jsonString) => const JsonDecoder().convert(jsonString))
-      .map((json) => UserInfo.fromJson(json));
-
-  late final Stream<Error> error = const EventChannel(EVENT_ERROR)
-      .receiveBroadcastStream()
-      .map((jsonString) => const JsonDecoder().convert(jsonString))
-      .map((json) => Error.fromJson(json));
-
-  late final Stream<ReceivedCommand> receivedCommand =
-      const EventChannel(EVENT_RECEIVED_COMMAND)
+  late final Stream<ShopLiveUserInfo> userInfo =
+      const EventChannel(_EVENT_PLAYER_SET_USER_NAME)
           .receiveBroadcastStream()
           .map((jsonString) => const JsonDecoder().convert(jsonString))
-          .map((json) => ReceivedCommand.fromJson(json));
+          .map((json) => ShopLiveUserInfo.fromJson(json));
 
-  late final Stream<ShopLiveLog> log = const EventChannel(EVENT_LOG)
-      .receiveBroadcastStream()
-      .map((jsonString) => const JsonDecoder().convert(jsonString))
-      .map((json) => ShopLiveLog.fromJson(json));
+  late final Stream<ShopLivePlayerError> error =
+      const EventChannel(_EVENT_PLAYER_ERROR)
+          .receiveBroadcastStream()
+          .map((jsonString) => const JsonDecoder().convert(jsonString))
+          .map((json) => ShopLivePlayerError.fromJson(json));
 
-  void setAccessKey({
-    required String accessKey,
-  }) {
-    return ShoplivePlayerPlatform.instance.setAccessKey(accessKey: accessKey);
-  }
+  late final Stream<ShopLiveReceivedCommand> receivedCommand =
+      const EventChannel(_EVENT_PLAYER_RECEIVED_COMMAND)
+          .receiveBroadcastStream()
+          .map((jsonString) => const JsonDecoder().convert(jsonString))
+          .map((json) => ShopLiveReceivedCommand.fromJson(json));
+
+  late final Stream<ShopLivePlayerLog> log =
+      const EventChannel(_EVENT_PLAYER_LOG)
+          .receiveBroadcastStream()
+          .map((jsonString) => const JsonDecoder().convert(jsonString))
+          .map((json) => ShopLivePlayerLog.fromJson(json));
 
   void setMixWithOthers({
     required bool isMixAudio,
   }) {
-    return ShoplivePlayerPlatform.instance.setMixWithOthers(isMixAudio: isMixAudio);
+    return ShoplivePlayerPlatform.instance
+        .setMixWithOthers(isMixAudio: isMixAudio);
   }
 
   void useCloseButton({
@@ -92,42 +94,13 @@ class ShopLivePlayer {
   }
 
   void play({
-    required String campaignKey,
-    bool? keepWindowStateOnPlayExecuted,
+    required ShopLivePlayerData data,
   }) {
-    return ShoplivePlayerPlatform.instance.play(
-      campaignKey: campaignKey,
-      keepWindowStateOnPlayExecuted: keepWindowStateOnPlayExecuted,
-    );
+    return ShoplivePlayerPlatform.instance.play(data: data);
   }
 
   void close() {
     return ShoplivePlayerPlatform.instance.close();
-  }
-
-  void setUser({
-    String? userId,
-    String? userName,
-    int? age,
-    ShopLiveGender? gender,
-    int? userScore,
-    Map<String, String>? parameters,
-  }) {
-    return ShoplivePlayerPlatform.instance.setUser(
-        userId: userId,
-        userName: userName,
-        age: age,
-        gender: gender,
-        userScore: userScore,
-        parameters: parameters);
-  }
-
-  void setAuthToken({required String authToken}) {
-    return ShoplivePlayerPlatform.instance.setAuthToken(authToken: authToken);
-  }
-
-  void resetUser() {
-    return ShoplivePlayerPlatform.instance.resetUser();
   }
 
   void setShareScheme({
@@ -177,24 +150,16 @@ class ShopLivePlayer {
   }
 }
 
-enum ShopLiveGender { male, female, neutral }
+class ShopLivePlayerData {
+  final String campaignKey;
+  bool keepWindowStateOnPlayExecuted;
+  String? referrer;
 
-extension ShopLiveGenderExtension on ShopLiveGender {
-  String parseText() {
-    var text = "";
-    switch (this) {
-      case ShopLiveGender.male:
-        text = "m";
-        break;
-      case ShopLiveGender.female:
-        text = "f";
-        break;
-      default:
-        text = "n";
-        break;
-    }
-    return text;
-  }
+  ShopLivePlayerData({
+    required this.campaignKey,
+    this.keepWindowStateOnPlayExecuted = false,
+    this.referrer,
+  });
 }
 
 enum ShopLiveActionType { show, hide, keep }
@@ -217,78 +182,78 @@ extension ShopLiveActionTypeExtension on ShopLiveActionType {
   }
 }
 
-class HandleNavigation {
+class ShopLiveHandleNavigation {
   final String url;
 
-  HandleNavigation({required this.url});
+  ShopLiveHandleNavigation({required this.url});
 
-  factory HandleNavigation.fromJson(Map<String, dynamic> json) {
-    return HandleNavigation(
+  factory ShopLiveHandleNavigation.fromJson(Map<String, dynamic> json) {
+    return ShopLiveHandleNavigation(
       url: json['url'],
     );
   }
 }
 
-class HandleDownloadCoupon {
+class ShopLiveHandleDownloadCoupon {
   final String couponId;
 
-  HandleDownloadCoupon({required this.couponId});
+  ShopLiveHandleDownloadCoupon({required this.couponId});
 
-  factory HandleDownloadCoupon.fromJson(Map<String, dynamic> json) {
-    return HandleDownloadCoupon(
+  factory ShopLiveHandleDownloadCoupon.fromJson(Map<String, dynamic> json) {
+    return ShopLiveHandleDownloadCoupon(
       couponId: json['couponId'],
     );
   }
 }
 
-class ChangeCampaignStatus {
+class ShopLiveChangeCampaignStatus {
   final String campaignStatus;
 
-  ChangeCampaignStatus({required this.campaignStatus});
+  ShopLiveChangeCampaignStatus({required this.campaignStatus});
 
-  factory ChangeCampaignStatus.fromJson(Map<String, dynamic> json) {
-    return ChangeCampaignStatus(
+  factory ShopLiveChangeCampaignStatus.fromJson(Map<String, dynamic> json) {
+    return ShopLiveChangeCampaignStatus(
       campaignStatus: json['campaignStatus'],
     );
   }
 }
 
-class CampaignInfo {
+class ShopLiveCampaignInfo {
   final Map<String, dynamic> campaignInfo;
 
-  CampaignInfo({required this.campaignInfo});
+  ShopLiveCampaignInfo({required this.campaignInfo});
 
-  factory CampaignInfo.fromJson(Map<String, dynamic> json) {
-    return CampaignInfo(
+  factory ShopLiveCampaignInfo.fromJson(Map<String, dynamic> json) {
+    return ShopLiveCampaignInfo(
       campaignInfo: json['campaignInfo'],
     );
   }
 }
 
-class Error {
+class ShopLivePlayerError {
   final String code;
   final String message;
 
-  Error({required this.code, required this.message});
+  ShopLivePlayerError({required this.code, required this.message});
 
-  factory Error.fromJson(Map<String, dynamic> json) {
-    return Error(
+  factory ShopLivePlayerError.fromJson(Map<String, dynamic> json) {
+    return ShopLivePlayerError(
       code: json['code'],
       message: json['message'],
     );
   }
 }
 
-class HandleCustomAction {
+class ShopLiveHandleCustomAction {
   final String id;
   final String type;
   final String payload;
 
-  HandleCustomAction(
+  ShopLiveHandleCustomAction(
       {required this.id, required this.type, required this.payload});
 
-  factory HandleCustomAction.fromJson(Map<String, dynamic> json) {
-    return HandleCustomAction(
+  factory ShopLiveHandleCustomAction.fromJson(Map<String, dynamic> json) {
+    return ShopLiveHandleCustomAction(
       id: json['id'],
       type: json['type'],
       payload: json['payload'],
@@ -296,12 +261,12 @@ class HandleCustomAction {
   }
 }
 
-class ChangedPlayerStatus {
+class ShopLiveChangedPlayerStatus {
   final ShopLivePlayStatus status;
 
-  ChangedPlayerStatus({required this.status});
+  ShopLiveChangedPlayerStatus({required this.status});
 
-  factory ChangedPlayerStatus.fromJson(Map<String, dynamic> json) {
+  factory ShopLiveChangedPlayerStatus.fromJson(Map<String, dynamic> json) {
     String? stateString = json['status'];
     ShopLivePlayStatus status;
     if (stateString == 'CREATED') {
@@ -312,7 +277,7 @@ class ChangedPlayerStatus {
       status = ShopLivePlayStatus.destroyed;
     }
 
-    return ChangedPlayerStatus(
+    return ShopLiveChangedPlayerStatus(
       status: status,
     );
   }
@@ -320,54 +285,62 @@ class ChangedPlayerStatus {
 
 enum ShopLivePlayStatus { created, destroyed }
 
-class UserInfo {
+class ShopLiveUserInfo {
   final Map<String, dynamic> userInfo;
 
-  UserInfo({required this.userInfo});
+  ShopLiveUserInfo({required this.userInfo});
 
-  factory UserInfo.fromJson(Map<String, dynamic> json) {
-    return UserInfo(
+  factory ShopLiveUserInfo.fromJson(Map<String, dynamic> json) {
+    return ShopLiveUserInfo(
       userInfo: json['userInfo'],
     );
   }
 }
 
-class ReceivedCommand {
+class ShopLiveReceivedCommand {
   final String command;
   final Map<String, dynamic> data;
 
-  ReceivedCommand({
+  ShopLiveReceivedCommand({
     required this.command,
     required this.data,
   });
 
-  factory ReceivedCommand.fromJson(Map<String, dynamic> json) {
-    return ReceivedCommand(
+  factory ShopLiveReceivedCommand.fromJson(Map<String, dynamic> json) {
+    return ShopLiveReceivedCommand(
       command: json['command'],
       data: json['data'],
     );
   }
 }
 
-class ShopLiveLog {
+class ShopLivePlayerLog {
   final String name;
   final String feature;
   final String campaignKey;
   final Map<String, dynamic> payload;
 
-  ShopLiveLog({
+  ShopLivePlayerLog({
     required this.name,
     required this.feature,
     required this.campaignKey,
     required this.payload,
   });
 
-  factory ShopLiveLog.fromJson(Map<String, dynamic> json) {
-    return ShopLiveLog(
+  factory ShopLivePlayerLog.fromJson(Map<String, dynamic> json) {
+    return ShopLivePlayerLog(
       name: json['name'],
       feature: json['feature'],
       campaignKey: json['campaignKey'],
       payload: json['payload'],
     );
+  }
+}
+
+class ShopLiveBaseData {
+  ShopLiveBaseData();
+
+  factory ShopLiveBaseData.fromJson(Map<String, dynamic> json) {
+    return ShopLiveBaseData();
   }
 }

@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:shoplive_player/shoplive_common.dart';
 import 'package:shoplive_player/shoplive_player.dart';
+import 'package:shoplive_player/shoplive_shortform.dart';
 
 void main() {
   runApp(const MyApp());
@@ -41,7 +43,9 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
 
   final String _accessKey = "";
   final String _campaignKey = "";
+  late final _shopLiveCommonPlugin = ShopLiveCommon();
   late final _shopLivePlayerPlugin = ShopLivePlayer();
+  late final _shopLiveShortformPlugin = ShopLiveShortform();
   late final _accessKeyController =
       TextEditingController(text: _accessKey); // For testing AccessKey
   late final _campaignKeyController =
@@ -53,16 +57,6 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
   void initState() {
     super.initState();
     initListener();
-
-    _shopLivePlayerPlugin.setEnterPipModeOnBackPressed(isEnterPipMode: true);
-    _shopLivePlayerPlugin.setMuteWhenPlayStart(isMute: false);
-    _shopLivePlayerPlugin.setUser(
-        userName: "TestUser",
-        userId: "userId",
-        userScore: 0,
-        gender: ShopLiveGender.neutral,
-        age: 20,
-        parameters: {"key": "value"});
   }
 
   void initListener() {
@@ -109,6 +103,33 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
       _showToast(
           "clickLog : ${data.name}, ${data.feature}, ${data.campaignKey}, ${const JsonEncoder().convert(data.payload)}");
     }).addTo(_compositeSubscription);
+
+
+    //shortform event listener
+    _shopLiveShortformPlugin.onClickProduct.listen((data) {
+      _showToast("onClickProduct : ${data.productId} " );
+    }).addTo(_compositeSubscription);
+
+    _shopLiveShortformPlugin.onClickBanner.listen((data){
+      _showToast("onClickBanner : ${data.url} ");
+    }).addTo(_compositeSubscription);
+
+    _shopLiveShortformPlugin.onShare.listen((data) {
+      _showToast("onClickShare : ${data.shortsId}, ${data.title}  ");
+    }).addTo(_compositeSubscription);
+
+    _shopLiveShortformPlugin.onStart.listen((data) {
+      _showToast("onShortformStarted");
+    }).addTo(_compositeSubscription);
+
+    _shopLiveShortformPlugin.onClose.listen((data) {
+      _showToast("onShortformClosed");
+    }).addTo(_compositeSubscription);
+
+    _shopLiveShortformPlugin.log.listen((data) {
+      _showToast("onShortformEventLog : ${data.command}, ${data.payload} ");
+    }).addTo(_compositeSubscription);
+    //shortform event listener end
   }
 
   @override
@@ -155,29 +176,69 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
                 ),
               ),
               TextButton(
-                  onPressed: () {
-                    if (_accessKeyController.text.isEmpty) {
-                      _showToast("Required to accessKey");
-                      return;
-                    }
-                    if (_campaignKeyController.text.isEmpty) {
-                      _showToast("Required to campaignKey");
-                      return;
-                    }
+                onPressed: () {
+                  if (_accessKeyController.text.isEmpty) {
+                    _showToast("Required to accessKey");
+                    return;
+                  }
+                  if (_campaignKeyController.text.isEmpty) {
+                    _showToast("Required to campaignKey");
+                    return;
+                  }
 
-                    _shopLivePlayerPlugin.setMixWithOthers(isMixAudio: true);
-                    _shopLivePlayerPlugin.useCloseButton(canUse: true);
-                    _shopLivePlayerPlugin.setShareScheme(
-                        shareSchemeUrl:
-                            _shareSchemeUrlController.text.isNotEmpty
-                                ? _shareSchemeUrlController.text
-                                : "http://google.com");
-                    _shopLivePlayerPlugin.setAccessKey(
-                        accessKey: _accessKeyController.text);
-                    _shopLivePlayerPlugin.play(
-                        campaignKey: _campaignKeyController.text);
-                  },
-                  child: const Text('PLAY')),
+                  _shopLivePlayerPlugin.setEnterPipModeOnBackPressed(
+                      isEnterPipMode: true);
+                  _shopLivePlayerPlugin.setMuteWhenPlayStart(isMute: false);
+                  _shopLivePlayerPlugin.setMixWithOthers(isMixAudio: true);
+                  _shopLivePlayerPlugin.useCloseButton(canUse: true);
+                  _shopLivePlayerPlugin.setShareScheme(
+                      shareSchemeUrl: _shareSchemeUrlController.text.isNotEmpty
+                          ? _shareSchemeUrlController.text
+                          : "http://google.com");
+
+                  _shopLiveCommonPlugin.setUser(
+                      accessKey: _accessKeyController.text,
+                      user: ShopLiveCommonUser(
+                          userId: "userId",
+                          name: "TestUser",
+                          userScore: 0,
+                          gender: ShopLiveCommonUserGender.NEUTRAL,
+                          age: 20,
+                          custom: {"key": "value"}));
+
+                  _shopLiveCommonPlugin.setAccessKey(
+                      accessKey: _accessKeyController.text);
+                  _shopLivePlayerPlugin.play(
+                      data: ShopLivePlayerData(
+                          campaignKey: _campaignKeyController.text));
+                },
+                child: const Text('Live PLAY'),
+              ),
+              TextButton(
+                onPressed: () {
+                  if (_accessKeyController.text.isEmpty) {
+                    _showToast("Required to accessKey");
+                    return;
+                  }
+
+                  _shopLiveCommonPlugin.setUser(
+                      accessKey: _accessKeyController.text,
+                      user: ShopLiveCommonUser(
+                          userId: "userId",
+                          name: "TestUser",
+                          userScore: 0,
+                          gender: ShopLiveCommonUserGender.NEUTRAL,
+                          age: 20,
+                          custom: {"key": "value"}));
+
+                  _shopLiveCommonPlugin.setAccessKey(
+                      accessKey: _accessKeyController.text);
+
+                  _shopLiveShortformPlugin.play(
+                      data: ShopLiveShortformCollectionData());
+                },
+                child: const Text('Shortform PLAY'),
+              ),
             ],
           ),
         ),

@@ -24,96 +24,68 @@ abstract class ShoplivePlayerPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  void setAccessKey({
-    required String accessKey,
-  }) {
-    throw UnimplementedError('play() has not been implemented.');
-  }
-
   void setMixWithOthers({
     required bool isMixAudio,
   }) {
-    throw UnimplementedError('play() has not been implemented.');
+    throw UnimplementedError('setMixWithOthers() has not been implemented.');
   }
 
   void useCloseButton({
     required bool canUse,
   }) {
-    throw UnimplementedError('play() has not been implemented.');
+    throw UnimplementedError('useCloseButton() has not been implemented.');
   }
 
   void play({
-    required String campaignKey,
-    bool? keepWindowStateOnPlayExecuted,
+    required ShopLivePlayerData data,
   }) {
     throw UnimplementedError('play() has not been implemented.');
   }
 
   void close() {
-    throw UnimplementedError('play() has not been implemented.');
-  }
-
-  void setUser({
-    String? userId,
-    String? userName,
-    int? age,
-    ShopLiveGender? gender,
-    int? userScore,
-    Map<String, String>? parameters,
-  }) {
-    throw UnimplementedError('play() has not been implemented.');
-  }
-
-  void setAuthToken({
-    required String authToken,
-  }) {
-    throw UnimplementedError('play() has not been implemented.');
-  }
-
-  void resetUser() {
-    throw UnimplementedError('play() has not been implemented.');
+    throw UnimplementedError('close() has not been implemented.');
   }
 
   void setShareScheme({
     required String shareSchemeUrl,
   }) {
-    throw UnimplementedError('play() has not been implemented.');
+    throw UnimplementedError('setShareScheme() has not been implemented.');
   }
 
   void setEndpoint({
     required String? endpoint,
   }) {
-    throw UnimplementedError('play() has not been implemented.');
+    throw UnimplementedError('setEndpoint() has not been implemented.');
   }
 
   void setNextActionOnHandleNavigation({
     required ShopLiveActionType type,
   }) {
-    throw UnimplementedError('play() has not been implemented.');
+    throw UnimplementedError('setNextActionOnHandleNavigation() has not been implemented.');
   }
 
   void setEnterPipModeOnBackPressed({
     required bool isEnterPipMode,
   }) {
-    throw UnimplementedError('play() has not been implemented.');
+    throw UnimplementedError('setEnterPipModeOnBackPressed() has not been implemented.');
   }
 
   void setMuteWhenPlayStart({
     required bool isMute,
   }) {
-    throw UnimplementedError('play() has not been implemented.');
+    throw UnimplementedError('setMuteWhenPlayStart() has not been implemented.');
   }
 
   void addParameter({
     required String key,
     required String? value,
   }) {
-    throw UnimplementedError('play() has not been implemented.');
+    throw UnimplementedError('addParameter() has not been implemented.');
   }
 
   void removeParameter({
     required String key,
   }) {
-    throw UnimplementedError('play() has not been implemented.');
+    throw UnimplementedError('removeParameter() has not been implemented.');
   }
 }
