@@ -1,9 +1,12 @@
 import Flutter
 import UIKit
+import ShopliveSDKCommon
+
 
 
 class SwiftShopliveCommonModule : SwiftShopliveBaseModule {
-
+    
+    
     override func initializeEvent(
         binaryMessenger: FlutterBinaryMessenger,
         eventName: String
@@ -15,7 +18,7 @@ class SwiftShopliveCommonModule : SwiftShopliveBaseModule {
     }
     
     
-    func handleMethodCall(call : FlutterMethodCall, result : @escaping FlutterResult ) {
+    override func handleMethodCall(call : FlutterMethodCall, result : @escaping FlutterResult ) {
         guard let args = call.arguments as? Dictionary<String,Any> else { return }
         switch call.method {
         case "common_setAuth":
@@ -43,33 +46,36 @@ class SwiftShopliveCommonModule : SwiftShopliveBaseModule {
         case "common_clearAuth":
             ShopLiveCommon.clearAuth()
         default:
-            return nil
+            return
         }
     }
     
     
     private func setUser(args : [String : Any]) {
         guard let accesskey = args["accessKey"] as? String,
-                          let userId = args["userId"] as? String else { return nil }
-                    var gender : ShopLiveCommonUserGender?
-                    if let genderString = args["gender"] as? String {
-                        switch genderString {
-                            case "m":
-                            gender = .male
-                            case "f":
-                            gender = .female
-                            case "n":
-                            gender = .netural
-                            default:
-                                break
-                        }
-                    }
-                    ShopLiveCommonUser(userId: userId,
-                     name: args["name"] as? String,
-                     age: args["age"] as? Int,
-                     gender: gender,
-                     userScore: args["userScore"] as? Int,
-                     custom: args["custom"] as? [String : Any])
+              let userId = args["userId"] as? String else { return }
+        
+        var gender : ShopliveCommonUserGender?
+        if let genderString = args["gender"] as? String {
+            switch genderString {
+            case "m":
+                gender = .male
+            case "f":
+                gender = .female
+            case "n":
+                gender = .netural
+            default:
+                break
+            }
+        }
+        let user = ShopLiveCommonUser(userId: userId,
+                           name: args["name"] as? String,
+                           age: args["age"] as? Int,
+                           gender: gender,
+                           userScore: args["userScore"] as? Int,
+                           custom: args["custom"] as? [String : Any])
+        
+        ShopLiveCommon.setUser(user: user)
     }
     
 }

@@ -1,5 +1,7 @@
 import Flutter
 import UIKit
+import ShopliveSDKCommon
+import ShopLiveSDK
 
 
 struct SwiftShoplivePlayerModuleEventName {
@@ -30,18 +32,27 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
     public static var eventReceivedCommand = ShopliveEventData(eventName: eventName.EVENT_PLAYER_RECEIVED_COMMAND, flutterEventSink: nil)
     public static var eventLog = ShopliveEventData(eventName: eventName.EVENT_PLAYER_LOG, flutterEventSink: nil)
     
-    private let eventPairs = [
-        EVENT_PLAYER_HANDLE_NAVIGATION,
-        EVENT_PLAYER_HANDLE_DOWNLOAD_COUPON,
-        EVENT_PLAYER_CHANGE_CAMPAIGN_STATUS,
-        EVENT_PLAYER_CAMPAIGN_INFO,
-        EVENT_PLAYER_ERROR,
-        EVENT_PLAYER_HANDLE_CUSTOM_ACTION,
-        EVENT_PLAYER_CHANGED_PLAYER_STATUS,
-        EVENT_PLAYER_SET_USER_NAME,
-        EVENT_PLAYER_RECEIVED_COMMAND,
-        EVENT_PLAYER_LOG
-    ]
+    
+    override var eventPairs: [String] {
+        get {
+            return [
+                eventName.EVENT_PLAYER_HANDLE_NAVIGATION,
+                eventName.EVENT_PLAYER_HANDLE_DOWNLOAD_COUPON,
+                eventName.EVENT_PLAYER_CHANGE_CAMPAIGN_STATUS,
+                eventName.EVENT_PLAYER_CAMPAIGN_INFO,
+                eventName.EVENT_PLAYER_ERROR,
+                eventName.EVENT_PLAYER_HANDLE_CUSTOM_ACTION,
+                eventName.EVENT_PLAYER_CHANGED_PLAYER_STATUS,
+                eventName.EVENT_PLAYER_SET_USER_NAME,
+                eventName.EVENT_PLAYER_RECEIVED_COMMAND,
+                eventName.EVENT_PLAYER_LOG
+            ]
+        }
+        set {
+            
+        }
+    }
+    
 
     override func initializeEvent(
         binaryMessenger: FlutterBinaryMessenger,
@@ -54,13 +65,15 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
     }
     
     
-    func handleMethodCall(call : FlutterMethodCall, result : @escaping FlutterResult) {
-        guard let args = call.arguments as? Dictionary<String, Any> else { return }
+    override func handleMethodCall(call : FlutterMethodCall, result : @escaping FlutterResult) {
+        guard let args = call.arguments as? [String: Any] else { return }
+        print("[HASSAN LOG] args \(args)")
+        print("[HASSAN LOG] call.method \(call.method)")
         switch(call.method) {
         case "setAccessKey" :
             setAccessKey(accessKey: args["accessKey"] as? String)
             break
-        case "play" :
+        case "player_play" :
             play(
                 campaignKey: args["campaignKey"] as? String,
                 keepWindowStateOnPlayExecuted: args["keepWindowStateOnPlayExecuted"] as? Bool
@@ -383,7 +396,7 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
     
     public func handleNavigation(with url: URL) {
         if let json = try? JSONEncoder().encode(HandleNavigation(url: url.absoluteString)) {
-            if let eventSink = SwiftShoplivePlayerPlugin.eventHandleNavigation.flutterEventSink {
+            if let eventSink = Self.eventHandleNavigation.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }
@@ -391,7 +404,7 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
     
     public func handleDownloadCoupon(with couponId: String, result: @escaping (ShopLiveSDK.ShopLiveCouponResult) -> Void) {
         if let json = try? JSONEncoder().encode(HandleDownloadCoupon(couponId: couponId)) {
-            if let eventSink = SwiftShoplivePlayerPlugin.eventHandleDownloadCoupon.flutterEventSink {
+            if let eventSink = Self.eventHandleDownloadCoupon.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }
@@ -407,7 +420,7 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
             return
         }
         if let json = try? JSONEncoder().encode(HandleCustomAction(id: id, type: type, payload: payload)) {
-            if let eventSink = SwiftShoplivePlayerPlugin.eventHandleCustomAction.flutterEventSink {
+            if let eventSink = Self.eventHandleCustomAction.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }
@@ -423,7 +436,7 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
             return
         }
         if let json = try? JSONEncoder().encode(HandleCustomAction(id: id, type: type, payload: payload)) {
-            if let eventSink = SwiftShoplivePlayerPlugin.eventHandleCustomAction.flutterEventSink {
+            if let eventSink = Self.eventHandleCustomAction.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }
@@ -434,7 +447,7 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
             return
         }
         if let json = try? JSONEncoder().encode(HandleCustomAction(id: id, type: type, payload: payload)) {
-            if let eventSink = SwiftShoplivePlayerPlugin.eventHandleCustomAction.flutterEventSink {
+            if let eventSink = Self.eventHandleCustomAction.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }
@@ -442,7 +455,7 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
     
     public func handleChangeCampaignStatus(status: String) {
         if let json = try? JSONEncoder().encode(ChangeCampaignStatus(campaignStatus: status)) {
-            if let eventSink = SwiftShoplivePlayerPlugin.eventChangeCampaignStatus.flutterEventSink {
+            if let eventSink = Self.eventChangeCampaignStatus.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }
@@ -450,7 +463,7 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
     
     public func handleError(code: String, message: String) {
         if let json = try? JSONEncoder().encode(Error(code: code, message: message)) {
-            if let eventSink = SwiftShoplivePlayerPlugin.eventError.flutterEventSink {
+            if let eventSink = Self.eventError.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }
@@ -458,7 +471,7 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
     
     public func handleCampaignInfo(campaignInfo: [String : Any]) {
         if let json = try? JSONEncoder().encode(CampaignInfo(campaignInfo: campaignInfo)) {
-            if let eventSink = SwiftShoplivePlayerPlugin.eventCampaignInfo.flutterEventSink {
+            if let eventSink = Self.eventCampaignInfo.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }
@@ -470,7 +483,7 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
         }
         
         if let json = try? JSONEncoder().encode(ReceivedCommand(command: command, data: payload)) {
-            if let eventSink = SwiftShoplivePlayerPlugin.eventReceivedCommand.flutterEventSink {
+            if let eventSink = Self.eventReceivedCommand.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }
@@ -478,7 +491,7 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
     
     public func onSetUserName(_ payload: [String : Any]) {
         if let json = try? JSONEncoder().encode(UserInfo(userInfo: payload)) {
-            if let eventSink = SwiftShoplivePlayerPlugin.eventSetUserName.flutterEventSink {
+            if let eventSink = Self.eventSetUserName.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }
@@ -490,7 +503,7 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
         }
         
         if let json = try? JSONEncoder().encode(ReceivedCommand(command: command, data: payload)) {
-            if let eventSink = SwiftShoplivePlayerPlugin.eventReceivedCommand.flutterEventSink {
+            if let eventSink = Self.eventReceivedCommand.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }
@@ -498,7 +511,7 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
     
     public func handleChangedPlayerStatus(status: String) {
         if let json = try? JSONEncoder().encode(ChangedPlayerStatus(status: status)) {
-            if let eventSink = SwiftShoplivePlayerPlugin.eventChangedPlayerStatus.flutterEventSink {
+            if let eventSink = Self.eventChangedPlayerStatus.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }
@@ -508,7 +521,7 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
         let eventLog = ShopLiveLog(name: name, feature: feature, campaign: campaign, payload: payload)
 
         if let json = try? JSONEncoder().encode(ShopliveLog(name: name, feature: feature.name, campaignKey: campaign, payload: payload)) {
-            if let eventSink = SwiftShoplivePlayerPlugin.eventLog.flutterEventSink {
+            if let eventSink = Self.eventLog.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }
@@ -520,14 +533,15 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
 fileprivate class StreamHandler: NSObject, FlutterStreamHandler {
     typealias eventName = SwiftShoplivePlayerModuleEventName
     typealias module = SwiftShopLivePlayerModule
-    let eventName: String
+    let eventname: String
     
     init(eventName: String) {
-        self.eventName = eventName
+        self.eventname = eventName
     }
     
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
-        switch (eventName) {
+        
+        switch (eventname) {
         case eventName.EVENT_PLAYER_HANDLE_NAVIGATION :
             module.eventHandleNavigation.flutterEventSink = events
             break
