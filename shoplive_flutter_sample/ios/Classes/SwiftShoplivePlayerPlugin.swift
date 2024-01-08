@@ -16,9 +16,12 @@ public struct ShopliveEventData {
 public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
 
    private var playerModule = SwiftShoplivePlayerModule()
+   private var commonModule = SwiftShopliveCommonModule()
+
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         playerModule.register(registrar : registrar)
+        commonModule.register(registrar : registrar)
 
         let channel = FlutterMethodChannel(name: "shoplive_player", binaryMessenger: registrar.messenger())
         registrar.addMethodCallDelegate(self, channel: channel)
@@ -26,6 +29,7 @@ public class SwiftShoplivePlayerPlugin: NSObject, FlutterPlugin {
 
     func handle(_ call : FlutterMethodCall, result: @escaping FlutterResult ) {
         playerModule.handleMethodCall(call: call , result : result)
+        commonModule.handleMethodCall(call: call , result : result)
     }
 
 

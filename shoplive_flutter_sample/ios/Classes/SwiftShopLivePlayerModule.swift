@@ -1,29 +1,34 @@
 import Flutter
 import UIKit
 
+
+struct SwiftShoplivePlayerModuleEventName {
+    static let EVENT_PLAYER_HANDLE_NAVIGATION = "event_player_handle_navigation"
+    static let EVENT_PLAYER_HANDLE_DOWNLOAD_COUPON = "event_player_handle_download_coupon"
+    static let EVENT_PLAYER_CHANGE_CAMPAIGN_STATUS = "event_player_change_campaign_status"
+    static let EVENT_PLAYER_CAMPAIGN_INFO = "event_player_campaign_info"
+    static let EVENT_PLAYER_ERROR = "event_player_error"
+    static let EVENT_PLAYER_HANDLE_CUSTOM_ACTION = "event_player_handle_custom_action"
+    static let EVENT_PLAYER_CHANGED_PLAYER_STATUS = "event_player_changed_player_status"
+    static let EVENT_PLAYER_SET_USER_NAME = "event_player_set_user_name"
+    static let EVENT_PLAYER_RECEIVED_COMMAND = "event_player_received_command"
+    static let EVENT_PLAYER_LOG = "event_player_log"
+}
+
 class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
-    
-    private let EVENT_PLAYER_HANDLE_NAVIGATION = "event_player_handle_navigation"
-    private let EVENT_PLAYER_HANDLE_DOWNLOAD_COUPON = "event_player_handle_download_coupon"
-    private let EVENT_PLAYER_CHANGE_CAMPAIGN_STATUS = "event_player_change_campaign_status"
-    private let EVENT_PLAYER_CAMPAIGN_INFO = "event_player_campaign_info"
-    private let EVENT_PLAYER_ERROR = "event_player_error"
-    private let EVENT_PLAYER_HANDLE_CUSTOM_ACTION = "event_player_handle_custom_action"
-    private let EVENT_PLAYER_CHANGED_PLAYER_STATUS = "event_player_changed_player_status"
-    private let EVENT_PLAYER_SET_USER_NAME = "event_player_set_user_name"
-    private let EVENT_PLAYER_RECEIVED_COMMAND = "event_player_received_command"
-    private let EVENT_PLAYER_LOG = "event_player_log"
-    
-    public static var eventHandleNavigation = ShopliveEventData(eventName: EVENT_PLAYER_HANDLE_NAVIGATION, flutterEventSink: nil)
-    public static var eventHandleDownloadCoupon = ShopliveEventData(eventName: EVENT_PLAYER_HANDLE_DOWNLOAD_COUPON, flutterEventSink: nil)
-    public static var eventChangeCampaignStatus = ShopliveEventData(eventName: EVENT_PLAYER_CHANGE_CAMPAIGN_STATUS, flutterEventSink: nil)
-    public static var eventCampaignInfo = ShopliveEventData(eventName: EVENT_PLAYER_CAMPAIGN_INFO, flutterEventSink: nil)
-    public static var eventError = ShopliveEventData(eventName: EVENT_PLAYER_ERROR, flutterEventSink: nil)
-    public static var eventHandleCustomAction = ShopliveEventData(eventName: EVENT_PLAYER_HANDLE_CUSTOM_ACTION, flutterEventSink: nil)
-    public static var eventChangedPlayerStatus = ShopliveEventData(eventName: EVENT_PLAYER_CHANGED_PLAYER_STATUS, flutterEventSink: nil)
-    public static var eventSetUserName = ShopliveEventData(eventName: EVENT_PLAYER_SET_USER_NAME, flutterEventSink: nil)
-    public static var eventReceivedCommand = ShopliveEventData(eventName: EVENT_PLAYER_RECEIVED_COMMAND, flutterEventSink: nil)
-    public static var eventLog = ShopliveEventData(eventName: EVENT_PLAYER_LOG, flutterEventSink: nil)
+
+    typealias eventName = SwiftShoplivePlayerModuleEventName
+
+    public static var eventHandleNavigation = ShopliveEventData(eventName: eventName.EVENT_PLAYER_HANDLE_NAVIGATION, flutterEventSink: nil)
+    public static var eventHandleDownloadCoupon = ShopliveEventData(eventName: eventName.EVENT_PLAYER_HANDLE_DOWNLOAD_COUPON, flutterEventSink: nil)
+    public static var eventChangeCampaignStatus = ShopliveEventData(eventName: eventName.EVENT_PLAYER_CHANGE_CAMPAIGN_STATUS, flutterEventSink: nil)
+    public static var eventCampaignInfo = ShopliveEventData(eventName: eventName.EVENT_PLAYER_CAMPAIGN_INFO, flutterEventSink: nil)
+    public static var eventError = ShopliveEventData(eventName: eventName.EVENT_PLAYER_ERROR, flutterEventSink: nil)
+    public static var eventHandleCustomAction = ShopliveEventData(eventName: eventName.EVENT_PLAYER_HANDLE_CUSTOM_ACTION, flutterEventSink: nil)
+    public static var eventChangedPlayerStatus = ShopliveEventData(eventName: eventName.EVENT_PLAYER_CHANGED_PLAYER_STATUS, flutterEventSink: nil)
+    public static var eventSetUserName = ShopliveEventData(eventName: eventName.EVENT_PLAYER_SET_USER_NAME, flutterEventSink: nil)
+    public static var eventReceivedCommand = ShopliveEventData(eventName: eventName.EVENT_PLAYER_RECEIVED_COMMAND, flutterEventSink: nil)
+    public static var eventLog = ShopliveEventData(eventName: eventName.EVENT_PLAYER_LOG, flutterEventSink: nil)
     
     private let eventPairs = [
         EVENT_PLAYER_HANDLE_NAVIGATION,
@@ -37,7 +42,7 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         EVENT_PLAYER_RECEIVED_COMMAND,
         EVENT_PLAYER_LOG
     ]
-    
+
     override func initializeEvent(
         binaryMessenger: FlutterBinaryMessenger,
         eventName: String
@@ -513,6 +518,8 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
 
 
 fileprivate class StreamHandler: NSObject, FlutterStreamHandler {
+    typealias eventName = SwiftShoplivePlayerModuleEventName
+    typealias module = SwiftShopLivePlayerModule
     let eventName: String
     
     init(eventName: String) {
@@ -521,35 +528,35 @@ fileprivate class StreamHandler: NSObject, FlutterStreamHandler {
     
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
         switch (eventName) {
-        case EVENT_PLAYER_HANDLE_NAVIGATION :
-            eventHandleNavigation.flutterEventSink = events
+        case eventName.EVENT_PLAYER_HANDLE_NAVIGATION :
+            module.eventHandleNavigation.flutterEventSink = events
             break
-        case EVENT_PLAYER_HANDLE_DOWNLOAD_COUPON :
-            eventHandleDownloadCoupon.flutterEventSink = events
+        case eventName.EVENT_PLAYER_HANDLE_DOWNLOAD_COUPON :
+            module.eventHandleDownloadCoupon.flutterEventSink = events
             break
-        case EVENT_PLAYER_CHANGE_CAMPAIGN_STATUS :
-            eventChangeCampaignStatus.flutterEventSink = events
+        case eventName.EVENT_PLAYER_CHANGE_CAMPAIGN_STATUS :
+            module.eventChangeCampaignStatus.flutterEventSink = events
             break
-        case EVENT_PLAYER_CAMPAIGN_INFO :
-            eventCampaignInfo.flutterEventSink = events
+        case eventName.EVENT_PLAYER_CAMPAIGN_INFO :
+            module.eventCampaignInfo.flutterEventSink = events
             break
-        case EVENT_PLAYER_ERROR :
-            eventError.flutterEventSink = events
+        case eventName.EVENT_PLAYER_ERROR :
+            module.eventError.flutterEventSink = events
             break
-        case EVENT_PLAYER_HANDLE_CUSTOM_ACTION :
-            eventHandleCustomAction.flutterEventSink = events
+        case eventName.EVENT_PLAYER_HANDLE_CUSTOM_ACTION :
+            module.eventHandleCustomAction.flutterEventSink = events
             break
-        case EVENT_PLAYER_CHANGED_PLAYER_STATUS :
-            eventChangedPlayerStatus.flutterEventSink = events
+        case eventName.EVENT_PLAYER_CHANGED_PLAYER_STATUS :
+            module.eventChangedPlayerStatus.flutterEventSink = events
             break
-        case EVENT_PLAYER_SET_USER_NAME :
-            eventSetUserName.flutterEventSink = events
+        case eventName.EVENT_PLAYER_SET_USER_NAME :
+            module.eventSetUserName.flutterEventSink = events
             break
-        case EVENT_PLAYER_RECEIVED_COMMAND :
-            eventReceivedCommand.flutterEventSink = events
+        case eventName.EVENT_PLAYER_RECEIVED_COMMAND :
+            module.eventReceivedCommand.flutterEventSink = events
             break
-        case EVENT_PLAYER_LOG :
-            eventLog.flutterEventSink = events
+        case eventName.EVENT_PLAYER_LOG :
+            module.eventLog.flutterEventSink = events
             break
         default: return nil
         }
