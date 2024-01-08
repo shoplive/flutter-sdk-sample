@@ -103,6 +103,33 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
       _showToast(
           "clickLog : ${data.name}, ${data.feature}, ${data.campaignKey}, ${const JsonEncoder().convert(data.payload)}");
     }).addTo(_compositeSubscription);
+
+
+    //shortform event listener
+    _shopLiveShortformPlugin.onClickProduct.listen((data) {
+      _showToast("onClickProduct : ${data.productId} " );
+    }).addTo(_compositeSubscription);
+
+    _shopLiveShortformPlugin.onClickBanner.listen((data){
+      _showToast("onClickBanner : ${data.url} ");
+    });
+
+    _shopLiveShortformPlugin.onShare.listen((data) {
+      _showToast("onClickShare : ${data.shortsId}, ${data.title}  ");
+    });
+
+    _shopLiveShortformPlugin.onStart.listen((data) {
+      _showToast("onShortformStarted");
+    });
+
+    _shopLiveShortformPlugin.onClose.listen((data) {
+      _showToast("onShortformClosed");
+    });
+
+    _shopLiveShortformPlugin.log.listen((data) {
+      _showToast("onShortformEventLog : ${data.command}, ${data.payload} ");
+    });
+    //shortform event listener end
   }
 
   @override
