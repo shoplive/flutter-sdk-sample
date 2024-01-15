@@ -189,8 +189,8 @@ class ShopLiveShortformCollectionData {
     return ShopLiveShortformCollectionData(
       shortsId: json['shortsId'],
       shortsSrn: json['shortsSrn'],
-      tags: json['shortsSrn'],
-      tagSearchOperator: json['shortsSrn'] == "OR"
+      tags: json['tags'],
+      tagSearchOperator: json['tagSearchOperator'] == "OR"
           ? ShopLiveShortformTagSearchOperator.OR
           : ShopLiveShortformTagSearchOperator.AND,
       brands: json['brands'],
