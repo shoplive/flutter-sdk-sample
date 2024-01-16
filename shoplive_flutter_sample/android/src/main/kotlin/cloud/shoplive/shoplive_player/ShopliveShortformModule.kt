@@ -73,7 +73,7 @@ class ShopliveShortformModule : ShopliveBaseModule() {
         referrer: String?
     ) {
         ShopLiveShortform.setHandler(shopLiveBaseHandler)
-        ShopLiveShortform.setNativeHandler(activity, shopLiveNativeHandler)
+        ShopLiveShortform.setNativeHandler(shopLiveNativeHandler)
         ShopLiveShortform.play(
             context,
             ShopLiveShortformCollectionData(
