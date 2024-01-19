@@ -70,7 +70,7 @@ class ShopLiveShortformProductData {
   String? imageUrl;
   String? name;
   double? originalPrice;
-  int? productId;
+  String? productId;
   bool? showPrice;
   String? sku;
   String? stockStatus;

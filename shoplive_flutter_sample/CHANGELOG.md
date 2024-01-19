@@ -1,3 +1,6 @@
+## 1.5.4
+* Bump version to v1.5.4
+
 ## 1.5.3
 * Bump version to v1.5.3
 
