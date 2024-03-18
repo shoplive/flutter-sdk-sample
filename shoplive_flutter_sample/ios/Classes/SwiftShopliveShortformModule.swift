@@ -134,7 +134,7 @@ class SwiftShopliveShortformModule : SwiftShopliveBaseModule {
     
 
 }
-extension SwiftShopliveShortformModule : ShopLiveShortformNativeHandlerDelegate {
+extension SwiftShopliveShortformModule : ShopLiveShortformDetailHandlerDelegate {
     func handleProductItem(shortsId: String, shortsSrn: String, product: ShopLiveShortformSDK.Product) {
         if let json = try? JSONEncoder().encode(product) {
             if let eventSink = Self.eventClickProduct.flutterEventSink {
