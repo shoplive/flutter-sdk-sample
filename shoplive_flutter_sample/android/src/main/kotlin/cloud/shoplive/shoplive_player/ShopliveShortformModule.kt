@@ -1,6 +1,7 @@
 package cloud.shoplive.shoplive_player
 
 import android.app.Activity
+import android.content.Context
 import androidx.annotation.Keep
 import cloud.shoplive.sdk.shorts.*
 import cloud.shoplive.sdk.network.request.ShopLiveShortformTagSearchOperator
@@ -8,7 +9,7 @@ import com.google.gson.*
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel.Result
+import io.flutter.plugin.common.MethodChannel
 import java.util.concurrent.atomic.AtomicReference
 
 class ShopliveShortformModule : ShopliveBaseModule() {
@@ -44,7 +45,7 @@ class ShopliveShortformModule : ShopliveBaseModule() {
         }
     }
 
-    override fun onMethodCall(call: MethodCall, result: Result) {
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "shortform_play" -> play(
                 call.argument<String?>("shortsId"),
@@ -72,8 +73,8 @@ class ShopliveShortformModule : ShopliveBaseModule() {
         shuffle: Boolean?,
         referrer: String?
     ) {
-        ShopLiveShortform.setHandler(shopLiveBaseHandler)
-        ShopLiveShortform.setNativeHandler(shopLiveNativeHandler)
+        ShopLiveShortform.setReceiveHandler(shopLiveBaseHandler)
+        ShopLiveShortform.setDetailHandler(shopLiveDetailHandler)
         ShopLiveShortform.play(
             context,
             ShopLiveShortformCollectionData(
@@ -97,7 +98,7 @@ class ShopliveShortformModule : ShopliveBaseModule() {
     }
     // endregion
 
-    private val shopLiveNativeHandler = object : ShopLiveShortformNativeHandler() {
+    private val shopLiveDetailHandler = object : ShopLiveShortformDetailHandler() {
         override fun getOnClickProductListener(): ShopLiveShortformProductListener {
             return ShopLiveShortformProductListener { _, product ->
                 eventClickProduct.get()?.success(Gson().toJson(product))
@@ -111,12 +112,12 @@ class ShopliveShortformModule : ShopliveBaseModule() {
         }
     }
 
-    private val shopLiveBaseHandler = object : ShopLiveShortformFullTypeHandler() {
-        override fun onEvent(command: String, payload: String?) {
+    private val shopLiveBaseHandler = object : ShopLiveShortformReceiveHandler() {
+        override fun onEvent(context: Context, command: String, payload: String?) {
             eventLog.get()?.success(Gson().toJson(ShopliveShortformLogData(command, payload)))
         }
 
-        override fun onShare(activity: Activity, data: ShopLiveShortformShareData) {
+        override fun onShare(context: Context, data: ShopLiveShortformShareData) {
             eventShare.get()?.success(Gson().toJson(data))
         }
 

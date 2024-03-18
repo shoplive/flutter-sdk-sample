@@ -22,15 +22,15 @@ class SwiftShopliveCommonModule : SwiftShopliveBaseModule {
         guard let args = call.arguments as? Dictionary<String,Any> else { return }
         switch call.method {
         case "common_setAuth":
-            ShopLiveCommon.setUserJWT(userJWT : args["userJWT"] as? String)
+            ShopLiveCommon.setAuthToken(userJWT : args["userJWT"] as? String)
             ShopLiveCommon.setGuestUid(guestUid : args["guestUid"] as? String)
             ShopLiveCommon.setAccessKey(accessKey : args["accessKey"] as? String)
             ShopLiveCommon.setUtmSource(utmSource : args["utmSource"] as? String)
             ShopLiveCommon.setUtmMedium(utmMedium : args["utmMedium"] as? String)
             ShopLiveCommon.setUtmCampaign(utmCampaign : args["utmCampaign"] as? String)
             ShopLiveCommon.setUtmContent(utmContent : args["utmContent"] as? String)
-        case "common_setUserJWT":
-            ShopLiveCommon.setUserJWT(userJWT : args["userJWT"] as? String)
+        case "common_setAuthToken":
+            ShopLiveCommon.setAuthToken(userJWT : args["userJWT"] as? String)
         case "common_setUser":
             setUser(args: args)
         case "common_setUtmSource":
