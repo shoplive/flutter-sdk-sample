@@ -92,7 +92,7 @@ class ShopLiveCommonAuth {
 
 class ShopLiveCommonUser {
   final String userId;
-  String? name;
+  String? userName;
   int? age;
   ShopLiveCommonUserGender? gender;
   int? userScore;
@@ -100,7 +100,7 @@ class ShopLiveCommonUser {
 
   ShopLiveCommonUser({
     required this.userId,
-    this.name,
+    this.userName,
     this.age,
     this.gender,
     this.userScore,
@@ -110,7 +110,7 @@ class ShopLiveCommonUser {
   Map<String, dynamic> toJson() {
     return {
       'userId': userId,
-      'name': name,
+      'userName': userName,
       'age': age,
       'gender': gender?.parseText(),
       'userScore': userScore,

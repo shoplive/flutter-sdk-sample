@@ -200,7 +200,7 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
                       accessKey: _accessKeyController.text,
                       user: ShopLiveCommonUser(
                           userId: "userId",
-                          name: "TestUser",
+                          userName: "TestUser",
                           userScore: 0,
                           gender: ShopLiveCommonUserGender.NEUTRAL,
                           age: 20,
@@ -225,7 +225,7 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
                       accessKey: _accessKeyController.text,
                       user: ShopLiveCommonUser(
                           userId: "userId",
-                          name: "TestUser",
+                          userName: "TestUser",
                           userScore: 0,
                           gender: ShopLiveCommonUserGender.NEUTRAL,
                           age: 20,

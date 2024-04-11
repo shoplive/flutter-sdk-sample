@@ -36,7 +36,7 @@ class MethodChannelShopliveCommon extends ShopliveCommonPlatform {
         .invokeMethod<void>('common_setUser', <String, dynamic>{
       'accessKey': accessKey,
       'userId': user.userId,
-      'name': user.name,
+      'name': user.userName,
       'age': user.age,
       'gender': user.gender?.parseText(),
       'userScore': user.userScore,
