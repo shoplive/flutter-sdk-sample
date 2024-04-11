@@ -28,7 +28,7 @@ class ShopliveCommonModule : ShopliveBaseModule() {
                 call.argument<String>("accessKey") ?: return,
                 ShopLiveCommonUser(
                     call.argument<String>("userId") ?: return,
-                    call.argument<String?>("name"),
+                    call.argument<String?>("userName"),
                     call.argument<Int?>("age"),
                     when (call.argument<String?>("gender")) {
                         "m" -> {
