@@ -22,15 +22,15 @@ class SwiftShopliveCommonModule : SwiftShopliveBaseModule {
         guard let args = call.arguments as? Dictionary<String,Any> else { return }
         switch call.method {
         case "common_setAuth":
-            ShopLiveCommon.setUserJWT(userJWT : args["userJWT"] as? String)
+            ShopLiveCommon.setAuthToken(authToken : args["userJWT"] as? String)
             ShopLiveCommon.setGuestUid(guestUid : args["guestUid"] as? String)
             ShopLiveCommon.setAccessKey(accessKey : args["accessKey"] as? String)
             ShopLiveCommon.setUtmSource(utmSource : args["utmSource"] as? String)
             ShopLiveCommon.setUtmMedium(utmMedium : args["utmMedium"] as? String)
             ShopLiveCommon.setUtmCampaign(utmCampaign : args["utmCampaign"] as? String)
             ShopLiveCommon.setUtmContent(utmContent : args["utmContent"] as? String)
-        case "common_setUserJWT":
-            ShopLiveCommon.setUserJWT(userJWT : args["userJWT"] as? String)
+        case "common_setAuthToken":
+            ShopLiveCommon.setAuthToken(authToken : args["userJWT"] as? String)
         case "common_setUser":
             setUser(args: args)
         case "common_setUtmSource":
@@ -76,8 +76,8 @@ class SwiftShopliveCommonModule : SwiftShopliveBaseModule {
                            custom: args["custom"] as? [String : Any])
         
         ShopLiveCommon.setUser(user: user)
+        ShopLiveCommon.setAuthToken(authToken: JWTMaker.make(accessKey: accesskey, userData: user))
     }
-    
 }
 
 
@@ -92,8 +92,7 @@ fileprivate class StreamHandler: NSObject, FlutterStreamHandler {
         switch (eventName) {
        
             
-            
-            
+        
         default: return nil
         }
         return nil
@@ -104,3 +103,99 @@ fileprivate class StreamHandler: NSObject, FlutterStreamHandler {
     }
 }
 
+
+
+fileprivate class JWTMaker {
+    typealias Header = [String : Any]
+    typealias Payload = [String : Any]
+    
+    static func make(accessKey : String, userData : ShopLiveCommonUser, iat : Double? = nil) -> String? {
+        var dict = userDataToDictionary(userData: userData)
+        var payLoad : Payload = [ "accessKey" : accessKey ]
+        if let iat = iat {
+            payLoad["iat"] = iat
+        }
+        dict.removeValue(forKey: "custom")
+        for (key,value) in dict {
+            payLoad[key] = value
+        }
+        return make(payload: payLoad)
+    }
+    
+    
+    
+    static func make(header : Header, payload : Payload ) -> String? {
+        guard var header64BaseEncoded = header.toJson_SL()?.base64Encoded_SL else { return nil }
+        header64BaseEncoded = header64BaseEncoded.replacingOccurrences(of: "=", with: "")
+        var payLoad = payload
+        if payLoad.keys.contains(where: { $0 == "iat" }) == false {
+            payLoad["iat"] = Int(Date().timeIntervalSince1970)
+        }
+        guard var payload64BaseEncoded = payLoad.toJson()?.base64Encoded else { return nil }
+        payload64BaseEncoded = payload64BaseEncoded.replacingOccurrences(of: "=", with: "")
+        
+        return "\(header64BaseEncoded).\(payload64BaseEncoded)."
+    }
+    
+    
+    static func make(payload : Payload) -> String? {
+        return make(header: ["typ" : "JWT"], payload: payload)
+    }
+    
+    static func userDataToDictionary(userData : ShopLiveCommonUser) -> [String : Any] {
+        var dict : [String : Any] = [:]
+        
+        dict["userId"] = userData.userId
+        
+        if let name = userData.name {
+            dict["name"] = name
+        }
+        if let age = userData.age {
+            dict["age"] = age
+        }
+        if let gender = userData.gender {
+            dict["gender"] = gender.rawValue
+        }
+        if let userScore = userData.userScore {
+            dict["userScore"] = userScore
+        }
+        if let custom = userData.custom {
+            for (key,value) in custom {
+                dict[key] = value
+            }
+        }
+        return dict
+    }
+}
+
+
+extension Dictionary {
+    func toJson() -> String? {
+        let jsonData = try? JSONSerialization.data(withJSONObject: self, options: [])
+        if let jsonString = String(data: jsonData!, encoding: .utf8){
+            return jsonString
+        }else{
+            return nil
+        }
+    }
+    
+    var jsonData: Data? {
+        return try? JSONSerialization.data(withJSONObject: self, options: [.prettyPrinted])
+    }
+    
+    func toJSONString() -> String? {
+        if let jsonData = jsonData {
+            let jsonString = String(data: jsonData, encoding: .utf8)
+            return jsonString
+        }
+        
+        return nil
+    }
+}
+
+extension String {
+    var base64Encoded: String? {
+        let plainData = data(using: .utf8)
+        return plainData?.base64EncodedString()
+    }
+}

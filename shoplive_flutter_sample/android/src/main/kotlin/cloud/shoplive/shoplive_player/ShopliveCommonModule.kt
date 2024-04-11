@@ -1,20 +1,12 @@
 package cloud.shoplive.shoplive_player
 
-import android.content.Context
-import android.os.Handler
-import android.os.Looper
-import androidx.annotation.Keep
 import cloud.shoplive.sdk.common.*
 import com.google.gson.*
-import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel.Result
-import org.json.JSONObject
-import java.util.concurrent.atomic.AtomicReference
+import io.flutter.plugin.common.MethodChannel
 
 class ShopliveCommonModule : ShopliveBaseModule() {
-    override fun onMethodCall(call: MethodCall, result: Result) {
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "common_setAuth" -> setAuth(
                 ShopLiveCommonAuth(
@@ -28,7 +20,7 @@ class ShopliveCommonModule : ShopliveBaseModule() {
                 )
             )
 
-            "common_setUserJWT" -> setUserJWT(
+            "common_setAuthToken" -> setAuthToken(
                 call.argument<String?>("userJWT"),
             )
 
@@ -90,12 +82,12 @@ class ShopliveCommonModule : ShopliveBaseModule() {
         ShopLiveCommon.setAuth(auth)
     }
 
-    private fun setUserJWT(userJWT: String?) {
-        ShopLiveCommon.setUserJWT(userJWT)
+    private fun setAuthToken(userJWT: String?) {
+        ShopLiveCommon.setAuthToken(userJWT)
     }
 
     private fun setUser(accessKey: String, user: ShopLiveCommonUser) {
-        ShopLiveCommon.setUserJWT(accessKey, user)
+        ShopLiveCommon.setUser(accessKey, user)
     }
 
     private fun setUtmSource(utmSource: String?) {

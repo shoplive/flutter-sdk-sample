@@ -228,9 +228,9 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
             )
         }
 
-        override fun handleShare(context: Context, url: String) {
+        override fun handleShare(context: Context, data: ShopLivePlayerShareData) {
             Handler(Looper.getMainLooper()).postDelayed({
-                super.handleShare(context, url)
+                super.handleShare(context, data)
             }, 100)
         }
 

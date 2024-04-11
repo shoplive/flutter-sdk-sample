@@ -31,10 +31,10 @@ abstract class ShopliveCommonPlatform extends PlatformInterface {
     throw UnimplementedError('setAuth() has not been implemented.');
   }
 
-  void setUserJWT({
+  void setAuthToken({
     required String? userJWT,
   }) {
-    throw UnimplementedError('setUserJWT() has not been implemented.');
+    throw UnimplementedError('setAuthToken() has not been implemented.');
   }
 
   void setUser({

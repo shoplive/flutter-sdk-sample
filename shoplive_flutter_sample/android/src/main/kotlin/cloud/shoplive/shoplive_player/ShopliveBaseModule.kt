@@ -29,7 +29,7 @@ abstract class ShopliveBaseModule {
         context = flutterPluginBinding.applicationContext
     }
 
-    abstract fun onMethodCall(call: MethodCall, result: Result)
+    abstract fun onMethodCall(call: MethodCall, result: MethodChannel.Result)
 
     fun initializeEvent(
         binaryMessenger: BinaryMessenger,

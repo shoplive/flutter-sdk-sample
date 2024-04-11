@@ -70,52 +70,41 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         print("[HASSAN LOG] args \(args)")
         print("[HASSAN LOG] call.method \(call.method)")
         switch(call.method) {
-        case "setAccessKey" :
-            setAccessKey(accessKey: args["accessKey"] as? String)
-            break
+    
         case "player_play" :
             play(
                 campaignKey: args["campaignKey"] as? String,
                 keepWindowStateOnPlayExecuted: args["keepWindowStateOnPlayExecuted"] as? Bool
             )
             break
-        case "setUser" :
-            setUser(userId: args["userId"] as? String, userName: args["userName"] as? String, age: args["age"] as? Int, gender: args["gender"] as? String, userScore: args["userScore"] as? Int, parameters: args["parameters"] as? Dictionary<String, String>)
-            break
-        case "setAuthToken" :
-            setAuthToken(authToken: args["authToken"] as? String)
-            break
-        case "resetUser" :
-            resetUser()
-            break
-        case "setShareScheme" :
+        case "player_setShareScheme" :
             setShareScheme(shareSchemeUrl: args["shareSchemeUrl"] as? String)
             break
-        case "setEndpoint" :
+        case "player_setEndpoint" :
             setEndpoint(endpoint: args["endpoint"] as? String)
             break
-        case "setNextActionOnHandleNavigation" :
+        case "player_setNextActionOnHandleNavigation" :
             setNextActionOnHandleNavigation(type: args["type"] as? Int)
             break
-        case "setEnterPipModeOnBackPressed" :
+        case "player_setEnterPipModeOnBackPressed" :
             setEnterPipModeOnBackPressed(isEnterPipMode: args["isEnterPipMode"] as? Bool)
             break
-        case "setMuteWhenPlayStart" :
+        case "player_setMuteWhenPlayStart" :
             setMuteWhenPlayStart(isMute: args["isMute"] as? Bool)
             break
-        case "setMixWithOthers" :
+        case "player_setMixWithOthers" :
             setMixWithOthers(isMixAudio: args["isMixAudio"] as? Bool)
             break
-        case "useCloseButton" :
+        case "player_useCloseButton" :
             useCloseButton(use: args["canUse"] as? Bool)
             break
-        case "close" :
+        case "player_close" :
             close()
             break
-        case "addParameter" :
+        case "player_addParameter" :
             addParameter(key: args["key"] as? String, value: args["value"] as? String)
             break
-        case "removeParameter" :
+        case "player_removeParameter" :
             removeParameter(key: args["key"] as? String)
             break
         default : break
@@ -137,59 +126,12 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         ShopLive.play(with: campaignKey, keepWindowStateOnPlayExecuted: keepWindowStateOnPlayExecuted)
     }
     
-    private func setUser(
-        userId: String?,
-        userName: String?,
-        age: Int?,
-        gender: String?,
-        userScore: Int?,
-        parameters: Dictionary<String, String>?
-    ) {
-        let user = ShopLiveCommonUser(userId: userId ?? "")
-        user.name = userName
-        user.age = age ?? 0
-        var _gender = ShopliveSDKCommon.ShopliveCommonUserGender.netural
-        switch (gender) {
-        case "m" :
-            _gender = ShopliveSDKCommon.ShopliveCommonUserGender.male
-            break
-        case "f" :
-            _gender = ShopliveSDKCommon.ShopliveCommonUserGender.female
-            break
-        default :
-            _gender = ShopliveSDKCommon.ShopliveCommonUserGender.netural
-            break
-        }
-        user.gender = _gender
-        user.userScore = userScore
-        
-        let parameters = parameters ?? [String: String]()
-        
-        user.custom = parameters
-        ShopLive.user = user
-    }
-    
-    private func setAuthToken(authToken: String?) {
-        ShopLive.authToken = authToken
-    }
-    
-    private func setAccessKey(accessKey: String?) {
-        guard let accessKey = accessKey else {
-            return
-        }
-        
-        ShopLive.configure(with: accessKey)
-    }
-    
-    private func resetUser() {
-        ShopLive.user = nil
-    }
     
     private func setShareScheme(shareSchemeUrl: String?) {
         guard let shareSchemeUrl = shareSchemeUrl else {
             return
         }
-        ShopLive.setShareScheme(shareSchemeUrl, custom: nil)
+        ShopLive.setShareScheme(shareSchemeUrl, shareDelegate: nil)
     }
     
     private func setEndpoint(endpoint: String?) {
@@ -527,8 +469,6 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
         }
     }
 }
-
-
 
 fileprivate class StreamHandler: NSObject, FlutterStreamHandler {
     typealias eventName = SwiftShoplivePlayerModuleEventName

@@ -18,7 +18,7 @@ class MethodChannelShopliveCommon extends ShopliveCommonPlatform {
   }
 
   @override
-  void setUserJWT({
+  void setAuthToken({
     required String? userJWT,
   }) async {
     return await methodChannel

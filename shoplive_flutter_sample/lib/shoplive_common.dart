@@ -7,10 +7,10 @@ class ShopLiveCommon {
     return ShopliveCommonPlatform.instance.setAuth(data: data);
   }
 
-  void setUserJWT({
+  void setAuthToken({
     required String? userJWT,
   }) {
-    return ShopliveCommonPlatform.instance.setUserJWT(userJWT: userJWT);
+    return ShopliveCommonPlatform.instance.setAuthToken(userJWT: userJWT);
   }
 
   void setUser({
