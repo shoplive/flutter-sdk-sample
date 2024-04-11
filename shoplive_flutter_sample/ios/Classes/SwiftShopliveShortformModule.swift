@@ -86,11 +86,14 @@ class SwiftShopliveShortformModule : SwiftShopliveBaseModule {
             let brands = args["brands"] as? [String]
             let shuffle = args["shuffle"] as? Bool
             let referrer = args["referrer"] as? String
+            let shortsCollectionId = args["shortsCollectionId"] as? String
+            let skus = args["skus"] as? [String]
             self.play(reference: nil, shortsId: shortsId,
-                      shortsSrn: shortsSrn,
+                      shortsCollectionId : shortsCollectionId,
                       tags: tags,
                       tagSearchOperator: tagOperator,
                       brands: brands,
+                      skus : skus,
                       shuffle: shuffle,
                       referrer: referrer)
         case "shortform_close":
@@ -118,13 +121,13 @@ class SwiftShopliveShortformModule : SwiftShopliveBaseModule {
         
         let requestData = ShopLiveShortformCollectionData(reference: reference,
                                                           shortsId: shortsId,
-                                                          shortsCollectionId: shortsCollectionId,
                                                           tags: tags,
                                                           tagSearchOperator: _tagSearchOperator,
                                                           brands: brands,
-                                                          skus: skus,
                                                           shuffle: shuffle,
-                                                          referrer: referrer)
+                                                          referrer: referrer,
+                                                          skus: skus,
+                                                          shortsCollectionId: shortsCollectionId)
         ShopLiveShortform.play(requestData: requestData)
     }
     
@@ -134,7 +137,7 @@ class SwiftShopliveShortformModule : SwiftShopliveBaseModule {
     
 
 }
-extension SwiftShopliveShortformModule : ShopLiveShortformHandlerDelegate {
+extension SwiftShopliveShortformModule : ShopLiveShortformReceiveHandlerDelegate {
     func handleProductItem(shortsId: String, shortsSrn: String, product: ShopLiveShortformSDK.Product) {
         if let json = try? JSONEncoder().encode(product) {
             if let eventSink = Self.eventClickProduct.flutterEventSink {
