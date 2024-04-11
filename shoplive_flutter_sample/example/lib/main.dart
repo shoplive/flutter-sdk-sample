@@ -41,8 +41,8 @@ class ShopLiveTestPage extends StatefulWidget {
 class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
   final CompositeSubscription _compositeSubscription = CompositeSubscription();
 
-  final String _accessKey = "";
-  final String _campaignKey = "";
+  final String _accessKey = "a1AW6QRCXeoZ9MEWRdDQ";
+  final String _campaignKey = "f5ad5163e33a";
   late final _shopLiveCommonPlugin = ShopLiveCommon();
   late final _shopLivePlayerPlugin = ShopLivePlayer();
   late final _shopLiveShortformPlugin = ShopLiveShortform();

@@ -1,3 +1,7 @@
+## 1.5.7
+* Bump version to v1.5.7
+* Add a iOS Privacy manifest
+
 ## 1.5.6+1
 * Bump version to v1.5.6+1
 

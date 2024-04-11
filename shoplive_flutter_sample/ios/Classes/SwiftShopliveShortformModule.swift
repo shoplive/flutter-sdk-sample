@@ -102,7 +102,7 @@ class SwiftShopliveShortformModule : SwiftShopliveBaseModule {
     
     
     
-    private func play(reference : String?, shortsId : String?, shortsSrn : String?, tags : [String]?, tagSearchOperator : String?, brands : [String]?, shuffle : Bool?, referrer : String?) {
+    private func play(reference : String?, shortsId : String?, shortsCollectionId : String?, tags : [String]?, tagSearchOperator : String?, brands : [String]?, skus : [String]?, shuffle : Bool?, referrer : String?) {
         
         var _tagSearchOperator : ShopLiveTagSearchOperator?
         if let op = tagSearchOperator {
@@ -114,15 +114,15 @@ class SwiftShopliveShortformModule : SwiftShopliveBaseModule {
             }
         }
         
-        ShopLiveShortform.ShortsReceiveInterface.setNativeHandler(self)
-        ShopLiveShortform.ShortsReceiveInterface.setHandler(self)
+        ShopLiveShortform.Delegate.setDelegate(self)
         
         let requestData = ShopLiveShortformCollectionData(reference: reference,
                                                           shortsId: shortsId,
-                                                          shortsSrn: shortsSrn,
+                                                          shortsCollectionId: shortsCollectionId,
                                                           tags: tags,
                                                           tagSearchOperator: _tagSearchOperator,
                                                           brands: brands,
+                                                          skus: skus,
                                                           shuffle: shuffle,
                                                           referrer: referrer)
         ShopLiveShortform.play(requestData: requestData)
@@ -134,7 +134,7 @@ class SwiftShopliveShortformModule : SwiftShopliveBaseModule {
     
 
 }
-extension SwiftShopliveShortformModule : ShopLiveShortformDetailHandlerDelegate {
+extension SwiftShopliveShortformModule : ShopLiveShortformHandlerDelegate {
     func handleProductItem(shortsId: String, shortsSrn: String, product: ShopLiveShortformSDK.Product) {
         if let json = try? JSONEncoder().encode(product) {
             if let eventSink = Self.eventClickProduct.flutterEventSink {
@@ -142,7 +142,7 @@ extension SwiftShopliveShortformModule : ShopLiveShortformDetailHandlerDelegate 
             }
         }
     }
-    
+
     func handleProductBanner(shortsId: String, shortsSrn: String, scheme: String, shortsDetail: ShopLiveShortformSDK.ShortsDetail) {
         if let json = try? JSONEncoder().encode(FlutterShopliveShortformUrlData(url: scheme)) {
             if let eventSink = Self.eventClickBanner.flutterEventSink {
@@ -150,8 +150,7 @@ extension SwiftShopliveShortformModule : ShopLiveShortformDetailHandlerDelegate 
             }
         }
     }
-}
-extension SwiftShopliveShortformModule : ShopLiveShortformReceiveHandlerDelegate {
+
     func onDidAppear() {
         if let json = try? JSONEncoder().encode(FlutterShopLiveBaseData()) {
             if let eventSink = Self.eventStart.flutterEventSink {

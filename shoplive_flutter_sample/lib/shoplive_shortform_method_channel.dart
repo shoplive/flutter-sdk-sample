@@ -16,10 +16,11 @@ class MethodChannelShopliveShortform extends ShopliveShortformPlatform {
   }) async {
     return await methodChannel.invokeMethod<void>('shortform_play', <String, dynamic>{
       'shortsId': data.shortsId,
-      'shortsSrn': data.shortsSrn,
+      'shortsCollectionId': data.shortsCollectionId,
       'tags': data.tags,
       'tagSearchOperator': data.tagSearchOperator?.text(),
       'brands': data.brands,
+      'skus': data.skus,
       'shuffle': data.shuffle,
       'referrer': data.referrer,
     });

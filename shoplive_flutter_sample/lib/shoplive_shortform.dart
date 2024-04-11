@@ -168,19 +168,21 @@ class ShopliveShortformLogData {
 
 class ShopLiveShortformCollectionData {
   String? shortsId;
-  String? shortsSrn;
+  String? shortsCollectionId;
   List<String>? tags;
   ShopLiveShortformTagSearchOperator? tagSearchOperator;
   List<String>? brands;
+  List<String>? skus;
   bool shuffle = false;
   String? referrer;
 
   ShopLiveShortformCollectionData({
     this.shortsId,
-    this.shortsSrn,
+    this.shortsCollectionId,
     this.tags,
     this.tagSearchOperator,
     this.brands,
+    this.skus,
     this.shuffle = false,
     this.referrer,
   });
@@ -188,12 +190,13 @@ class ShopLiveShortformCollectionData {
   factory ShopLiveShortformCollectionData.fromJson(Map<String, dynamic> json) {
     return ShopLiveShortformCollectionData(
       shortsId: json['shortsId'],
-      shortsSrn: json['shortsSrn'],
+      shortsCollectionId: json['shortsCollectionId'],
       tags: json['tags'],
       tagSearchOperator: json['tagSearchOperator'] == "OR"
           ? ShopLiveShortformTagSearchOperator.OR
           : ShopLiveShortformTagSearchOperator.AND,
       brands: json['brands'],
+      skus: json['skus'],
       shuffle: json['shuffle'],
       referrer: json['referrer'],
     );
