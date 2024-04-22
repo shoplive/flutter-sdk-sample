@@ -49,10 +49,11 @@ class ShopliveShortformModule : ShopliveBaseModule() {
         when (call.method) {
             "shortform_play" -> play(
                 call.argument<String?>("shortsId"),
-                call.argument<String?>("shortsSrn"),
+                call.argument<String?>("shortsCollectionId"),
                 call.argument<List<String>?>("tags"),
                 call.argument<String?>("tagSearchOperator"),
                 call.argument<List<String>?>("brands"),
+                call.argument<List<String>?>("skus"),
                 call.argument<Boolean?>("shuffle"),
                 call.argument<String?>("referrer"),
             )
@@ -66,20 +67,20 @@ class ShopliveShortformModule : ShopliveBaseModule() {
     // region ShopLive Public class
     private fun play(
         shortsId: String?,
-        shortsSrn: String?,
+        shortsCollectionId: String?,
         tags: List<String>?,
         tagSearchOperator: String?,
         brands: List<String>?,
+        skus: List<String>?,
         shuffle: Boolean?,
         referrer: String?
     ) {
-        ShopLiveShortform.setReceiveHandler(shopLiveBaseHandler)
-        ShopLiveShortform.setDetailHandler(shopLiveDetailHandler)
+        ShopLiveShortform.setHandler(shopLiveShortformHandler)
         ShopLiveShortform.play(
             context,
             ShopLiveShortformCollectionData(
                 shortsId,
-                shortsSrn,
+                shortsCollectionId,
                 tags,
                 if (tagSearchOperator == "OR") {
                     ShopLiveShortformTagSearchOperator.OR
@@ -87,6 +88,7 @@ class ShopliveShortformModule : ShopliveBaseModule() {
                     ShopLiveShortformTagSearchOperator.AND
                 },
                 brands,
+                skus,
                 shuffle ?: false,
                 referrer
             )
@@ -97,8 +99,7 @@ class ShopliveShortformModule : ShopliveBaseModule() {
         ShopLiveShortform.close()
     }
     // endregion
-
-    private val shopLiveDetailHandler = object : ShopLiveShortformDetailHandler() {
+    private val shopLiveShortformHandler = object : ShopLiveShortformHandler() {
         override fun getOnClickProductListener(): ShopLiveShortformProductListener {
             return ShopLiveShortformProductListener { _, product ->
                 eventClickProduct.get()?.success(Gson().toJson(product))
@@ -110,9 +111,7 @@ class ShopliveShortformModule : ShopliveBaseModule() {
                 eventClickBanner.get()?.success(Gson().toJson(ShopliveShortformUrlData(url)))
             }
         }
-    }
 
-    private val shopLiveBaseHandler = object : ShopLiveShortformReceiveHandler() {
         override fun onEvent(context: Context, command: String, payload: String?) {
             eventLog.get()?.success(Gson().toJson(ShopliveShortformLogData(command, payload)))
         }

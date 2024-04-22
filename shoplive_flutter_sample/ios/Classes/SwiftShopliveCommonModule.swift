@@ -69,13 +69,13 @@ class SwiftShopliveCommonModule : SwiftShopliveBaseModule {
             }
         }
         let user = ShopLiveCommonUser(userId: userId,
-                           name: args["name"] as? String,
+                           userName: args["userName"] as? String,
                            age: args["age"] as? Int,
                            gender: gender,
                            userScore: args["userScore"] as? Int,
                            custom: args["custom"] as? [String : Any])
         
-        ShopLiveCommon.setUser(user: user)
+        ShopLiveCommon.setUser(user: user, accessKey: accesskey)
         ShopLiveCommon.setAuthToken(authToken: JWTMaker.make(accessKey: accesskey, userData: user))
     }
 }
@@ -147,8 +147,8 @@ fileprivate class JWTMaker {
         
         dict["userId"] = userData.userId
         
-        if let name = userData.name {
-            dict["name"] = name
+        if let userName = userData.userName {
+            dict["userName"] = userName
         }
         if let age = userData.age {
             dict["age"] = age
