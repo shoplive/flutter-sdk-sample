@@ -69,7 +69,7 @@ class SwiftShopliveCommonModule : SwiftShopliveBaseModule {
             }
         }
         let user = ShopLiveCommonUser(userId: userId,
-                           userName: args["name"] as? String,
+                           userName: args["userName"] as? String,
                            age: args["age"] as? Int,
                            gender: gender,
                            userScore: args["userScore"] as? Int,
@@ -147,8 +147,8 @@ fileprivate class JWTMaker {
         
         dict["userId"] = userData.userId
         
-        if let name = userData.userName {
-            dict["name"] = name
+        if let userName = userData.userName {
+            dict["userName"] = userName
         }
         if let age = userData.age {
             dict["age"] = age
