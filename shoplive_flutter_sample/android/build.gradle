@@ -48,6 +48,16 @@ android {
     defaultConfig {
         minSdkVersion 16
     }
+
+    buildTypes {
+        debug {
+            debuggable true
+        }
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
 }
 
 dependencies {
