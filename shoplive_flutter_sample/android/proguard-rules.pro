@@ -21,5 +21,7 @@
 #-renamesourcefileattribute SourceFile
 
 
--dontshrink
--keepnames class ** { *; }
+-keep public class cloud.shoplive.** { *; }
+-dontwarn cloud.shoplive.**
+
+-keep class org.json.** { *; }
