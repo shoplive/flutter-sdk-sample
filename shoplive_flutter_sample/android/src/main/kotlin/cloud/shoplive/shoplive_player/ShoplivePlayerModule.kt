@@ -73,6 +73,17 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
                 )
             }
 
+            "player_showPreview" -> {
+                val campaignKey: String = call.argument<String?>("campaignKey") ?: return
+                showPreview(
+                    ShopLivePreviewData(campaignKey).apply {
+                        useCloseButton =
+                            call.argument<Boolean?>("useCloseButton") ?: false
+                        referrer = call.argument<String?>("referrer")
+                    },
+                )
+            }
+
             "player_setShareScheme" -> setShareScheme(
                 call.argument<String>("shareSchemeUrl"),
             )
@@ -123,6 +134,13 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
         setOption()
 
         ShopLive.play(context, data)
+    }
+
+    private fun showPreview(data: ShopLivePreviewData) {
+        ShopLive.setHandler(shopLiveHandler)
+        setOption()
+
+        ShopLive.showPreviewPopup(activity, data)
     }
 
     private fun setShareScheme(shareSchemeUrl: String?) {
