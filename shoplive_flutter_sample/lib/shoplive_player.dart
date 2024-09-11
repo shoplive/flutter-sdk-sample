@@ -99,6 +99,12 @@ class ShopLivePlayer {
     return ShoplivePlayerPlatform.instance.play(data: data);
   }
 
+  void showPreview({
+    required ShopLivePlayerPreviewData data,
+  }) {
+    return ShoplivePlayerPlatform.instance.showPreview(data: data);
+  }
+
   void close() {
     return ShoplivePlayerPlatform.instance.close();
   }
@@ -158,6 +164,18 @@ class ShopLivePlayerData {
   ShopLivePlayerData({
     required this.campaignKey,
     this.keepWindowStateOnPlayExecuted = false,
+    this.referrer,
+  });
+}
+
+class ShopLivePlayerPreviewData {
+  final String campaignKey;
+  bool useCloseButton;
+  String? referrer;
+
+  ShopLivePlayerPreviewData({
+    required this.campaignKey,
+    this.useCloseButton = false,
     this.referrer,
   });
 }

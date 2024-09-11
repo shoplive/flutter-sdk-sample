@@ -77,6 +77,12 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
                 keepWindowStateOnPlayExecuted: args["keepWindowStateOnPlayExecuted"] as? Bool
             )
             break
+        case "player_showPreview" :
+            showPreview(
+                campaignKey: args["campaignKey"] as? String,
+                closeButton: args["useCloseButton"] as? Bool
+            )
+            break
         case "player_setShareScheme" :
             setShareScheme(shareSchemeUrl: args["shareSchemeUrl"] as? String)
             break
@@ -125,8 +131,17 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         }
         ShopLive.play(with: campaignKey, keepWindowStateOnPlayExecuted: keepWindowStateOnPlayExecuted)
     }
-    
-    
+
+    private func showPreview(campaignKey: String?, closeButton: Bool?) {
+        guard campaignKey != nil else { return }
+
+        ShopLive.delegate = self
+
+        setOption()
+        useCloseButton(use: closeButton)
+        ShopLive.preview(with: campaignKey)
+    }
+
     private func setShareScheme(shareSchemeUrl: String?) {
         guard let shareSchemeUrl = shareSchemeUrl else {
             return

@@ -1,3 +1,12 @@
+## 1.5.14+2
+* Add a showPreview
+
+## 1.5.14+1
+* Remove a jfrog
+
+## 1.5.14
+* Bump version to v1.5.14
+
 ## 1.5.13
 * Bump version to v1.5.13
 

@@ -40,6 +40,17 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
   }
 
   @override
+  void showPreview({
+    required ShopLivePlayerPreviewData data,
+  }) async {
+    return await methodChannel.invokeMethod<void>('player_showPreview', <String, dynamic>{
+      'campaignKey': data.campaignKey,
+      'useCloseButton': data.useCloseButton,
+      'referrer': data.referrer
+    });
+  }
+
+  @override
   void close() async {
     return await methodChannel.invokeMethod<void>('player_close');
   }
