@@ -109,6 +109,14 @@ class ShopLivePlayer {
     return ShoplivePlayerPlatform.instance.close();
   }
 
+  void startPictureInPicture() {
+    return ShoplivePlayerPlatform.instance.startPictureInPicture();
+  }
+
+  void stopPictureInPicture() {
+    return ShoplivePlayerPlatform.instance.stopPictureInPicture();
+  }
+
   void setShareScheme({
     required String shareSchemeUrl,
   }) {

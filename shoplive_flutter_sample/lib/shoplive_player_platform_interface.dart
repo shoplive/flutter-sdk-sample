@@ -52,6 +52,14 @@ abstract class ShoplivePlayerPlatform extends PlatformInterface {
     throw UnimplementedError('close() has not been implemented.');
   }
 
+  void startPictureInPicture() {
+    throw UnimplementedError('startPictureInPicture() has not been implemented.');
+  }
+
+  void stopPictureInPicture() {
+    throw UnimplementedError('stopPictureInPicture() has not been implemented.');
+  }
+
   void setShareScheme({
     required String shareSchemeUrl,
   }) {

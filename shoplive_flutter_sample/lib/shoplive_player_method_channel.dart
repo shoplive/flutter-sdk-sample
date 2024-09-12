@@ -56,6 +56,16 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
   }
 
   @override
+  void startPictureInPicture() async {
+    return await methodChannel.invokeMethod<void>('player_startPictureInPicture');
+  }
+
+  @override
+  void stopPictureInPicture() async {
+    return await methodChannel.invokeMethod<void>('player_stopPictureInPicture');
+  }
+
+  @override
   void setShareScheme({
     required String shareSchemeUrl,
   }) async {

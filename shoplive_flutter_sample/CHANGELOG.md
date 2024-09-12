@@ -1,3 +1,7 @@
+## 1.5.14+3
+* Add a startPictureInPicture
+* Add a stopPictureInPicture
+
 ## 1.5.14+2
 * Add a showPreview
 

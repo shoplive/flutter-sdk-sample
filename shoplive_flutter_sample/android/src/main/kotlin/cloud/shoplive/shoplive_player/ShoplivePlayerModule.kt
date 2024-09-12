@@ -113,6 +113,8 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
             )
 
             "player_close" -> close()
+            "player_startPictureInPicture" -> startPictureInPicture()
+            "player_stopPictureInPicture" -> stopPictureInPicture()
             "player_addParameter" -> addParameter(
                 call.argument<String>("key"),
                 call.argument<String>("value"),
@@ -184,6 +186,14 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
 
     private fun close() {
         ShopLive.close()
+    }
+
+    private fun startPictureInPicture() {
+        ShopLive.startPictureInPicture()
+    }
+
+    private fun stopPictureInPicture() {
+        ShopLive.stopPictureInPicture()
     }
 
     private fun addParameter(key: String?, value: String?) {
