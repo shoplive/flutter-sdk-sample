@@ -107,6 +107,12 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         case "player_close" :
             close()
             break
+        case "player_startPictureInPicture" :
+            startPictureInPicture()
+            break
+        case "player_stopPictureInPicture" :
+            stopPictureInPicture()
+            break
         case "player_addParameter" :
             addParameter(key: args["key"] as? String, value: args["value"] as? String)
             break
@@ -194,6 +200,14 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
     
     private func close() {
         ShopLive.close()
+    }
+
+    private func startPictureInPicture() {
+        ShopLive.startPictureInPicture()
+    }
+
+    private func stopPictureInPicture() {
+        ShopLive.stopPictureInPicture()
     }
     
     private func addParameter(key: String?, value: String?) {
