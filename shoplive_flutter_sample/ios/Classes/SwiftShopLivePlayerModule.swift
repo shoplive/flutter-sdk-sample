@@ -66,43 +66,43 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
     
     
     override func handleMethodCall(call : FlutterMethodCall, result : @escaping FlutterResult) {
-        guard let args = call.arguments as? [String: Any] else { return }
+        let args = call.arguments as? [String: Any]
         print("[HASSAN LOG] args \(args)")
         print("[HASSAN LOG] call.method \(call.method)")
         switch(call.method) {
     
         case "player_play" :
             play(
-                campaignKey: args["campaignKey"] as? String,
-                keepWindowStateOnPlayExecuted: args["keepWindowStateOnPlayExecuted"] as? Bool
+                campaignKey: args?["campaignKey"] as? String,
+                keepWindowStateOnPlayExecuted: args?["keepWindowStateOnPlayExecuted"] as? Bool
             )
             break
         case "player_showPreview" :
             showPreview(
-                campaignKey: args["campaignKey"] as? String,
-                closeButton: args["useCloseButton"] as? Bool
+                campaignKey: args?["campaignKey"] as? String,
+                closeButton: args?["useCloseButton"] as? Bool
             )
             break
         case "player_setShareScheme" :
-            setShareScheme(shareSchemeUrl: args["shareSchemeUrl"] as? String)
+            setShareScheme(shareSchemeUrl: args?["shareSchemeUrl"] as? String)
             break
         case "player_setEndpoint" :
-            setEndpoint(endpoint: args["endpoint"] as? String)
+            setEndpoint(endpoint: args?["endpoint"] as? String)
             break
         case "player_setNextActionOnHandleNavigation" :
-            setNextActionOnHandleNavigation(type: args["type"] as? Int)
+            setNextActionOnHandleNavigation(type: args?["type"] as? Int)
             break
         case "player_setEnterPipModeOnBackPressed" :
-            setEnterPipModeOnBackPressed(isEnterPipMode: args["isEnterPipMode"] as? Bool)
+            setEnterPipModeOnBackPressed(isEnterPipMode: args?["isEnterPipMode"] as? Bool)
             break
         case "player_setMuteWhenPlayStart" :
-            setMuteWhenPlayStart(isMute: args["isMute"] as? Bool)
+            setMuteWhenPlayStart(isMute: args?["isMute"] as? Bool)
             break
         case "player_setMixWithOthers" :
-            setMixWithOthers(isMixAudio: args["isMixAudio"] as? Bool)
+            setMixWithOthers(isMixAudio: args?["isMixAudio"] as? Bool)
             break
         case "player_useCloseButton" :
-            useCloseButton(use: args["canUse"] as? Bool)
+            useCloseButton(use: args?["canUse"] as? Bool)
             break
         case "player_close" :
             close()
@@ -114,10 +114,10 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
             stopPictureInPicture()
             break
         case "player_addParameter" :
-            addParameter(key: args["key"] as? String, value: args["value"] as? String)
+            addParameter(key: args?["key"] as? String, value: args?["value"] as? String)
             break
         case "player_removeParameter" :
-            removeParameter(key: args["key"] as? String)
+            removeParameter(key: args?["key"] as? String)
             break
         default : break
         }
