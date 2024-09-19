@@ -1,3 +1,6 @@
+## 1.5.15
+* Bump version to v1.5.15
+
 ## 1.5.14+3
 * Add a startPictureInPicture
 * Add a stopPictureInPicture
