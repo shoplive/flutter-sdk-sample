@@ -10,6 +10,7 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import org.json.JSONObject
 import java.util.concurrent.atomic.AtomicReference
 
 class ShopliveShortformModule : ShopliveBaseModule() {
@@ -75,7 +76,6 @@ class ShopliveShortformModule : ShopliveBaseModule() {
         shuffle: Boolean?,
         referrer: String?
     ) {
-        ShopLiveShortform.setHandler(shopLiveShortformHandler)
         ShopLiveShortform.play(
             context,
             ShopLiveShortformCollectionData(
@@ -91,7 +91,9 @@ class ShopliveShortformModule : ShopliveBaseModule() {
                 skus,
                 shuffle ?: false,
                 referrer
-            )
+            ).apply {
+                handler = shopLiveShortformHandler
+            }
         )
     }
 
@@ -101,19 +103,19 @@ class ShopliveShortformModule : ShopliveBaseModule() {
     // endregion
     private val shopLiveShortformHandler = object : ShopLiveShortformHandler() {
         override fun getOnClickProductListener(): ShopLiveShortformProductListener {
-            return ShopLiveShortformProductListener { _, product ->
+            return ShopLiveShortformProductListener { _, _, product ->
                 eventClickProduct.get()?.success(Gson().toJson(product))
             }
         }
 
         override fun getOnClickBannerListener(): ShopLiveShortformUrlListener {
-            return ShopLiveShortformUrlListener { _, url ->
+            return ShopLiveShortformUrlListener { _, _, url ->
                 eventClickBanner.get()?.success(Gson().toJson(ShopliveShortformUrlData(url)))
             }
         }
 
-        override fun onEvent(context: Context, command: String, payload: String?) {
-            eventLog.get()?.success(Gson().toJson(ShopliveShortformLogData(command, payload)))
+        override fun onEvent(context: Context, messenger: ShopLiveShortformMessageListener?, command: String, payload: Map<String, Any?>) {
+            eventLog.get()?.success(Gson().toJson(ShopliveShortformLogData(command, JSONObject(payload).toString())))
         }
 
         override fun onShare(context: Context, data: ShopLiveShortformShareData) {

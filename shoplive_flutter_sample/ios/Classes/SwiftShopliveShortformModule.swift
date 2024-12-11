@@ -27,7 +27,22 @@ class SwiftShopliveShortformModule : SwiftShopliveBaseModule {
     public static var eventClose = ShopliveEventData(eventName: eventName.EVENT_SHORTFORM_CLOSE, flutterEventSink: nil)
     public static var eventLog = ShopliveEventData(eventName: eventName.EVENT_SHORTFORM_LOG, flutterEventSink: nil)
     
-    
+    struct FlutterShopliveShortformProductData : Codable {
+        var brand: String?
+        var productId: String?
+        var customerProductId: String?
+        var name: String?
+        var descriptions: String?
+        var url: String?
+        var sku: String?
+        var imageUrl: String?
+        var currency: String?
+        var showPrice: Bool?
+        var originalPrice: Double?
+        var discountPrice: Double?
+        var discountRate: Double?
+        var stockStatus: String?
+    }
     
     struct FlutterShopliveShortformUrlData : Codable {
         var url : String
@@ -48,7 +63,6 @@ class SwiftShopliveShortformModule : SwiftShopliveBaseModule {
     }
     
     struct FlutterShopLiveBaseData : Codable {
-        
     }
     
     override var eventPairs : [String] {
@@ -117,8 +131,6 @@ class SwiftShopliveShortformModule : SwiftShopliveBaseModule {
             }
         }
         
-        ShopLiveShortform.Delegate.setDelegate(self)
-        
         let requestData = ShopLiveShortformCollectionData(reference: reference,
                                                           shortsId: shortsId,
                                                           tags: tags,
@@ -127,7 +139,8 @@ class SwiftShopliveShortformModule : SwiftShopliveBaseModule {
                                                           shuffle: shuffle,
                                                           referrer: referrer,
                                                           skus: skus,
-                                                          shortsCollectionId: shortsCollectionId)
+                                                          shortsCollectionId: shortsCollectionId,
+                                                          delegate: self)
         ShopLiveShortform.play(requestData: requestData)
     }
     
@@ -138,15 +151,30 @@ class SwiftShopliveShortformModule : SwiftShopliveBaseModule {
 
 }
 extension SwiftShopliveShortformModule : ShopLiveShortformReceiveHandlerDelegate {
-    func handleProductItem(shortsId: String, shortsSrn: String, product: ShopLiveShortformSDK.Product) {
-        if let json = try? JSONEncoder().encode(product) {
+    func handleProductItem(shortsId: String, shortsSrn: String, product: ProductData) {
+        if let json = try? JSONEncoder().encode(FlutterShopliveShortformProductData(
+            brand: product.brand,
+            productId: product.productId,
+            customerProductId: product.customerProductId,
+            name: product.name,
+            descriptions: product.descriptions,
+            url: product.url,
+            sku: product.sku,
+            imageUrl: product.imageUrl,
+            currency: product.currency,
+            showPrice: product.showPrice,
+            originalPrice: product.originalPrice,
+            discountPrice: product.discountPrice,
+            discountRate: product.discountRate,
+            stockStatus: product.stockStatus
+        )) {
             if let eventSink = Self.eventClickProduct.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }
     }
 
-    func handleProductBanner(shortsId: String, shortsSrn: String, scheme: String, shortsDetail: ShopLiveShortformSDK.ShortsDetail) {
+    func handleProductBanner(shortsId: String, shortsSrn: String, scheme: String, shortsDetail: ShopLiveShortformDetailData) {
         if let json = try? JSONEncoder().encode(FlutterShopliveShortformUrlData(url: scheme)) {
             if let eventSink = Self.eventClickBanner.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
@@ -174,7 +202,7 @@ extension SwiftShopliveShortformModule : ShopLiveShortformReceiveHandlerDelegate
         }
     }
     
-    func onEvent(command: String, payload: String?) {
+    func onEvent(messenger : ShopLiveShortformMessenger?, command: String, payload: String?) {
         let model = FlutterShopLiveLogData(command: command, payload: payload)
         if let json = try? JSONEncoder().encode(model) {
             if let eventSink = Self.eventLog.flutterEventSink {
