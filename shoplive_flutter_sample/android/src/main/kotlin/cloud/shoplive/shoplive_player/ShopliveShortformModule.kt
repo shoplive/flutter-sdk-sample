@@ -90,6 +90,7 @@ class ShopliveShortformModule : ShopliveBaseModule() {
                 brands,
                 skus,
                 shuffle ?: false,
+                false,
                 referrer
             ).apply {
                 handler = shopLiveShortformHandler
