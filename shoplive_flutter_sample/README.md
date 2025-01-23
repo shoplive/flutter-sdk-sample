@@ -4,9 +4,16 @@ Shoplive SDK sample for Flutter
 
 ## Getting Started
 
-- [iOS Native Sample](https://github.com/shoplive/ios-sdk-sample)
+- Live docs : https://docs.shoplive.cloud/docs/en/flutter-live-api
 
-- [Android Native Sample](https://github.com/shoplive/android-sdk-sample)
+- Shortform docs : https://docs.shoplive.cloud/docs/en/flutter-shortform-api
+
+- Common docs : https://docs.shoplive.cloud/docs/en/flutter-common-api
+
+
+- Release note for Android : https://docs.shoplive.cloud/docs/en/android-changelog
+
+- Release note for iOS : https://docs.shoplive.cloud/docs/en/ios-changelog
 
 ## PUBLISH LIBRARY
 
