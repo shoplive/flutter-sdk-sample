@@ -186,7 +186,7 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
 
     private fun close() {
         ShopLive.close()
-        ShopLive.hidePreview()
+        ShopLive.hidePreviewPopup()
     }
 
     private fun startPictureInPicture() {
