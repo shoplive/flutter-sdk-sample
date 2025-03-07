@@ -53,6 +53,12 @@ class ShopLiveCommon {
     return ShopliveCommonPlatform.instance.setAccessKey(accessKey: accessKey);
   }
 
+  void setStreamerToken({
+    required String? streamerJWT,
+  }) async {
+    return ShopliveCommonPlatform.instance.setStreamerToken(streamerJWT: streamerJWT);
+  }
+
   void clearAuth() async {
     return ShopliveCommonPlatform.instance.clearAuth();
   }

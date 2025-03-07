@@ -9,6 +9,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:shoplive_player/shoplive_common.dart';
 import 'package:shoplive_player/shoplive_player.dart';
 import 'package:shoplive_player/shoplive_shortform.dart';
+import 'package:shoplive_player/shoplive_streamer.dart';
 
 void main() {
   runApp(const MyApp());
@@ -43,15 +44,19 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
 
   final String _accessKey = "";
   final String _campaignKey = "";
+  final String _streamerToken = "";
   late final _shopLiveCommonPlugin = ShopLiveCommon();
   late final _shopLivePlayerPlugin = ShopLivePlayer();
   late final _shopLiveShortformPlugin = ShopLiveShortform();
+  late final _shopLiveStreamerPlugin = ShopLiveStreamer();
   late final _accessKeyController =
       TextEditingController(text: _accessKey); // For testing AccessKey
   late final _campaignKeyController =
       TextEditingController(text: _campaignKey); // For testing CampaignKey
   late final _shareSchemeUrlController =
       TextEditingController(text: "http://google.com");
+  late final _streamerTokenController =
+      TextEditingController(text: _streamerToken); // For testing StreamerToken
 
   @override
   void initState() {
@@ -129,6 +134,10 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
       _showToast("onShortformEventLog : ${data.command}, ${data.payload} ");
     }).addTo(_compositeSubscription);
     //shortform event listener end
+
+    _shopLiveStreamerPlugin.error.listen((data) {
+      _showToast("onStreamerError : ${data.code}, ${data.message} ");
+    }).addTo(_compositeSubscription);
   }
 
   @override
@@ -161,6 +170,16 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Campaign key',
+                  ),
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.all(20),
+                child: TextField(
+                  controller: _streamerTokenController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Streamer token',
                   ),
                 ),
               ),
@@ -283,6 +302,30 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
                 },
                 child: const Text('Shortform PLAY'),
               ),
+              TextButton(
+                onPressed: () {
+                  if (_accessKeyController.text.isEmpty) {
+                    _showToast("Required to accessKey");
+                    return;
+                  }
+                  if (_streamerTokenController.text.isEmpty) {
+                    _showToast("Required to streamer token");
+                    return;
+                  }
+                  if (!Platform.isAndroid) {
+                    _showToast("Available only for Android");
+                    return;
+                  }
+                  _shopLiveCommonPlugin.setAccessKey(
+                    accessKey: _accessKeyController.text,
+                  );
+                  _shopLiveCommonPlugin.setStreamerToken(
+                    streamerJWT: _streamerTokenController.text,
+                  );
+                  _shopLiveStreamerPlugin.play();
+                },
+                child: const Text('Streamer PLAY - only Android'),
+              ),
             ],
           ),
         ),
@@ -294,6 +337,7 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
   void dispose() {
     _accessKeyController.dispose();
     _campaignKeyController.dispose();
+    _streamerTokenController.dispose();
     _shareSchemeUrlController.dispose();
     _compositeSubscription.dispose();
     super.dispose();

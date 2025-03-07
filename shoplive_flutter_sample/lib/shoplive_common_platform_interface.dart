@@ -74,6 +74,12 @@ abstract class ShopliveCommonPlatform extends PlatformInterface {
     throw UnimplementedError('setAccessKey() has not been implemented.');
   }
 
+  void setStreamerToken({
+    required String? streamerJWT,
+  }) {
+    throw UnimplementedError('setStreamerToken() has not been implemented.');
+  }
+
   void clearAuth() {
     throw UnimplementedError('clearAuth() has not been implemented.');
   }

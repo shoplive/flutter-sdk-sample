@@ -1,3 +1,7 @@
+## 1.7.0
+* Add a streamer feature
+* Bump version to v1.7.0
+
 ## 1.6.6
 * Bump version to v1.6.6
 

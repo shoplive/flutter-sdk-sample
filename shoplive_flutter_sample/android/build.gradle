@@ -44,7 +44,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 34
     }
 
@@ -64,12 +64,14 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.google.code.gson:gson:2.9.1'
 
-    def shoplive_sdk_version = "1.6.6"
-    def shoplive_exoplayer_version = "2.19.1.8"
+    def shoplive_sdk_version = "0.0.0"
+    def shoplive_exoplayer_version = "2.19.1.9"
 
-    implementation "cloud.shoplive:shoplive-common:$shoplive_sdk_version" // must required
-    implementation "cloud.shoplive:shoplive-exoplayer:$shoplive_exoplayer_version" // must required
-    implementation "cloud.shoplive:shoplive-sdk-core:$shoplive_sdk_version" // for live player
-    implementation "cloud.shoplive:shoplive-network:$shoplive_sdk_version" // for shot-form player && editor
+    implementation "cloud.shoplive:shoplive-common:$shoplive_sdk_version"
+    implementation "cloud.shoplive:shoplive-core:$shoplive_sdk_version"
+    implementation "cloud.shoplive:shoplive-network:$shoplive_sdk_version"
+    implementation "cloud.shoplive:shoplive-permission:$shoplive_sdk_version"
+    implementation "cloud.shoplive:shoplive-webrtc:$shoplive_sdk_version"
+    implementation "cloud.shoplive:shoplive-exoplayer:$shoplive_exoplayer_version"
     implementation "cloud.shoplive:shoplive-short-form:$shoplive_sdk_version" // for short-form player
 }

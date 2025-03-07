@@ -258,7 +258,7 @@ class ShopLiveCampaignInfo {
 
 class ShopLivePlayerError {
   final String code;
-  final String message;
+  String? message;
 
   ShopLivePlayerError({required this.code, required this.message});
 
