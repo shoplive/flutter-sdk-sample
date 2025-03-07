@@ -68,6 +68,10 @@ class ShopliveCommonModule : ShopliveBaseModule() {
                 call.argument<String?>("accessKey"),
             )
 
+            "common_setStreamerToken" -> setStreamerToken(
+                call.argument<String?>("streamerJWT"),
+            )
+
             "common_clearAuth" -> clearAuth()
 
             else -> {
@@ -108,6 +112,10 @@ class ShopliveCommonModule : ShopliveBaseModule() {
 
     private fun setAccessKey(accessKey: String?) {
         ShopLiveCommon.setAccessKey(accessKey)
+    }
+
+    private fun setStreamerToken(streamerJWT: String?) {
+        ShopLiveCommon.setStreamerToken(streamerJWT)
     }
 
     private fun clearAuth() {

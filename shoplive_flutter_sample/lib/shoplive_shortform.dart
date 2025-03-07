@@ -20,11 +20,11 @@ class ShopLiveShortform {
           .map((jsonString) => const JsonDecoder().convert(jsonString))
           .map((json) => ShopLiveShortformProductData.fromJson(json));
 
-  late final Stream<ShopliveShortformUrlData> onClickBanner =
+  late final Stream<ShopLiveShortformUrlData> onClickBanner =
       const EventChannel(EVENT_SHORTFORM_CLICK_BANNER)
           .receiveBroadcastStream()
           .map((jsonString) => const JsonDecoder().convert(jsonString))
-          .map((json) => ShopliveShortformUrlData.fromJson(json));
+          .map((json) => ShopLiveShortformUrlData.fromJson(json));
 
   late final Stream<ShopLiveShortformShareData> onShare =
       const EventChannel(EVENT_SHORTFORM_SHARE)
@@ -44,11 +44,11 @@ class ShopLiveShortform {
           .map((jsonString) => const JsonDecoder().convert(jsonString))
           .map((json) => ShopLiveBaseData.fromJson(json));
 
-  late final Stream<ShopliveShortformLogData> log =
+  late final Stream<ShopLiveShortformLogData> log =
       const EventChannel(EVENT_SHORTFORM_LOG)
           .receiveBroadcastStream()
           .map((jsonString) => const JsonDecoder().convert(jsonString))
-          .map((json) => ShopliveShortformLogData.fromJson(json));
+          .map((json) => ShopLiveShortformLogData.fromJson(json));
 
   void play({
     required ShopLiveShortformCollectionData data,
@@ -111,13 +111,13 @@ class ShopLiveShortformProductData {
   }
 }
 
-class ShopliveShortformUrlData {
+class ShopLiveShortformUrlData {
   final String url;
 
-  ShopliveShortformUrlData({required this.url});
+  ShopLiveShortformUrlData({required this.url});
 
-  factory ShopliveShortformUrlData.fromJson(Map<String, dynamic> json) {
-    return ShopliveShortformUrlData(
+  factory ShopLiveShortformUrlData.fromJson(Map<String, dynamic> json) {
+    return ShopLiveShortformUrlData(
       url: json['url'],
     );
   }
@@ -149,17 +149,17 @@ class ShopLiveShortformShareData {
   }
 }
 
-class ShopliveShortformLogData {
+class ShopLiveShortformLogData {
   final String command;
   String? payload;
 
-  ShopliveShortformLogData({
+  ShopLiveShortformLogData({
     required this.command,
     this.payload,
   });
 
-  factory ShopliveShortformLogData.fromJson(Map<String, dynamic> json) {
-    return ShopliveShortformLogData(
+  factory ShopLiveShortformLogData.fromJson(Map<String, dynamic> json) {
+    return ShopLiveShortformLogData(
       command: json['command'] ?? "",
       payload: json['payload'],
     );

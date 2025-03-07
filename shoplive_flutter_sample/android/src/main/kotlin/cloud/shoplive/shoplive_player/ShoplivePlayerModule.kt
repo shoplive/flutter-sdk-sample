@@ -5,6 +5,8 @@ import android.os.Handler
 import android.os.Looper
 import androidx.annotation.Keep
 import cloud.shoplive.sdk.*
+import cloud.shoplive.sdk.player.ShopLivePlayer
+import cloud.shoplive.sdk.common.*
 import com.google.gson.*
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.EventChannel
@@ -76,7 +78,7 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
             "player_showPreview" -> {
                 val campaignKey: String = call.argument<String?>("campaignKey") ?: return
                 showPreview(
-                    ShopLivePreviewData(campaignKey).apply {
+                    ShopLivePlayerPreviewData(campaignKey).apply {
                         useCloseButton =
                             call.argument<Boolean?>("useCloseButton") ?: false
                         referrer = call.argument<String?>("referrer")
@@ -132,52 +134,52 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
 
     // region ShopLive Public class
     private fun play(data: ShopLivePlayerData) {
-        ShopLive.setHandler(shopLiveHandler)
+        ShopLivePlayer.setHandler(shopLiveHandler)
         setOption()
 
-        ShopLive.play(context, data)
+        ShopLivePlayer.play(activity, data)
     }
 
-    private fun showPreview(data: ShopLivePreviewData) {
-        ShopLive.setHandler(shopLiveHandler)
+    private fun showPreview(data: ShopLivePlayerPreviewData) {
+        ShopLivePlayer.setHandler(shopLiveHandler)
         setOption()
 
-        ShopLive.showPreviewPopup(activity, data)
+        ShopLivePlayer.showPreview(activity, data)
     }
 
     private fun setShareScheme(shareSchemeUrl: String?) {
         shareSchemeUrl ?: return
-        ShopLive.setShareScheme(shareSchemeUrl)
+        ShopLivePlayer.setShareScheme(shareSchemeUrl)
     }
 
     private fun setEndpoint(endpoint: String?) {
         endpoint ?: return
-        ShopLive.setEndpoint(endpoint)
+        ShopLivePlayer.setEndpoint(endpoint)
     }
 
     private fun setNextActionOnHandleNavigation(type: Int?) {
         val action = when (type) {
-            ShopLive.ActionType.KEEP.ordinal -> ShopLive.ActionType.KEEP
-            ShopLive.ActionType.CLOSE.ordinal -> ShopLive.ActionType.CLOSE
-            ShopLive.ActionType.PIP.ordinal -> ShopLive.ActionType.PIP
-            else -> ShopLive.ActionType.PIP
+            ShopLivePlayerActionType.KEEP.ordinal -> ShopLivePlayerActionType.KEEP
+            ShopLivePlayerActionType.CLOSE.ordinal -> ShopLivePlayerActionType.CLOSE
+            ShopLivePlayerActionType.PIP.ordinal -> ShopLivePlayerActionType.PIP
+            else -> ShopLivePlayerActionType.PIP
         }
-        ShopLive.setNextActionOnHandleNavigation(action)
+        ShopLivePlayer.setNextActionOnHandleNavigation(action)
     }
 
     private fun setEnterPipModeOnBackPressed(isEnterPipMode: Boolean?) {
         isEnterPipMode ?: return
-        ShopLive.setEnterPipModeOnBackPressed(isEnterPipMode)
+        ShopLivePlayer.setEnterPipModeOnBackPressed(isEnterPipMode)
     }
 
     private fun setMuteWhenPlayStart(isMute: Boolean?) {
         isMute ?: return
-        ShopLive.setMuteWhenPlayStart(isMute)
+        ShopLivePlayer.setMuteWhenPlayStart(isMute)
     }
 
     private fun setMixWithOthers(isMixAudio: Boolean?) {
         isMixAudio ?: return
-        ShopLive.setMixWithOthers(isMixAudio)
+        ShopLivePlayer.setMixWithOthers(isMixAudio)
     }
 
     private fun useCloseButton(use: Boolean?) {
@@ -185,30 +187,30 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
     }
 
     private fun close() {
-        ShopLive.close()
-        ShopLive.hidePreviewPopup()
+        ShopLivePlayer.close()
+        ShopLivePlayer.hidePreview()
     }
 
     private fun startPictureInPicture() {
-        ShopLive.startPictureInPicture()
+        ShopLivePlayer.startPictureInPicture()
     }
 
     private fun stopPictureInPicture() {
-        ShopLive.stopPictureInPicture()
+        ShopLivePlayer.stopPictureInPicture()
     }
 
     private fun addParameter(key: String?, value: String?) {
         key ?: return
-        ShopLive.addParameter(key, value)
+        ShopLivePlayer.addParameter(key, value)
     }
 
     private fun removeParameter(key: String?) {
         key ?: return
-        ShopLive.removeParameter(key)
+        ShopLivePlayer.removeParameter(key)
     }
     // endregion
 
-    private val shopLiveHandler = object : ShopLiveHandler() {
+    private val shopLiveHandler = object : ShopLivePlayerHandler() {
         override fun handleNavigation(context: Context, url: String) {
             eventHandleNavigation.get()?.success(Gson().toJson(HandleNavigation(url)))
         }
@@ -216,7 +218,7 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
         override fun handleDownloadCoupon(
             context: Context,
             couponId: String,
-            callback: ShopLiveHandlerCallback
+            callback: ShopLivePlayerHandlerCallback
         ) {
             eventHandleDownloadCoupon.get()
                 ?.success(Gson().toJson(HandleDownloadCoupon(couponId)))
@@ -224,8 +226,8 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
             callback.couponResult(
                 true,
                 "Success",
-                ShopLive.CouponPopupStatus.HIDE,
-                ShopLive.CouponPopupResultAlertType.TOAST
+                ShopLivePlayerCouponPopupStatus.HIDE,
+                ShopLivePlayerCouponPopupResultAlertType.TOAST
             )
         }
 
@@ -238,22 +240,22 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
             eventCampaignInfo.get()?.success(Gson().toJson(CampaignInfo(campaignInfo.toMap())))
         }
 
-        override fun onError(context: Context, code: String, message: String) {
-            eventError.get()?.success(Gson().toJson(Error(code, message)))
+        override fun onError(context: Context, error: ShopLiveCommonError) {
+            eventError.get()?.success(Gson().toJson(Error(error.code.toString(), error.message)))
         }
 
         override fun handleCustomAction(
-            context: Context, id: String, type: String, payload: String,
-            callback: ShopLiveHandlerCallback
+            context: Context, id: String, type: String, payload: JSONObject,
+            callback: ShopLivePlayerHandlerCallback
         ) {
             eventHandleCustomAction.get()
-                ?.success(Gson().toJson(HandleCustomAction(id, type, payload)))
+                ?.success(Gson().toJson(HandleCustomAction(id, type, payload.toString())))
 
             callback.couponResult(
                 true,
                 "Success",
-                ShopLive.CouponPopupStatus.HIDE,
-                ShopLive.CouponPopupResultAlertType.TOAST
+                ShopLivePlayerCouponPopupStatus.HIDE,
+                ShopLivePlayerCouponPopupResultAlertType.TOAST
             )
         }
 
@@ -265,7 +267,7 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
 
         override fun onChangedPlayerStatus(
             isPipMode: Boolean,
-            state: ShopLive.PlayerLifecycle
+            state: ShopLivePlayerLifecycle
         ) {
             eventChangedPlayerStatus.get()
                 ?.success(Gson().toJson(ChangedPlayerStatus(state.name)))
@@ -312,7 +314,7 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
     private data class CampaignInfo(val campaignInfo: Map<String, Any?>)
 
     @Keep
-    private data class Error(val code: String, val message: String)
+    private data class Error(val code: String, val message: String?)
 
     @Keep
     private data class HandleCustomAction(
@@ -342,20 +344,14 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
     )
 
     private fun setOption() {
-        // tablet 화면 비율
-        ShopLive.setKeepAspectOnTabletPortrait(true)
-
-        // 플레이어 status bar 투명  (enabled / disabled)
-        ShopLive.setStatusBarTransparent(true)
-
         // audio focus 잃었을 시 mute 기능
-        ShopLive.setSoundFocusHandling(object : OnAudioFocusListener {
+        ShopLivePlayer.setSoundFocusHandling(object : OnAudioFocusListener {
             override fun onGain() {
-                ShopLive.unmute()
+                ShopLivePlayer.unmute()
             }
 
             override fun onLoss() {
-                ShopLive.mute()
+                ShopLivePlayer.mute()
             }
 
         })

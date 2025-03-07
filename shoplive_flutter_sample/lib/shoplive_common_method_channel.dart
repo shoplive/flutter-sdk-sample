@@ -95,6 +95,16 @@ class MethodChannelShopliveCommon extends ShopliveCommonPlatform {
   }
 
   @override
+  void setStreamerToken({
+    required String? streamerJWT,
+  }) async {
+    return await methodChannel
+        .invokeMethod<void>('common_setStreamerToken', <String, dynamic>{
+      'streamerJWT': streamerJWT,
+    });
+  }
+
+  @override
   void clearAuth() async {
     return await methodChannel
         .invokeMethod<void>('common_clearAuth', <String, dynamic>{});
