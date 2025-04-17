@@ -65,6 +65,13 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
     }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.handleDownloadCoupon.listen((data) {
+      _shopLivePlayerPlugin.sendCommandMessage(
+          command: "SHOW_LAYER_TOAST",
+          payload: <String, dynamic>{
+            "message": data.couponId,
+            "duration": 1000,
+            "position": "CENTER",
+          });
       _showToast("handleDownloadCoupon : ${data.couponId}");
     }).addTo(_compositeSubscription);
 

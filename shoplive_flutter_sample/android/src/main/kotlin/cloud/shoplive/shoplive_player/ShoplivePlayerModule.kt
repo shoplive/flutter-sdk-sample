@@ -115,6 +115,11 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
             "player_close" -> close()
             "player_startPictureInPicture" -> startPictureInPicture()
             "player_stopPictureInPicture" -> stopPictureInPicture()
+            "player_sendCommandMessage" -> sendCommandMessage(
+                call.argument<String>("command"),
+                call.argument<Map<String, Any?>>("payload"),
+            )
+
             "player_addParameter" -> addParameter(
                 call.argument<String>("key"),
                 call.argument<String>("value"),
@@ -197,6 +202,11 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
         ShopLive.stopPictureInPicture()
     }
 
+    private fun sendCommandMessage(command: String?, payload: Map<String, Any?>?) {
+        command ?: return
+        ShopLive.sendCommandMessage(command, payload ?: emptyMap())
+    }
+
     private fun addParameter(key: String?, value: String?) {
         key ?: return
         ShopLive.addParameter(key, value)
@@ -220,13 +230,6 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
         ) {
             eventHandleDownloadCoupon.get()
                 ?.success(Gson().toJson(HandleDownloadCoupon(couponId)))
-
-            callback.couponResult(
-                true,
-                "Success",
-                ShopLive.CouponPopupStatus.HIDE,
-                ShopLive.CouponPopupResultAlertType.TOAST
-            )
         }
 
         override fun onChangeCampaignStatus(context: Context, campaignStatus: String) {

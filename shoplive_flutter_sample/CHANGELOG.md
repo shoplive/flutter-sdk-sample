@@ -1,3 +1,14 @@
+## 1.7.0+2
+* Bump version to v1.7.0+2
+
+## 1.7.0+1
+* Revert a streamer feature
+* Bump version to v1.7.0+1
+
+## 1.7.0
+* Add a streamer feature
+* Bump version to v1.7.0
+
 ## 1.6.6
 * Bump version to v1.6.6
 

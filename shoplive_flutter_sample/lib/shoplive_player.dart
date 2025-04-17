@@ -117,6 +117,14 @@ class ShopLivePlayer {
     return ShoplivePlayerPlatform.instance.stopPictureInPicture();
   }
 
+  void sendCommandMessage({
+    required String command,
+    required Map<String, dynamic> payload,
+  }) async {
+    return ShoplivePlayerPlatform.instance
+        .sendCommandMessage(command: command, payload: payload);
+  }
+
   void setShareScheme({
     required String shareSchemeUrl,
   }) {

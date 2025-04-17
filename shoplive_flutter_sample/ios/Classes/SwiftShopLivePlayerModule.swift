@@ -113,6 +113,9 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         case "player_stopPictureInPicture" :
             stopPictureInPicture()
             break
+        case "player_sendCommandMessage" :
+            sendCommandMessage(command: args?["command"] as? String, payload: args?["payload"] as? [String:Any])
+            break
         case "player_addParameter" :
             addParameter(key: args?["key"] as? String, value: args?["value"] as? String)
             break
@@ -208,6 +211,13 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
 
     private func stopPictureInPicture() {
         ShopLive.stopPictureInPicture()
+    }
+
+    private func sendCommandMessage(command: String?, payload: [String:Any]?) {
+        guard let command = command else {
+            return
+        }
+        ShopLive.sendCommandMessage(command: command, payload: payload)
     }
     
     private func addParameter(key: String?, value: String?) {
@@ -394,11 +404,6 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
             if let eventSink = Self.eventHandleCustomAction.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
-        }
-        
-        DispatchQueue.main.async {
-            let customActionResult = CustomActionResult(id: id, success: true,  message: "Success", status: ShopLiveSDK.ResultStatus.HIDE, alertType: ShopLiveSDK.ResultAlertType.TOAST)
-            completion(customActionResult)
         }
     }
     

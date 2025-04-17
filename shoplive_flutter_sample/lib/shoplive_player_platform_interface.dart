@@ -60,6 +60,13 @@ abstract class ShoplivePlayerPlatform extends PlatformInterface {
     throw UnimplementedError('stopPictureInPicture() has not been implemented.');
   }
 
+  void sendCommandMessage({
+    required String command,
+    required Map<String, dynamic> payload,
+  }) async {
+    throw UnimplementedError('sendCommandMessage() has not been implemented.');
+  }
+
   void setShareScheme({
     required String shareSchemeUrl,
   }) {

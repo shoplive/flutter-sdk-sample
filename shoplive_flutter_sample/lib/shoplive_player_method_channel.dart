@@ -32,7 +32,8 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
   void play({
     required ShopLivePlayerData data,
   }) async {
-    return await methodChannel.invokeMethod<void>('player_play', <String, dynamic>{
+    return await methodChannel
+        .invokeMethod<void>('player_play', <String, dynamic>{
       'campaignKey': data.campaignKey,
       'keepWindowStateOnPlayExecuted': data.keepWindowStateOnPlayExecuted,
       'referrer': data.referrer
@@ -43,7 +44,8 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
   void showPreview({
     required ShopLivePlayerPreviewData data,
   }) async {
-    return await methodChannel.invokeMethod<void>('player_showPreview', <String, dynamic>{
+    return await methodChannel
+        .invokeMethod<void>('player_showPreview', <String, dynamic>{
       'campaignKey': data.campaignKey,
       'useCloseButton': data.useCloseButton,
       'referrer': data.referrer
@@ -57,12 +59,26 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
 
   @override
   void startPictureInPicture() async {
-    return await methodChannel.invokeMethod<void>('player_startPictureInPicture');
+    return await methodChannel
+        .invokeMethod<void>('player_startPictureInPicture');
   }
 
   @override
   void stopPictureInPicture() async {
-    return await methodChannel.invokeMethod<void>('player_stopPictureInPicture');
+    return await methodChannel
+        .invokeMethod<void>('player_stopPictureInPicture');
+  }
+
+  @override
+  void sendCommandMessage({
+    required String command,
+    required Map<String, dynamic> payload,
+  }) async {
+    return await methodChannel
+        .invokeMethod<void>('player_sendCommandMessage', <String, dynamic>{
+      'command': command,
+      'payload': payload,
+    });
   }
 
   @override
@@ -99,8 +115,8 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
   void setEnterPipModeOnBackPressed({
     required bool isEnterPipMode,
   }) async {
-    return await methodChannel
-        .invokeMethod<void>('player_setEnterPipModeOnBackPressed', <String, dynamic>{
+    return await methodChannel.invokeMethod<void>(
+        'player_setEnterPipModeOnBackPressed', <String, dynamic>{
       'isEnterPipMode': isEnterPipMode,
     });
   }
