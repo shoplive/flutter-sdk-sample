@@ -15,10 +15,10 @@ A new Flutter plugin project.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'ShopLive', '1.6.6'
-  s.dependency 'ShopliveSDKCommon', '1.6.6'
-  s.dependency 'ShopliveShortformSDK', '1.6.6'
-  s.platform = :ios, '11.0'
+  s.dependency 'ShopLive', '0.0.1'
+  s.dependency 'ShopliveSDKCommon', '0.0.1'
+  s.dependency 'ShopliveShortformSDK', '0.0.1'
+  s.platform = :ios, '15.0'
   s.static_framework = true
 
   # Flutter.framework does not contain a i386 slice.

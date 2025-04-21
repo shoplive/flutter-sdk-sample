@@ -45,6 +45,8 @@ class SwiftShopliveCommonModule : SwiftShopliveBaseModule {
             ShopLiveCommon.setAccessKey(accessKey : args["accessKey"] as? String)
         case "common_clearAuth":
             ShopLiveCommon.clearAuth()
+        case "common_setStreamerToken":
+            ShopLiveCommon.setStreamerToken(token: args["streamerJWT"] as? String)
         default:
             return
         }

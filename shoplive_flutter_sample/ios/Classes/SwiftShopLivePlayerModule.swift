@@ -1,7 +1,9 @@
 import Flutter
 import UIKit
 import ShopliveSDKCommon
-import ShopLiveSDK
+import ShopLiveCorePlayerSDK
+import ShopLiveHLSPlayerSDK
+import ShopLiveWebRTCPlayerSDK
 
 
 struct SwiftShoplivePlayerModuleEventName {
@@ -33,6 +35,9 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
     public static var eventLog = ShopliveEventData(eventName: eventName.EVENT_PLAYER_LOG, flutterEventSink: nil)
     
     
+    private var useCloseButtonOnPip : Bool = true
+    
+    
     override var eventPairs: [String] {
         get {
             return [
@@ -51,6 +56,25 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         set {
             
         }
+    }
+    
+    override init() {
+        ShopLivePlayer.attachHLSPlayerView {
+            return ShopLiveHLSPlayer.getHLSPlayerView()
+        }
+        
+        ShopLivePlayer.attachHLSPlayerViewModel { stateContainer in
+            return ShopLiveHLSPlayer.getHLSPlayerViewModel(stateContainer: stateContainer)
+        }
+        
+        ShopLivePlayer.attachRTCPlayerView {
+            return ShopLiveWebRTCPlayer.getRTCPlayerView()
+        }
+        
+        ShopLivePlayer.attachRTCPlayerViewModel { stateContainer in
+            return ShopLiveWebRTCPlayer.getRTCPlayerViewModel(stateContainer: stateContainer)
+        }
+        
     }
     
 
@@ -128,49 +152,54 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
     private func play(campaignKey: String?, keepWindowStateOnPlayExecuted: Bool?) {
         guard campaignKey != nil else { return }
         
-        ShopLive.delegate = self
+        ShopLivePlayer.delegate = self
         
         setOption()
+        let data = ShopLivePlayerData(campaignKey: campaignKey ?? "",
+                                      keepWindowStateOnPlayExecuted: keepWindowStateOnPlayExecuted ?? true)
+        ShopLivePlayer.setInAppPipConfiguration(config: .init(enableSwipeOut: true))
         guard let keepWindowStateOnPlayExecuted = keepWindowStateOnPlayExecuted else {
-            ShopLive.play(with: campaignKey)
+            ShopLivePlayer.play(data: data)
             return
         }
-        ShopLive.play(with: campaignKey, keepWindowStateOnPlayExecuted: keepWindowStateOnPlayExecuted)
+        ShopLivePlayer.play(data: data)
     }
 
     private func showPreview(campaignKey: String?, closeButton: Bool?) {
         guard campaignKey != nil else { return }
 
-        ShopLive.delegate = self
+        ShopLivePlayer.delegate = self
 
         setOption()
         useCloseButton(use: closeButton)
-        ShopLive.preview(with: campaignKey)
+        let data = ShopLivePreviewData(campaignKey: campaignKey ?? "",
+                                       keepWindowStateOnPlayExecuted: true)
+        ShopLivePlayer.preview(data: data)
     }
 
     private func setShareScheme(shareSchemeUrl: String?) {
         guard let shareSchemeUrl = shareSchemeUrl else {
             return
         }
-        ShopLive.setShareScheme(shareSchemeUrl, shareDelegate: nil)
+        ShopLivePlayer.setShareScheme(shareSchemeUrl, shareDelegate: nil)
     }
     
     private func setEndpoint(endpoint: String?) {
         guard let endpoint = endpoint else {
             return
         }
-        ShopLive.setEndpoint(endpoint)
+        ShopLivePlayer.setEndpoint(endpoint)
     }
     
     private func setNextActionOnHandleNavigation(type: Int?) {
         guard let type = type else {
             return
         }
-        guard let actionType = ShopLiveSDK.ActionType(rawValue: type) else {
+        guard let actionType = ShopLiveNavigationActionType(rawValue: type) else {
             return
         }
         
-        ShopLive.setNextActionOnHandleNavigation(actionType: actionType)
+        ShopLivePlayer.setNextActionOnHandleNavigation(actionType: actionType)
     }
     
     private func setEnterPipModeOnBackPressed(isEnterPipMode: Bool?) {
@@ -181,33 +210,33 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         guard let isMute = isMute else {
             return
         }
-        ShopLive.setMuteWhenPlayStart(isMute)
+        ShopLivePlayer.setMuteWhenPlayStart(isMute)
     }
     
     private func setMixWithOthers(isMixAudio: Bool?) {
         guard let isMixAudio = isMixAudio else {
             return
         }
-        ShopLive.setMixWithOthers(isMixAudio: isMixAudio)
+        ShopLivePlayer.setMixWithOthers(isMixAudio: isMixAudio)
     }
     
     private func useCloseButton(use: Bool?) {
         guard let use = use else {
             return
         }
-        ShopLive.useCloseButton(use)
+        useCloseButtonOnPip = use
     }
     
     private func close() {
-        ShopLive.close()
+        ShopLivePlayer.close()
     }
 
     private func startPictureInPicture() {
-        ShopLive.startPictureInPicture()
+        ShopLivePlayer.startPictureInPicture()
     }
 
     private func stopPictureInPicture() {
-        ShopLive.stopPictureInPicture()
+        ShopLivePlayer.stopPictureInPicture()
     }
     
     private func addParameter(key: String?, value: String?) {
@@ -217,14 +246,14 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         guard let value = value else {
             return
         }
-        ShopLive.addParameter(key: key, value: value)
+        ShopLivePlayer.addParameter(key: key, value: value)
     }
     
     private func removeParameter(key: String?) {
         guard let key = key else {
             return
         }
-        ShopLive.removeParameter(key: key)
+        ShopLivePlayer.removeParameter(key: key)
     }
     // endregion
     
@@ -357,13 +386,12 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
     }
     
     private func setOption() {
-        // tablet 화면 비율
-        ShopLive.setKeepAspectOnTabletPortrait(true)
-        ShopLive.setEnabledPipSwipeOut(true)
+        ShopLivePlayer.setInAppPipConfiguration(config: .init(useCloseButton: useCloseButtonOnPip,
+                                                              enableSwipeOut: true))
     }
 }
 
-extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
+extension SwiftShopLivePlayerModule: ShopLivePlayerDelegate {
     
     public func handleNavigation(with url: URL) {
         if let json = try? JSONEncoder().encode(HandleNavigation(url: url.absoluteString)) {
@@ -373,7 +401,7 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
         }
     }
     
-    public func handleDownloadCoupon(with couponId: String, result: @escaping (ShopLiveSDK.ShopLiveCouponResult) -> Void) {
+    public func handleDownloadCoupon(with couponId: String, result: @escaping (ShopLiveCouponResult) -> Void) {
         if let json = try? JSONEncoder().encode(HandleDownloadCoupon(couponId: couponId)) {
             if let eventSink = Self.eventHandleDownloadCoupon.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
@@ -381,12 +409,12 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
         }
         
         DispatchQueue.main.async {
-            let couponResult = ShopLiveCouponResult(couponId: couponId, success: true, message: "Success", status: ShopLiveSDK.ShopLiveResultStatus.HIDE, alertType: ShopLiveSDK.ShopLiveResultAlertType.TOAST)
+            let couponResult = ShopLiveCouponResult(couponId: couponId, success: true, message: "Success", status: ShopLiveResultStatus.HIDE, alertType: ShopLiveResultAlertType.TOAST)
             result(couponResult)
         }
     }
     
-    public func handleCustomActionResult(with id: String, type: String, payload: Any?, completion: @escaping (ShopLiveSDK.CustomActionResult) -> Void) {
+    public func handleCustomActionResult(with id: String, type: String, payload: Any?, completion: @escaping (ShopLiveCustomActionResult) -> Void) {
         guard let payload = payload as? String else {
             return
         }
@@ -397,12 +425,12 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
         }
         
         DispatchQueue.main.async {
-            let customActionResult = CustomActionResult(id: id, success: true,  message: "Success", status: ShopLiveSDK.ResultStatus.HIDE, alertType: ShopLiveSDK.ResultAlertType.TOAST)
+            let customActionResult = ShopLiveCustomActionResult(id: id, success: true,  message: "Success", status: ShopLiveResultStatus.HIDE, alertType: ShopLiveResultAlertType.TOAST)
             completion(customActionResult)
         }
     }
     
-    public func handleCustomAction(with id: String, type: String, payload: Any?, result: @escaping (ShopLiveSDK.ShopLiveCustomActionResult) -> Void) {
+    public func handleCustomAction(with id: String, type: String, payload: Any?, result: @escaping (ShopLiveCustomActionResult) -> Void) {
         guard let payload = payload as? String else {
             return
         }

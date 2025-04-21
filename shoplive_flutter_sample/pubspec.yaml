@@ -40,6 +40,7 @@ flutter:
         pluginClass: ShoplivePlayerPlugin
       ios:
         pluginClass: ShoplivePlayerPlugin
+        minIos: 15.0
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

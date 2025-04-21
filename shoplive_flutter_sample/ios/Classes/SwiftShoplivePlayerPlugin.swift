@@ -1,6 +1,8 @@
 import Flutter
 import UIKit
-import ShopLiveSDK
+import ShopLiveCorePlayerSDK
+import ShopLiveHLSPlayerSDK
+import ShopLiveWebRTCPlayerSDK
 import ShopliveSDKCommon
 
 public struct ShopliveEventData {
@@ -40,6 +42,7 @@ public class SwiftShoplivePlayerPlugin: NSObject {
     private static var playerModule = SwiftShopLivePlayerModule()
     private static var commonModule = SwiftShopliveCommonModule()
     private static var shortformModule = SwiftShopliveShortformModule()
+    private static var streamerModule = SwiftShopLiveStreamerModule()
     
     
 }
