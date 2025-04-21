@@ -57,6 +57,13 @@ class SwiftShopLiveStreamerModule : SwiftShopliveBaseModule {
             .build()
         //need to pushViewControler
         
+        guard let rootVC = UIApplication.shared.delegate?.window??.rootViewController else {
+            return
+        }
+        
+        let vc = MyCustomViewController() // 커스텀 뷰컨트롤러 생성
+        vc.modalPresentationStyle = .fullScreen
+        rootVC.present(vc, animated: true, completion: nil)
     }
     
     
