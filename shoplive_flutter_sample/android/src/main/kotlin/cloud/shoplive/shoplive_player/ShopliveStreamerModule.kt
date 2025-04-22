@@ -30,8 +30,12 @@ class ShopliveStreamerModule : ShopliveBaseModule() {
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+
         when (call.method) {
-            "streamer_play" -> play()
+            "streamer_play" -> {
+                val campaignKey: String = call.argument<String>("campaignKey") ?: ""
+                play(campaignKey)
+            }
 
             else -> {
                 // Do nothing
@@ -40,9 +44,9 @@ class ShopliveStreamerModule : ShopliveBaseModule() {
     }
 
     // region ShopLive Public class
-    private fun play() {
+    private fun play(campaignKey: String) {
         ShopLiveStreamer.setHandler(shopLiveStreamerHandler)
-        ShopLiveStreamer.play(activity)
+        ShopLiveStreamer.play(activity,ShopLiveStreamerNormalData(campaignKey))
     }
 
     // endregion

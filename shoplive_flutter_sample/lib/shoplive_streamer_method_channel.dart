@@ -9,7 +9,9 @@ class MethodChannelShopliveStreamer extends ShopliveStreamerPlatform {
   final methodChannel = const MethodChannel('shoplive_player');
 
   @override
-  void play() async {
-    return await methodChannel.invokeMethod<void>('streamer_play', <String, dynamic>{});
+  void play({
+    String? campaignKey
+  }) async {
+    return await methodChannel.invokeMethod<void>('streamer_play', <String, dynamic>{"campaignKey" : campaignKey});
   }
 }

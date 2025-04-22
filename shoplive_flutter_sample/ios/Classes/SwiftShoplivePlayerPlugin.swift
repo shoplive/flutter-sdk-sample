@@ -63,6 +63,7 @@ extension SwiftShoplivePlayerPlugin : FlutterPlugin {
         Self.playerModule.handleMethodCall(call: call , result : result)
         Self.commonModule.handleMethodCall(call: call , result : result)
         Self.shortformModule.handleMethodCall(call: call, result: result)
+        Self.streamerModule.handleMethodCall(call: call, result: result)
     }
     
 }

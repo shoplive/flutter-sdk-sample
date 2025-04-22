@@ -23,7 +23,9 @@ abstract class ShopliveStreamerPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  void play() {
+  void play({
+    String? campaignKey
+  }) {
     throw UnimplementedError('play() has not been implemented.');
   }
 }

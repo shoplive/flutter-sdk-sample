@@ -13,8 +13,10 @@ class ShopLiveStreamer {
           .map((jsonString) => const JsonDecoder().convert(jsonString))
           .map((json) => ShopLiveStreamerError.fromJson(json));
 
-  void play() {
-    return ShopliveStreamerPlatform.instance.play();
+  void play({
+    String? campaignKey
+  }) {
+    return ShopliveStreamerPlatform.instance.play(campaignKey : campaignKey);
   }
 }
 

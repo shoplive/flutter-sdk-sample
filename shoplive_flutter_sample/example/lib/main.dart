@@ -312,19 +312,15 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
                     _showToast("Required to streamer token");
                     return;
                   }
-                  if (!Platform.isAndroid) {
-                    _showToast("Available only for Android");
-                    return;
-                  }
                   _shopLiveCommonPlugin.setAccessKey(
                     accessKey: _accessKeyController.text,
                   );
                   _shopLiveCommonPlugin.setStreamerToken(
                     streamerJWT: _streamerTokenController.text,
                   );
-                  _shopLiveStreamerPlugin.play();
+                  _shopLiveStreamerPlugin.play(campaignKey: _campaignKey);
                 },
-                child: const Text('Streamer PLAY - only Android'),
+                child: const Text('Streamer PLAY'),
               ),
             ],
           ),

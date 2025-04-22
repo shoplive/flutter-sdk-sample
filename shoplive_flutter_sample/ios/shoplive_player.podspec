@@ -15,7 +15,7 @@ A new Flutter plugin project.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'ShopLive', '0.0.1'
+  s.dependency 'ShopLive', '0.0.3'
   s.dependency 'ShopliveSDKCommon', '0.0.1'
   s.dependency 'ShopliveShortformSDK', '0.0.1'
   s.platform = :ios, '15.0'
