@@ -1,5 +1,5 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
-import 'package:shoplive_player/shoplive_player.dart';
+import 'package:shoplive_player_example/shoplive_player.dart';
 
 import 'shoplive_player_method_channel.dart';
 

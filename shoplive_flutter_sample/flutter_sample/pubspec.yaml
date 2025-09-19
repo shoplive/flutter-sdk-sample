@@ -19,7 +19,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  shoplive_player: ^1.7.2
+  shoplive_player: ^1.7.3
     # When depending on this package from a real application you should use:
     #   shoplive_player: ^x.y.z
     # See https://dart.dev/tools/pub/dependencies#version-constraints

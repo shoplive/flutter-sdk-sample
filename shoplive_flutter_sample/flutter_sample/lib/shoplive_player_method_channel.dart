@@ -1,5 +1,5 @@
 import 'package:flutter/services.dart';
-import 'package:shoplive_player/shoplive_player.dart';
+import 'package:shoplive_player_example/shoplive_player.dart';
 
 import 'shoplive_player_platform_interface.dart';
 
