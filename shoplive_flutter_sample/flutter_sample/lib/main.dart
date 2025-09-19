@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:shoplive_player/shoplive_common.dart';
-import 'package:shoplive_player/shoplive_player.dart';
-import 'package:shoplive_player/shoplive_shortform.dart';
+import 'package:shoplive_player_example/shoplive_common.dart';
+import 'package:shoplive_player_example/shoplive_player.dart';
+import 'package:shoplive_player_example/shoplive_shortform.dart';
 
 void main() {
   runApp(const MyApp());

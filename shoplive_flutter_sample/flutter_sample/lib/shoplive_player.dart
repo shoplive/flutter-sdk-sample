@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
-import 'package:shoplive_player/shoplive_player.dart' as shoplive_player;
+import 'package:shoplive_player_example/shoplive_player.dart' as shoplive_player;
 
 import 'shoplive_player_platform_interface.dart';
 
@@ -225,6 +225,16 @@ extension ShopLiveActionTypeExtension on ShopLiveActionType {
         return shoplive_player.ShopLiveActionType.hide;
       case ShopLiveActionType.keep:
         return shoplive_player.ShopLiveActionType.keep;
+    }
+  }
+  String parseValue() {
+    switch (this) {
+      case ShopLiveActionType.show:
+        return 'show';
+      case ShopLiveActionType.hide:
+        return 'hide';
+      case ShopLiveActionType.keep:
+        return 'keep';
     }
   }
 }
