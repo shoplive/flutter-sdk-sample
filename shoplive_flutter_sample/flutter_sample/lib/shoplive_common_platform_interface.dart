@@ -10,7 +10,7 @@ abstract class ShopliveCommonPlatform extends PlatformInterface {
 
   static final Object _token = Object();
 
-  static ShopliveCommonPlatform _instance = MethodChannelShopliveCommon();
+  static ShopliveCommonPlatform _instance = MethodChannelShopliveCommon() as ShopliveCommonPlatform;
 
   /// The default instance of [ShoplivePlayerPlatform] to use.
   ///

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
+import 'package:shoplive_player/shoplive_player.dart' as shoplive_player;
 
 import 'shoplive_player_platform_interface.dart';
 
@@ -96,13 +97,13 @@ class ShopLivePlayer {
   void play({
     required ShopLivePlayerData data,
   }) {
-    return ShoplivePlayerPlatform.instance.play(data: data);
+    return ShoplivePlayerPlatform.instance.play(data: data.toPackageType());
   }
 
   void showPreview({
     required ShopLivePlayerPreviewData data,
   }) {
-    return ShoplivePlayerPlatform.instance.showPreview(data: data);
+    return ShoplivePlayerPlatform.instance.showPreview(data: data.toPackageType());
   }
 
   void close() {
@@ -142,7 +143,7 @@ class ShopLivePlayer {
     required ShopLiveActionType type,
   }) {
     return ShoplivePlayerPlatform.instance
-        .setNextActionOnHandleNavigation(type: type);
+        .setNextActionOnHandleNavigation(type: type.toPackageType());
   }
 
   void setEnterPipModeOnBackPressed({
@@ -172,6 +173,7 @@ class ShopLivePlayer {
   }
 }
 
+
 class ShopLivePlayerData {
   final String campaignKey;
   bool keepWindowStateOnPlayExecuted;
@@ -182,6 +184,14 @@ class ShopLivePlayerData {
     this.keepWindowStateOnPlayExecuted = false,
     this.referrer,
   });
+
+  shoplive_player.ShopLivePlayerData toPackageType() {
+    return shoplive_player.ShopLivePlayerData(
+      campaignKey: campaignKey,
+      keepWindowStateOnPlayExecuted: keepWindowStateOnPlayExecuted,
+      referrer: referrer,
+    );
+  }
 }
 
 class ShopLivePlayerPreviewData {
@@ -194,25 +204,28 @@ class ShopLivePlayerPreviewData {
     this.useCloseButton = false,
     this.referrer,
   });
+
+  shoplive_player.ShopLivePlayerPreviewData toPackageType() {
+    return shoplive_player.ShopLivePlayerPreviewData(
+      campaignKey: campaignKey,
+      useCloseButton: useCloseButton,
+      referrer: referrer,
+    );
+  }
 }
 
 enum ShopLiveActionType { show, hide, keep }
 
 extension ShopLiveActionTypeExtension on ShopLiveActionType {
-  int? parseValue() {
-    int? value;
+  shoplive_player.ShopLiveActionType toPackageType() {
     switch (this) {
       case ShopLiveActionType.show:
-        value = 0;
-        break;
+        return shoplive_player.ShopLiveActionType.show;
       case ShopLiveActionType.hide:
-        value = 1;
-        break;
+        return shoplive_player.ShopLiveActionType.hide;
       case ShopLiveActionType.keep:
-        value = 2;
-        break;
+        return shoplive_player.ShopLiveActionType.keep;
     }
-    return value;
   }
 }
 
@@ -378,3 +391,4 @@ class ShopLiveBaseData {
     return ShopLiveBaseData();
   }
 }
+
