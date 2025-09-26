@@ -2,15 +2,14 @@ group 'cloud.shoplive.shoplive_player'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.6.10'
+    ext.kotlin_version = '1.8.22'
     repositories {
         google()
-        jcenter()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.2'
+        classpath 'com.android.tools.build:gradle:8.4.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -18,7 +17,6 @@ buildscript {
 rootProject.allprojects {
     repositories {
         google()
-        jcenter()
         mavenCentral()
     }
 }
@@ -26,26 +24,45 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
+def shoplive_sdk_version = "1.7.8"
+def shoplive_exoplayer_version = "2.19.1.16"
+
+// pubspec.yaml에서 버전 가져오기
+def pubspecFile = file('../pubspec.yaml')
+def pubspecContent = pubspecFile.text
+def versionMatch = pubspecContent =~ /version:\s*(.+)/
+def plugin_version = versionMatch ? versionMatch[0][1].trim() : "1.7.4"
+
 android {
     namespace "cloud.shoplive.shoplive_player"
     compileSdkVersion 34
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
-
+    kotlin {
+        jvmToolchain 17
+    }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
+        javaParameters = true
     }
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
+    
+    buildFeatures {
+        buildConfig = true
+    }
 
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 35
+            buildConfigField "String", "SHOPLIVE_SDK_VERSION", "\"${shoplive_sdk_version}\""
+            buildConfigField "String", "SHOPLIVE_EXOPLAYER_VERSION", "\"${shoplive_exoplayer_version}\""
+            buildConfigField "String", "PLUGIN_VERSION", "\"${plugin_version}\""
     }
 
     buildTypes {
@@ -63,9 +80,6 @@ dependencies {
     implementation(fileTree(dir: "libs", include: ["*.jar", "*.aar"]))
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.google.code.gson:gson:2.9.1'
-
-    def shoplive_sdk_version = "1.7.8"
-    def shoplive_exoplayer_version = "2.19.1.16"
 
     implementation "cloud.shoplive:shoplive-common:$shoplive_sdk_version" // must required
     implementation "cloud.shoplive:shoplive-exoplayer:$shoplive_exoplayer_version" // must required

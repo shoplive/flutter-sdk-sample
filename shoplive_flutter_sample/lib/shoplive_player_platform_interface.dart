@@ -1,5 +1,5 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
-import 'package:shoplive_player_example/shoplive_player.dart';
+import 'package:shoplive_player/shoplive_player.dart';
 
 import 'shoplive_player_method_channel.dart';
 
@@ -108,5 +108,13 @@ abstract class ShoplivePlayerPlatform extends PlatformInterface {
     required String key,
   }) {
     throw UnimplementedError('removeParameter() has not been implemented.');
+  }
+
+  Future<String> getSdkVersion() {
+    throw UnimplementedError('getSdkVersion() has not been implemented.');
+  }
+
+  Future<String> getPluginVersion() {
+    throw UnimplementedError('getPluginVersion() has not been implemented.');
   }
 }

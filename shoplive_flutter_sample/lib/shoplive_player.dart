@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
-import 'package:shoplive_player_example/shoplive_player.dart' as shoplive_player;
+import 'package:shoplive_player/shoplive_player.dart' as shoplive_player;
 
 import 'shoplive_player_platform_interface.dart';
 
@@ -170,6 +170,14 @@ class ShopLivePlayer {
     required String key,
   }) {
     return ShoplivePlayerPlatform.instance.removeParameter(key: key);
+  }
+
+  Future<String?> getSdkVersion() {
+    return ShoplivePlayerPlatform.instance.getSdkVersion();
+  }
+
+  Future<String?> getPluginVersion() {
+    return ShoplivePlayerPlatform.instance.getPluginVersion();
   }
 }
 

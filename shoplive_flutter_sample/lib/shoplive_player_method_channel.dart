@@ -1,5 +1,5 @@
 import 'package:flutter/services.dart';
-import 'package:shoplive_player_example/shoplive_player.dart';
+import 'package:shoplive_player/shoplive_player.dart';
 
 import 'shoplive_player_platform_interface.dart';
 
@@ -151,5 +151,15 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
         .invokeMethod<void>('player_removeParameter', <String, dynamic>{
       'key': key,
     });
+  }
+
+  @override
+  Future<String> getSdkVersion() async {
+    return await methodChannel.invokeMethod<String>('player_getSdkVersion') ?? '';
+  }
+
+  @override
+  Future<String> getPluginVersion() async {
+    return await methodChannel.invokeMethod<String>('player_getPluginVersion') ?? '';
   }
 }

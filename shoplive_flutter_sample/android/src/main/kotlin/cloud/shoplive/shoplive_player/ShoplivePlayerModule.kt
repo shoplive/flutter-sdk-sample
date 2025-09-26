@@ -129,6 +129,14 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
                 call.argument<String>("key"),
             )
 
+            "player_getSdkVersion" -> {
+                result.success(BuildConfig.SHOPLIVE_SDK_VERSION)
+            }
+
+            "player_getPluginVersion" -> {
+                result.success(BuildConfig.PLUGIN_VERSION)
+            }
+
             else -> {
                 // Do nothing
             }
