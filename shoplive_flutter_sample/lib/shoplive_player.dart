@@ -206,20 +206,22 @@ class ShopLivePlayerPreviewData {
   final String campaignKey;
   bool useCloseButton;
   String? referrer;
-  int? width;
-  int? height;
-  int? marginTop;
-  int? marginBottom;
-  int? marginLeft;
-  int? marginRight;
+  bool enableSwipeOut;
+  double? pipRadius;
+  double? pipMaxSize;
+  double? marginTop;
+  double? marginBottom;
+  double? marginLeft;
+  double? marginRight;
   String? position;
 
   ShopLivePlayerPreviewData({
     required this.campaignKey,
     this.useCloseButton = false,
     this.referrer,
-    this.width,
-    this.height,
+    this.enableSwipeOut = true,
+    this.pipRadius,
+    this.pipMaxSize,
     this.marginTop,
     this.marginBottom,
     this.marginLeft,
@@ -232,8 +234,9 @@ class ShopLivePlayerPreviewData {
       campaignKey: campaignKey,
       useCloseButton: useCloseButton,
       referrer: referrer,
-      width: width,
-      height: height,
+      enableSwipeOut: enableSwipeOut,
+      pipRadius: pipRadius,
+      pipMaxSize: pipMaxSize,
       marginTop: marginTop,
       marginBottom: marginBottom,
       marginLeft: marginLeft,

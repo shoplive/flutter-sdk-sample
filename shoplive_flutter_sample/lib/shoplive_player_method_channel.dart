@@ -48,9 +48,10 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
         .invokeMethod<void>('player_showPreview', <String, dynamic>{
       'campaignKey': data.campaignKey,
       'useCloseButton': data.useCloseButton,
+      'enableSwipeOut': data.enableSwipeOut,
+      'pipRadius': data.pipRadius,
       'referrer': data.referrer,
-      'width': data.width,
-      'height': data.height,
+      'pipMaxSize': data.pipMaxSize,
       'marginTop': data.marginTop,
       'marginBottom': data.marginBottom,
       'marginLeft': data.marginLeft,

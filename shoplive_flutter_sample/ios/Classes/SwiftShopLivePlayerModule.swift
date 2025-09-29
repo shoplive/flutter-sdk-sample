@@ -78,9 +78,28 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
             )
             break
         case "player_showPreview" :
+            let positionString = args?["position"] as? String ?? "BOTTOM_RIGHT"
+            
+            let inAppPipConfig = ShopLiveInAppPipConfiguration(
+                useCloseButton: args?["useCloseButton"] as? Bool ?? false,
+                pipPosition: positionString == "TOP_LEFT" ? .topLeft :
+                           positionString == "TOP_RIGHT" ? .topRight :
+                           positionString == "BOTTOM_LEFT" ? .bottomLeft :
+                           positionString == "BOTTOM_RIGHT" ? .bottomRight : .bottomRight,
+                enableSwipeOut: args?["enableSwipeOut"] as? Bool ?? true,
+                pipSize: .init(pipMaxSize: args?["pipMaxSize"] as? CGFloat ?? 300),
+                pipRadius: args?["pipRadius"] as? CGFloat ?? 0
+            )
+
+            let marginTop = args?["marginTop"] as? CGFloat ?? 0
+            let marginBottom = args?["marginBottom"] as? CGFloat ?? 0
+            let marginLeft = args?["marginLeft"] as? CGFloat ?? 0
+            let marginRight = args?["marginRight"] as? CGFloat ?? 0
+            
             showPreview(
                 campaignKey: args?["campaignKey"] as? String,
-                closeButton: args?["useCloseButton"] as? Bool
+                inAppPipConfig: inAppPipConfig,
+                padding: (top: marginTop, bottom: marginBottom, left: marginLeft, right: marginRight)
             )
             break
         case "player_setShareScheme" :
@@ -141,13 +160,14 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         ShopLive.play(with: campaignKey, keepWindowStateOnPlayExecuted: keepWindowStateOnPlayExecuted)
     }
 
-    private func showPreview(campaignKey: String?, closeButton: Bool?) {
+    private func showPreview(campaignKey: String?, inAppPipConfig: ShopLiveInAppPipConfiguration, padding: (top: CGFloat, bottom: CGFloat, left: CGFloat, right: CGFloat)) {
         guard campaignKey != nil else { return }
 
         ShopLive.delegate = self
 
         setOption()
-        useCloseButton(use: closeButton)
+        ShopLive.setPictureInPicturePadding(padding: .init(top: padding.top, left: padding.left, bottom: padding.bottom, right: padding.right))
+        ShopLive.setInAppPipConfiguration(config: inAppPipConfig)
         ShopLive.preview(with: campaignKey)
     }
 

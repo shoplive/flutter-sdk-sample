@@ -1,6 +1,7 @@
 package cloud.shoplive.shoplive_player
 
 import android.content.Context
+import android.util.TypedValue
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.Keep
@@ -13,6 +14,12 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel.Result
 import org.json.JSONObject
 import java.util.concurrent.atomic.AtomicReference
+
+fun Float.dpToPx(context: Context): Float = TypedValue.applyDimension(
+    TypedValue.COMPLEX_UNIT_DIP,
+    this,
+    context.resources.displayMetrics
+)
 
 class ShoplivePlayerModule : ShopliveBaseModule() {
     companion object {
@@ -80,12 +87,14 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
                     ShopLivePreviewData(campaignKey).apply {
                         useCloseButton = call.argument<Boolean?>("useCloseButton") ?: false
                         referrer = call.argument<String?>("referrer")
-                        width = call.argument<Int?>("width") ?: 0
-                        height = call.argument<Int?>("height") ?: 0
-                        marginTop = call.argument<Int?>("marginTop") ?: 0
-                        marginBottom = call.argument<Int?>("marginBottom") ?: 0
-                        marginLeft = call.argument<Int?>("marginLeft") ?: 0
-                        marginRight = call.argument<Int?>("marginRight") ?: 0
+                        enabledSwipeOut = call.argument<Boolean?>("enableSwipeOut") ?: false
+                        radius = (call.argument<Double?>("pipRadius") ?: 0.0).toFloat().dpToPx(activity)
+                        width = (call.argument<Double?>("pipMaxSize") ?: 0).toFloat().dpToPx(activity).toInt()
+                        height = (call.argument<Double?>("pipMaxSize") ?: 0).toFloat().dpToPx(activity).toInt()
+                        marginTop = (call.argument<Double?>("marginTop") ?: 0).toFloat().dpToPx(activity).toInt()
+                        marginBottom = (call.argument<Double?>("marginBottom") ?: 0).toFloat().dpToPx(activity).toInt()
+                        marginLeft = (call.argument<Double?>("marginLeft") ?: 0).toFloat().dpToPx(activity).toInt()
+                        marginRight = (call.argument<Double?>("marginRight") ?: 0).toFloat().dpToPx(activity).toInt()
                         position = when (call.argument<String?>("position")) {
                             "TOP_LEFT" -> ShopLivePreviewPositionConfig.TOP_LEFT
                             "TOP_RIGHT" -> ShopLivePreviewPositionConfig.TOP_RIGHT
