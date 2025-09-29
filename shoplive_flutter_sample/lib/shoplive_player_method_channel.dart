@@ -48,7 +48,14 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
         .invokeMethod<void>('player_showPreview', <String, dynamic>{
       'campaignKey': data.campaignKey,
       'useCloseButton': data.useCloseButton,
-      'referrer': data.referrer
+      'referrer': data.referrer,
+      'width': data.width,
+      'height': data.height,
+      'marginTop': data.marginTop,
+      'marginBottom': data.marginBottom,
+      'marginLeft': data.marginLeft,
+      'marginRight': data.marginRight,
+      'position': data.position,
     });
   }
 

@@ -206,11 +206,25 @@ class ShopLivePlayerPreviewData {
   final String campaignKey;
   bool useCloseButton;
   String? referrer;
+  int? width;
+  int? height;
+  int? marginTop;
+  int? marginBottom;
+  int? marginLeft;
+  int? marginRight;
+  String? position;
 
   ShopLivePlayerPreviewData({
     required this.campaignKey,
     this.useCloseButton = false,
     this.referrer,
+    this.width,
+    this.height,
+    this.marginTop,
+    this.marginBottom,
+    this.marginLeft,
+    this.marginRight,
+    this.position,
   });
 
   shoplive_player.ShopLivePlayerPreviewData toPackageType() {
@@ -218,6 +232,13 @@ class ShopLivePlayerPreviewData {
       campaignKey: campaignKey,
       useCloseButton: useCloseButton,
       referrer: referrer,
+      width: width,
+      height: height,
+      marginTop: marginTop,
+      marginBottom: marginBottom,
+      marginLeft: marginLeft,
+      marginRight: marginRight,
+      position: position,
     );
   }
 }
