@@ -152,4 +152,14 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
       'key': key,
     });
   }
+
+  @override
+  Future<String> getSdkVersion() async {
+    return await methodChannel.invokeMethod<String>('player_getSdkVersion') ?? '';
+  }
+
+  @override
+  Future<String> getPluginVersion() async {
+    return await methodChannel.invokeMethod<String>('player_getPluginVersion') ?? '';
+  }
 }

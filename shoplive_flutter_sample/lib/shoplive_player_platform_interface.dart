@@ -109,4 +109,12 @@ abstract class ShoplivePlayerPlatform extends PlatformInterface {
   }) {
     throw UnimplementedError('removeParameter() has not been implemented.');
   }
+
+  Future<String> getSdkVersion() {
+    throw UnimplementedError('getSdkVersion() has not been implemented.');
+  }
+
+  Future<String> getPluginVersion() {
+    throw UnimplementedError('getPluginVersion() has not been implemented.');
+  }
 }
