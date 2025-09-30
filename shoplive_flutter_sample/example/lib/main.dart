@@ -64,7 +64,7 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
       _showToast("handleNavigation : ${data.url}");
     }).addTo(_compositeSubscription);
 
-    _shopLivePlayerPlugin.handleDownloadCoupon.listen((data) {
+    _shopLivePlayerPlugin.handleDownloadCoupon.listen((data) async {
       _shopLivePlayerPlugin.sendCommandMessage(
           command: "SHOW_LAYER_TOAST",
           payload: <String, dynamic>{
@@ -72,7 +72,19 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
             "duration": 1000,
             "position": "CENTER",
           });
-      _showToast("handleDownloadCoupon : ${data.couponId}");
+
+      try {
+        await _shopLivePlayerPlugin.sendDownloadCouponResult(
+          couponId: data.couponId,
+          success: true,
+          message: "일반 쿠폰이 성공적으로 다운로드되었습니다!",
+          popupStatus: "KEEP",
+          alertType: "ALERT",
+        );
+        _showToast("쿠폰 다운로드 결과 전송 성공 handleDownloadCoupon : ${data.couponId}");
+      } catch (e) {
+        _showToast("쿠폰 다운로드 결과 전송 실패 handleDownloadCoupon : ${data.couponId} : $e");
+      }
     }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.changeCampaignStatus.listen((data) {
@@ -84,9 +96,22 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
           "campaignInfo : ${const JsonEncoder().convert(data.campaignInfo)}");
     }).addTo(_compositeSubscription);
 
-    _shopLivePlayerPlugin.handleCustomAction.listen((data) {
+    _shopLivePlayerPlugin.handleCustomAction.listen((data) async {
       _showToast(
           "handleCustomAction : ${data.id}, ${data.type}, ${data.payload}");
+      
+      try {
+        await _shopLivePlayerPlugin.sendCustomActionResult(
+          id: data.id,
+          success: true,
+          message: "커스텀 쿠폰이 성공적으로 다운로드되었습니다!",
+          popupStatus: "HIDE",
+          alertType: "ALERT",
+        );
+        _showToast("커스텀 액션 결과 전송 성공 handleCustomAction : ${data.id}");
+      } catch (e) {
+        _showToast("커스텀 액션 결과 전송 실패 handleCustomAction : ${data.id} : $e");
+      }
     }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.changedPlayerStatus.listen((data) {

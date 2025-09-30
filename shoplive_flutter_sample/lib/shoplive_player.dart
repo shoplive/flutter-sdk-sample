@@ -179,6 +179,38 @@ class ShopLivePlayer {
   Future<String?> getPluginVersion() {
     return ShoplivePlayerPlatform.instance.getPluginVersion();
   }
+
+  Future<void> sendDownloadCouponResult({
+    required String couponId,
+    required bool success,
+    required String message,
+    required String popupStatus,
+    required String alertType,
+  }) {
+    return ShoplivePlayerPlatform.instance.sendDownloadCouponResult(
+      couponId: couponId,
+      success: success,
+      message: message,
+      popupStatus: popupStatus,
+      alertType: alertType,
+    );
+  }
+
+  Future<void> sendCustomActionResult({
+    required String id,
+    required bool success,
+    required String message,
+    required String popupStatus,
+    required String alertType,
+  }) {
+    return ShoplivePlayerPlatform.instance.sendCustomActionResult(
+      id: id,
+      success: success,
+      message: message,
+      popupStatus: popupStatus,
+      alertType: alertType,
+    );
+  }
 }
 
 

@@ -20,6 +20,9 @@ struct SwiftShoplivePlayerModuleEventName {
 class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
 
     typealias eventName = SwiftShoplivePlayerModuleEventName
+    
+    // callback 객체를 임시 저장하는 Dictionary (id를 key로 사용)
+    private var pendingCallbacks: [String: Any] = [:]
 
     public static var eventHandleNavigation = ShopliveEventData(eventName: eventName.EVENT_PLAYER_HANDLE_NAVIGATION, flutterEventSink: nil)
     public static var eventHandleDownloadCoupon = ShopliveEventData(eventName: eventName.EVENT_PLAYER_HANDLE_DOWNLOAD_COUPON, flutterEventSink: nil)
@@ -140,6 +143,56 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
             break
         case "player_removeParameter" :
             removeParameter(key: args?["key"] as? String)
+            break
+        case "player_downloadCouponResult" :
+            let couponId = args?["couponId"] as? String ?? ""
+            let success = args?["success"] as? Bool ?? true
+            let message = args?["message"] as? String ?? "Success"
+            let popupStatus = args?["popupStatus"] as? String ?? "HIDE"
+            let alertType = args?["alertType"] as? String ?? "TOAST"
+            
+            // 저장된 callback 가져오기
+            if let callback = pendingCallbacks.removeValue(forKey: couponId) as? (ShopLiveCouponResult) -> Void {
+                // Flutter에서 받은 값으로 callback 호출
+                let couponResult = ShopLiveCouponResult(
+                    couponId: couponId,
+                    success: success,
+                    message: message,
+                    status: popupStatus == "SHOW" ? ShopLiveResultStatus.SHOW :
+                        popupStatus == "HIDE" ? ShopLiveResultStatus.HIDE :
+                        popupStatus == "KEEP" ? ShopLiveResultStatus.KEEP : ShopLiveResultStatus.HIDE,
+                    alertType: alertType == "TOAST" ? ShopLiveResultAlertType.TOAST :
+                        alertType == "ALERT" ? ShopLiveResultAlertType.ALERT : ShopLiveResultAlertType.TOAST
+                )
+                callback(couponResult)
+            }
+            
+            result(nil)
+            break
+        case "player_customActionResult" :
+            let id = args?["id"] as? String ?? ""
+            let success = args?["success"] as? Bool ?? true
+            let message = args?["message"] as? String ?? "Success"
+            let popupStatus = args?["popupStatus"] as? String ?? "HIDE"
+            let alertType = args?["alertType"] as? String ?? "TOAST"
+
+            // 저장된 callback 가져오기
+            if let callback = pendingCallbacks.removeValue(forKey: id) as? (ShopLiveCustomActionResult) -> Void {
+                // Flutter에서 받은 값으로 callback 호출
+                let customActionResult = ShopLiveCustomActionResult(
+                    id: id,
+                    success: success,
+                    message: message,
+                    status: popupStatus == "SHOW" ? ShopLiveResultStatus.SHOW :
+                        popupStatus == "HIDE" ? ShopLiveResultStatus.HIDE :
+                        popupStatus == "KEEP" ? ShopLiveResultStatus.KEEP : ShopLiveResultStatus.HIDE,
+                    alertType: alertType == "TOAST" ? ShopLiveResultAlertType.TOAST :
+                        alertType == "ALERT" ? ShopLiveResultAlertType.ALERT : ShopLiveResultAlertType.TOAST
+                )
+                callback(customActionResult)
+            }
+            
+            result(nil)
             break
         default : break
         }
@@ -403,17 +456,18 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
         }
     }
     
-    public func handleDownloadCoupon(with couponId: String, result: @escaping (ShopLiveSDK.ShopLiveCouponResult) -> Void) {
+    public func handleDownloadCoupon(with couponId: String, result: @escaping (ShopLiveCouponResult) -> Void) {
+        // callback을 임시 저장 (couponId를 key로 사용)
+        pendingCallbacks[couponId] = result
+        
+        // Flutter에 다운로드 쿠폰 이벤트 전송
         if let json = try? JSONEncoder().encode(HandleDownloadCoupon(couponId: couponId)) {
             if let eventSink = Self.eventHandleDownloadCoupon.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }
         
-        DispatchQueue.main.async {
-            let couponResult = ShopLiveCouponResult(couponId: couponId, success: true, message: "Success", status: ShopLiveSDK.ShopLiveResultStatus.HIDE, alertType: ShopLiveSDK.ShopLiveResultAlertType.TOAST)
-            result(couponResult)
-        }
+        // Flutter에서 응답을 받을 때까지 대기 (callback.couponResult는 나중에 호출)
     }
     
     public func handleCustomActionResult(with id: String, type: String, payload: Any?, completion: @escaping (ShopLiveSDK.CustomActionResult) -> Void) {
@@ -427,15 +481,22 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
         }
     }
     
-    public func handleCustomAction(with id: String, type: String, payload: Any?, result: @escaping (ShopLiveSDK.ShopLiveCustomActionResult) -> Void) {
+    public func handleCustomAction(with id: String, type: String, payload: Any?, result: @escaping (ShopLiveCustomActionResult) -> Void) {
         guard let payload = payload as? String else {
             return
         }
+        
+        // callback을 임시 저장 (id를 key로 사용)
+        pendingCallbacks[id] = result
+        
+        // Flutter에 커스텀 액션 이벤트 전송
         if let json = try? JSONEncoder().encode(HandleCustomAction(id: id, type: type, payload: payload)) {
             if let eventSink = Self.eventHandleCustomAction.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }
+        
+        // Flutter에서 응답을 받을 때까지 대기 (callback.customActionResult는 나중에 호출)
     }
     
     public func handleCustomAction(with id: String, type: String, payload: Any?, completion: @escaping () -> Void) {
