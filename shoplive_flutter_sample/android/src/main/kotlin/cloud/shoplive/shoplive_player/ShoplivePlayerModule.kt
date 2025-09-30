@@ -15,6 +15,9 @@ import io.flutter.plugin.common.MethodChannel.Result
 import org.json.JSONObject
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 
 fun Float.dpToPx(context: Context): Float = TypedValue.applyDimension(
     TypedValue.COMPLEX_UNIT_DIP,
@@ -40,6 +43,12 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
     
     // callback 객체를 임시 저장하는 Map (id를 key로 사용)
     private val pendingCallbacks = ConcurrentHashMap<String, ShopLiveHandlerCallback>()
+    
+    // 타임아웃 관리를 위한 스케줄러
+    private val timeoutScheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
+    
+    // 타임아웃 시간 (5초)
+    private val callbackTimeoutSeconds = 5L
 
     private val eventHandleNavigation = AtomicReference<EventChannel.EventSink?>(null)
     private val eventHandleDownloadCoupon = AtomicReference<EventChannel.EventSink?>(null)
@@ -164,7 +173,11 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
             }
 
             "player_downloadCouponResult" -> {
-                val couponId: String = call.argument<String?>("couponId") ?: return
+                val couponId: String? = call.argument<String?>("couponId")
+                if (couponId == null) {
+                    result.error("INVALID_ARGUMENT", "couponId is required", null)
+                    return
+                }
                 val success: Boolean = call.argument<Boolean?>("success") ?: true
                 val message: String = call.argument<String?>("message") ?: "Success"
                 val popupStatus: String = call.argument<String?>("popupStatus") ?: "HIDE"
@@ -193,7 +206,11 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
             }
 
             "player_customActionResult" -> {
-                val id: String = call.argument<String?>("id") ?: return
+                val id: String? = call.argument<String?>("id")
+                if (id == null) {
+                    result.error("INVALID_ARGUMENT", "id is required", null)
+                    return
+                }
                 val success: Boolean = call.argument<Boolean?>("success") ?: true
                 val message: String = call.argument<String?>("message") ?: "Success"
                 val popupStatus: String = call.argument<String?>("popupStatus") ?: "HIDE"
@@ -324,6 +341,22 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
             // callback을 임시 저장 (couponId를 key로 사용)
             pendingCallbacks[couponId] = callback
             
+            // 타임아웃 설정: 5초 후 자동 정리
+            timeoutScheduler.schedule({
+                val removedCallback = pendingCallbacks.remove(couponId)
+                if (removedCallback != null) {
+                    // 메인 스레드에서 callback 호출 (WebView 호출을 위해)
+                    Handler(Looper.getMainLooper()).post {
+                        removedCallback.couponResult(
+                            false,
+                            "",
+                            ShopLive.CouponPopupStatus.KEEP,
+                            ShopLive.CouponPopupResultAlertType.TOAST
+                        )
+                    }
+                }
+            }, callbackTimeoutSeconds, TimeUnit.SECONDS)
+            
             // Flutter에 다운로드 쿠폰 이벤트 전송
             eventHandleDownloadCoupon.get()
                 ?.success(Gson().toJson(HandleDownloadCoupon(couponId)))
@@ -350,6 +383,22 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
         ) {
             // callback을 임시 저장 (id를 key로 사용)
             pendingCallbacks[id] = callback
+            
+            // 타임아웃 설정: 5초 후 자동 정리
+            timeoutScheduler.schedule({
+                val removedCallback = pendingCallbacks.remove(id)
+                if (removedCallback != null) {
+                    // 메인 스레드에서 callback 호출 (WebView 호출을 위해)
+                    Handler(Looper.getMainLooper()).post {
+                        removedCallback.customActionResult(
+                            false,
+                            "",
+                            ShopLive.CouponPopupStatus.KEEP,
+                            ShopLive.CouponPopupResultAlertType.TOAST
+                        )
+                    }
+                }
+            }, callbackTimeoutSeconds, TimeUnit.SECONDS)
             
             // Flutter에 커스텀 액션 이벤트 전송
             eventHandleCustomAction.get()

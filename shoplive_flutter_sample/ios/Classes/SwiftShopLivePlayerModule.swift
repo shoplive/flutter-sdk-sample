@@ -23,6 +23,12 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
     
     // callback 객체를 임시 저장하는 Dictionary (id를 key로 사용)
     private var pendingCallbacks: [String: Any] = [:]
+    
+    // 타임아웃 관리를 위한 타이머들
+    private var timeoutTimers: [String: Timer] = [:]
+    
+    // 타임아웃 시간 (5초)
+    private let callbackTimeoutSeconds: TimeInterval = 5.0
 
     public static var eventHandleNavigation = ShopliveEventData(eventName: eventName.EVENT_PLAYER_HANDLE_NAVIGATION, flutterEventSink: nil)
     public static var eventHandleDownloadCoupon = ShopliveEventData(eventName: eventName.EVENT_PLAYER_HANDLE_DOWNLOAD_COUPON, flutterEventSink: nil)
@@ -153,6 +159,10 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
             
             // 저장된 callback 가져오기
             if let callback = pendingCallbacks.removeValue(forKey: couponId) as? (ShopLiveCouponResult) -> Void {
+                // 타임아웃 타이머 취소
+                timeoutTimers[couponId]?.invalidate()
+                timeoutTimers.removeValue(forKey: couponId)
+                
                 // Flutter에서 받은 값으로 callback 호출
                 let couponResult = ShopLiveCouponResult(
                     couponId: couponId,
@@ -178,6 +188,10 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
 
             // 저장된 callback 가져오기
             if let callback = pendingCallbacks.removeValue(forKey: id) as? (ShopLiveCustomActionResult) -> Void {
+                // 타임아웃 타이머 취소
+                timeoutTimers[id]?.invalidate()
+                timeoutTimers.removeValue(forKey: id)
+                
                 // Flutter에서 받은 값으로 callback 호출
                 let customActionResult = ShopLiveCustomActionResult(
                     id: id,
@@ -460,6 +474,25 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
         // callback을 임시 저장 (couponId를 key로 사용)
         pendingCallbacks[couponId] = result
         
+        // 타임아웃 설정: 5초 후 자동 정리
+        let timer = Timer.scheduledTimer(withTimeInterval: callbackTimeoutSeconds, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+            
+            if let removedCallback = self.pendingCallbacks.removeValue(forKey: couponId) as? (ShopLiveCouponResult) -> Void {
+                // 타임아웃으로 인한 실패 처리
+                let timeoutResult = ShopLiveCouponResult(
+                    couponId: couponId,
+                    success: false,
+                    message: "",
+                    status: ShopLiveResultStatus.KEEP,
+                    alertType: ShopLiveResultAlertType.TOAST
+                )
+                removedCallback(timeoutResult)
+            }
+            self.timeoutTimers.removeValue(forKey: couponId)
+        }
+        timeoutTimers[couponId] = timer
+        
         // Flutter에 다운로드 쿠폰 이벤트 전송
         if let json = try? JSONEncoder().encode(HandleDownloadCoupon(couponId: couponId)) {
             if let eventSink = Self.eventHandleDownloadCoupon.flutterEventSink {
@@ -482,15 +515,42 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
     }
     
     public func handleCustomAction(with id: String, type: String, payload: Any?, result: @escaping (ShopLiveCustomActionResult) -> Void) {
-        guard let payload = payload as? String else {
+        guard let dictPayload = payload as? [String: Any] else {
             return
+        }
+        
+        let payloadString: String
+        if let jsonData = try? JSONSerialization.data(withJSONObject: dictPayload),
+           let jsonString = String(data: jsonData, encoding: .utf8) {
+            payloadString = jsonString
+        } else {
+            payloadString = "{}"
         }
         
         // callback을 임시 저장 (id를 key로 사용)
         pendingCallbacks[id] = result
         
+        // 타임아웃 설정: 5초 후 자동 정리
+        let timer = Timer.scheduledTimer(withTimeInterval: callbackTimeoutSeconds, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+
+            if let removedCallback = self.pendingCallbacks.removeValue(forKey: id) as? (ShopLiveCustomActionResult) -> Void {
+                // 타임아웃으로 인한 실패 처리
+                let timeoutResult = ShopLiveCustomActionResult(
+                    id: id,
+                    success: false,
+                    message: "",
+                    status: ShopLiveResultStatus.KEEP,
+                    alertType: ShopLiveResultAlertType.TOAST
+                )
+                removedCallback(timeoutResult)
+            }
+            self.timeoutTimers.removeValue(forKey: id)
+        }
+        timeoutTimers[id] = timer
+        
         // Flutter에 커스텀 액션 이벤트 전송
-        if let json = try? JSONEncoder().encode(HandleCustomAction(id: id, type: type, payload: payload)) {
+        if let json = try? JSONEncoder().encode(HandleCustomAction(id: id, type: type, payload: payloadString)) {
             if let eventSink = Self.eventHandleCustomAction.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
