@@ -515,16 +515,16 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
     }
     
     public func handleCustomAction(with id: String, type: String, payload: Any?, result: @escaping (ShopLiveCustomActionResult) -> Void) {
-        guard let dictPayload = payload as? [String: Any] else {
-            return
-        }
         
         let payloadString: String
-        if let jsonData = try? JSONSerialization.data(withJSONObject: dictPayload),
+        if let dictPayload = payload as? [String: Any],
+           let jsonData = try? JSONSerialization.data(withJSONObject: dictPayload),
            let jsonString = String(data: jsonData, encoding: .utf8) {
             payloadString = jsonString
+        } else if let stringPayload = payload as? String {
+            payloadString = stringPayload
         } else {
-            payloadString = "{}"
+            payloadString = String(describing: payload ?? "")
         }
         
         // callback을 임시 저장 (id를 key로 사용)
