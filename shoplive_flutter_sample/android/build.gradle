@@ -60,9 +60,10 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 35
-            buildConfigField "String", "SHOPLIVE_SDK_VERSION", "\"${shoplive_sdk_version}\""
-            buildConfigField "String", "SHOPLIVE_EXOPLAYER_VERSION", "\"${shoplive_exoplayer_version}\""
-            buildConfigField "String", "PLUGIN_VERSION", "\"${plugin_version}\""
+        consumerProguardFiles 'consumer-rules.pro'
+        buildConfigField "String", "SHOPLIVE_SDK_VERSION", "\"${shoplive_sdk_version}\""
+        buildConfigField "String", "SHOPLIVE_EXOPLAYER_VERSION", "\"${shoplive_exoplayer_version}\""
+        buildConfigField "String", "PLUGIN_VERSION", "\"${plugin_version}\""
     }
 
     buildTypes {
@@ -72,7 +73,6 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            consumerProguardFiles 'consumer-rules.pro'
         }
     }
 }

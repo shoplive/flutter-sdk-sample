@@ -1,5 +1,4 @@
--keep class cloud.shoplive.** { *; }
--dontwarn cloud.shoplive.**
+-dontwarn kotlinx.parcelize.Parcelize
 
 -dontwarn com.google.android.play.core.splitcompat.SplitCompatApplication
 -dontwarn com.google.android.play.core.splitinstall.SplitInstallException
