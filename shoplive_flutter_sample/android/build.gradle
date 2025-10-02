@@ -35,7 +35,7 @@ def plugin_version = versionMatch ? versionMatch[0][1].trim() : "1.7.4"
 
 android {
     namespace "cloud.shoplive.shoplive_player"
-    compileSdkVersion 34
+    compileSdkVersion 35
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -72,6 +72,7 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            consumerProguardFiles 'consumer-rules.pro'
         }
     }
 }
