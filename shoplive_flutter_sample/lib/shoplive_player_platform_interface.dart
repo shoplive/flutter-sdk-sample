@@ -117,4 +117,24 @@ abstract class ShoplivePlayerPlatform extends PlatformInterface {
   Future<String> getPluginVersion() {
     throw UnimplementedError('getPluginVersion() has not been implemented.');
   }
+
+  Future<void> sendDownloadCouponResult({
+    required String couponId,
+    required bool success,
+    required String message,
+    required String popupStatus,
+    required String alertType,
+  }) {
+    throw UnimplementedError('sendDownloadCouponResult() has not been implemented.');
+  }
+
+  Future<void> sendCustomActionResult({
+    required String id,
+    required bool success,
+    required String message,
+    required String popupStatus,
+    required String alertType,
+  }) {
+    throw UnimplementedError('sendCustomActionResult() has not been implemented.');
+  }
 }
