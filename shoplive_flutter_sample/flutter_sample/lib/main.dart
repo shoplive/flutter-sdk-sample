@@ -259,6 +259,14 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
                       data: ShopLivePlayerPreviewData(
                     campaignKey: _campaignKeyController.text,
                     useCloseButton: true,
+                    enableSwipeOut: true,
+                    pipRadius: 10,
+                    pipMaxSize: 400,
+                    marginTop: 10,
+                    marginBottom: 10,
+                    marginLeft: 10,
+                    marginRight: 10,
+                    position: "TOP_LEFT",
                   ));
                 },
                 child: const Text('LivePreview PLAY'),

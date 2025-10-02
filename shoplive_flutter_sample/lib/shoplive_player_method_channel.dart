@@ -48,7 +48,15 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
         .invokeMethod<void>('player_showPreview', <String, dynamic>{
       'campaignKey': data.campaignKey,
       'useCloseButton': data.useCloseButton,
-      'referrer': data.referrer
+      'enableSwipeOut': data.enableSwipeOut,
+      'pipRadius': data.pipRadius,
+      'referrer': data.referrer,
+      'pipMaxSize': data.pipMaxSize,
+      'marginTop': data.marginTop,
+      'marginBottom': data.marginBottom,
+      'marginLeft': data.marginLeft,
+      'marginRight': data.marginRight,
+      'position': data.position,
     });
   }
 
@@ -161,5 +169,39 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
   @override
   Future<String> getPluginVersion() async {
     return await methodChannel.invokeMethod<String>('player_getPluginVersion') ?? '';
+  }
+
+  @override
+  Future<void> sendDownloadCouponResult({
+    required String couponId,
+    required bool success,
+    required String message,
+    required String popupStatus,
+    required String alertType,
+  }) async {
+    return await methodChannel.invokeMethod<void>('player_downloadCouponResult', <String, dynamic>{
+      'couponId': couponId,
+      'success': success,
+      'message': message,
+      'popupStatus': popupStatus,
+      'alertType': alertType,
+    });
+  }
+
+  @override
+  Future<void> sendCustomActionResult({
+    required String id,
+    required bool success,
+    required String message,
+    required String popupStatus,
+    required String alertType,
+  }) async {
+    return await methodChannel.invokeMethod<void>('player_customActionResult', <String, dynamic>{
+      'id': id,
+      'success': success,
+      'message': message,
+      'popupStatus': popupStatus,
+      'alertType': alertType,
+    });
   }
 }

@@ -179,6 +179,38 @@ class ShopLivePlayer {
   Future<String?> getPluginVersion() {
     return ShoplivePlayerPlatform.instance.getPluginVersion();
   }
+
+  Future<void> sendDownloadCouponResult({
+    required String couponId,
+    required bool success,
+    required String message,
+    required String popupStatus,
+    required String alertType,
+  }) {
+    return ShoplivePlayerPlatform.instance.sendDownloadCouponResult(
+      couponId: couponId,
+      success: success,
+      message: message,
+      popupStatus: popupStatus,
+      alertType: alertType,
+    );
+  }
+
+  Future<void> sendCustomActionResult({
+    required String id,
+    required bool success,
+    required String message,
+    required String popupStatus,
+    required String alertType,
+  }) {
+    return ShoplivePlayerPlatform.instance.sendCustomActionResult(
+      id: id,
+      success: success,
+      message: message,
+      popupStatus: popupStatus,
+      alertType: alertType,
+    );
+  }
 }
 
 
@@ -206,11 +238,27 @@ class ShopLivePlayerPreviewData {
   final String campaignKey;
   bool useCloseButton;
   String? referrer;
+  bool enableSwipeOut;
+  double? pipRadius;
+  double? pipMaxSize;
+  double? marginTop;
+  double? marginBottom;
+  double? marginLeft;
+  double? marginRight;
+  String? position;
 
   ShopLivePlayerPreviewData({
     required this.campaignKey,
     this.useCloseButton = false,
     this.referrer,
+    this.enableSwipeOut = true,
+    this.pipRadius,
+    this.pipMaxSize,
+    this.marginTop,
+    this.marginBottom,
+    this.marginLeft,
+    this.marginRight,
+    this.position,
   });
 
   shoplive_player.ShopLivePlayerPreviewData toPackageType() {
@@ -218,6 +266,14 @@ class ShopLivePlayerPreviewData {
       campaignKey: campaignKey,
       useCloseButton: useCloseButton,
       referrer: referrer,
+      enableSwipeOut: enableSwipeOut,
+      pipRadius: pipRadius,
+      pipMaxSize: pipMaxSize,
+      marginTop: marginTop,
+      marginBottom: marginBottom,
+      marginLeft: marginLeft,
+      marginRight: marginRight,
+      position: position,
     );
   }
 }
