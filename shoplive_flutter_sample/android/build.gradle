@@ -35,7 +35,7 @@ def plugin_version = versionMatch ? versionMatch[0][1].trim() : "1.7.4"
 
 android {
     namespace "cloud.shoplive.shoplive_player"
-    compileSdkVersion 34
+    compileSdkVersion 35
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -60,9 +60,10 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 35
-            buildConfigField "String", "SHOPLIVE_SDK_VERSION", "\"${shoplive_sdk_version}\""
-            buildConfigField "String", "SHOPLIVE_EXOPLAYER_VERSION", "\"${shoplive_exoplayer_version}\""
-            buildConfigField "String", "PLUGIN_VERSION", "\"${plugin_version}\""
+        consumerProguardFiles 'consumer-rules.pro'
+        buildConfigField "String", "SHOPLIVE_SDK_VERSION", "\"${shoplive_sdk_version}\""
+        buildConfigField "String", "SHOPLIVE_EXOPLAYER_VERSION", "\"${shoplive_exoplayer_version}\""
+        buildConfigField "String", "PLUGIN_VERSION", "\"${plugin_version}\""
     }
 
     buildTypes {
