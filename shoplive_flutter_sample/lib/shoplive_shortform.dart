@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:shoplive_player/shoplive_player.dart';
 
-import 'shoplive_player_platform_interface.dart';
 import 'shoplive_shortform_platform_interface.dart';
 
 const String EVENT_SHORTFORM_CLICK_PRODUCT = "event_shortform_click_product";
