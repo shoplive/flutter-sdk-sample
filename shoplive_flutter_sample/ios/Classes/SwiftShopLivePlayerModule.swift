@@ -111,6 +111,9 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
                 padding: (top: marginTop, bottom: marginBottom, left: marginLeft, right: marginRight)
             )
             break
+        case "player_hidePreview" :
+            hidePreview()
+            break
         case "player_setShareScheme" :
             setShareScheme(shareSchemeUrl: args?["shareSchemeUrl"] as? String)
             break
@@ -236,6 +239,10 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         ShopLive.setPictureInPicturePadding(padding: .init(top: padding.top, left: padding.left, bottom: padding.bottom, right: padding.right))
         ShopLive.setInAppPipConfiguration(config: inAppPipConfig)
         ShopLive.preview(with: campaignKey)
+    }
+
+    private func hidePreview() {
+        ShopLive.close()
     }
 
     private func setShareScheme(shareSchemeUrl: String?) {

@@ -61,6 +61,11 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
   }
 
   @override
+  void hidePreview() async {
+    return await methodChannel.invokeMethod<void>('player_hidePreview');
+  }
+
+  @override
   void close() async {
     return await methodChannel.invokeMethod<void>('player_close');
   }
