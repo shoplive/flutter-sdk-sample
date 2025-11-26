@@ -298,6 +298,12 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
               ),
               TextButton(
                 onPressed: () {
+                  _shopLivePlayerPlugin.hidePreview();
+                },
+                child: const Text('HidePreview'),
+              ),
+              TextButton(
+                onPressed: () {
                   if (_accessKeyController.text.isEmpty) {
                     _showToast("Required to accessKey");
                     return;

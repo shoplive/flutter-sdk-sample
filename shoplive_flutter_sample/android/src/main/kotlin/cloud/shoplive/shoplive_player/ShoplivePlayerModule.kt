@@ -119,6 +119,12 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
                 )
             }
 
+            "player_hidePreview" -> {
+                hidePreview()
+                result.success(null)
+                return
+            }
+
             "player_setShareScheme" -> setShareScheme(
                 call.argument<String>("shareSchemeUrl"),
             )
@@ -258,6 +264,10 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
         setOption()
 
         ShopLive.showPreviewPopup(activity, data)
+    }
+
+    private fun hidePreview() {
+        ShopLive.hidePreviewPopup()
     }
 
     private fun setShareScheme(shareSchemeUrl: String?) {

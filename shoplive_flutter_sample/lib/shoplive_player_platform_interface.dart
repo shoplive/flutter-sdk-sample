@@ -48,6 +48,10 @@ abstract class ShoplivePlayerPlatform extends PlatformInterface {
     throw UnimplementedError('showPreview() has not been implemented.');
   }
 
+  void hidePreview() {
+    throw UnimplementedError('hidePreview() has not been implemented.');
+  }
+
   void close() {
     throw UnimplementedError('close() has not been implemented.');
   }

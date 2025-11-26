@@ -106,6 +106,10 @@ class ShopLivePlayer {
     return ShoplivePlayerPlatform.instance.showPreview(data: data.toPackageType());
   }
 
+  void hidePreview() {
+    return ShoplivePlayerPlatform.instance.hidePreview();
+  }
+
   void close() {
     return ShoplivePlayerPlatform.instance.close();
   }
