@@ -86,30 +86,13 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
                 keepWindowStateOnPlayExecuted: args?["keepWindowStateOnPlayExecuted"] as? Bool
             )
             break
-        case "player_showPreview" :
-            let positionString = args?["position"] as? String ?? "BOTTOM_RIGHT"
-            
-            let inAppPipConfig = ShopLiveInAppPipConfiguration(
-                useCloseButton: args?["useCloseButton"] as? Bool ?? false,
-                pipPosition: positionString == "TOP_LEFT" ? .topLeft :
-                           positionString == "TOP_RIGHT" ? .topRight :
-                           positionString == "BOTTOM_LEFT" ? .bottomLeft :
-                           positionString == "BOTTOM_RIGHT" ? .bottomRight : .bottomRight,
-                enableSwipeOut: args?["enableSwipeOut"] as? Bool ?? true,
-                pipSize: .init(pipMaxSize: args?["pipMaxSize"] as? CGFloat ?? 300),
-                pipRadius: args?["pipRadius"] as? CGFloat ?? 0
-            )
+        case "player_setPreviewOption" :
+            setPreviewOption(args: args)
+            result(nil)
+            break
 
-            let marginTop = args?["marginTop"] as? CGFloat ?? 0
-            let marginBottom = args?["marginBottom"] as? CGFloat ?? 0
-            let marginLeft = args?["marginLeft"] as? CGFloat ?? 0
-            let marginRight = args?["marginRight"] as? CGFloat ?? 0
-            
-            showPreview(
-                campaignKey: args?["campaignKey"] as? String,
-                inAppPipConfig: inAppPipConfig,
-                padding: (top: marginTop, bottom: marginBottom, left: marginLeft, right: marginRight)
-            )
+        case "player_showPreview" :
+            showPreview(campaignKey: args?["campaignKey"] as? String)
             break
         case "player_hidePreview" :
             hidePreview()
@@ -230,14 +213,53 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         ShopLive.play(with: campaignKey, keepWindowStateOnPlayExecuted: keepWindowStateOnPlayExecuted)
     }
 
-    private func showPreview(campaignKey: String?, inAppPipConfig: ShopLiveInAppPipConfiguration, padding: (top: CGFloat, bottom: CGFloat, left: CGFloat, right: CGFloat)) {
+    private func setPreviewOption(args: [String: Any]?) {
+        let positionString = args?["position"] as? String ?? "BOTTOM_RIGHT"
+        
+        let inAppPipConfig = ShopLiveInAppPipConfiguration(
+            useCloseButton: args?["useCloseButton"] as? Bool ?? false,
+            pipPosition: positionString == "TOP_LEFT" ? .topLeft :
+                       positionString == "TOP_RIGHT" ? .topRight :
+                       positionString == "BOTTOM_LEFT" ? .bottomLeft :
+                       positionString == "BOTTOM_RIGHT" ? .bottomRight : .bottomRight,
+            enableSwipeOut: args?["enableSwipeOut"] as? Bool ?? true,
+            pipSize: .init(pipMaxSize: args?["pipMaxSize"] as? CGFloat ?? 300),
+            pipRadius: args?["pipRadius"] as? CGFloat ?? 0
+        )
+
+        let marginTop = args?["marginTop"] as? CGFloat ?? 0
+        let marginBottom = args?["marginBottom"] as? CGFloat ?? 0
+        let marginLeft = args?["marginLeft"] as? CGFloat ?? 0
+        let marginRight = args?["marginRight"] as? CGFloat ?? 0
+        
+        // closeButtonConfig 처리
+        if let closeButtonConfigMap = args?["closeButtonConfig"] as? [String: Any] {
+            // TODO: iOS에서 closeButtonConfig 관련 API가 추가되면 여기서 설정
+            // Android와 동일한 파라미터들:
+            // - position: closeButtonConfigMap["position"] as? String
+            // - width: closeButtonConfigMap["width"] as? CGFloat
+            // - height: closeButtonConfigMap["height"] as? CGFloat
+            // - offsetX: closeButtonConfigMap["offsetX"] as? CGFloat
+            // - offsetY: closeButtonConfigMap["offsetY"] as? CGFloat
+            // - color: closeButtonConfigMap["color"] as? String
+            // - shadowOffsetX: closeButtonConfigMap["shadowOffsetX"] as? CGFloat
+            // - shadowOffsetY: closeButtonConfigMap["shadowOffsetY"] as? CGFloat
+            // - shadowBlur: closeButtonConfigMap["shadowBlur"] as? CGFloat
+            // - shadowBlurStyle: closeButtonConfigMap["shadowBlurStyle"] as? String
+            // - shadowColor: closeButtonConfigMap["shadowColor"] as? String
+            // - imageStr: closeButtonConfigMap["imageStr"] as? String
+        }
+        
+        ShopLive.setPictureInPicturePadding(padding: .init(top: marginTop, left: marginLeft, bottom: marginBottom, right: marginRight))
+        ShopLive.setInAppPipConfiguration(config: inAppPipConfig)
+    }
+
+    private func showPreview(campaignKey: String?) {
         guard campaignKey != nil else { return }
 
         ShopLive.delegate = self
 
         setOption()
-        ShopLive.setPictureInPicturePadding(padding: .init(top: padding.top, left: padding.left, bottom: padding.bottom, right: padding.right))
-        ShopLive.setInAppPipConfiguration(config: inAppPipConfig)
         ShopLive.preview(with: campaignKey)
     }
 

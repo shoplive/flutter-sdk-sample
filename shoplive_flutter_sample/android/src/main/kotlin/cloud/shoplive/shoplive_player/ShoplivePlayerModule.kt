@@ -1,12 +1,16 @@
 package cloud.shoplive.shoplive_player
 
 import android.content.Context
+import android.graphics.BlurMaskFilter
 import android.util.TypedValue
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.annotation.Keep
 import cloud.shoplive.sdk.*
+import cloud.shoplive.sdk.common.ShopLivePreviewCloseButtonPositionConfig
 import cloud.shoplive.sdk.common.ShopLivePreviewPositionConfig
+import cloud.shoplive.sdk.common.extension.toColorIntOrNull
 import com.google.gson.*
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.EventChannel
@@ -96,27 +100,14 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
 
             "player_showPreview" -> {
                 val campaignKey: String = call.argument<String?>("campaignKey") ?: return
-                showPreview(
-                    ShopLivePreviewData(campaignKey).apply {
-                        useCloseButton = call.argument<Boolean?>("useCloseButton") ?: false
-                        referrer = call.argument<String?>("referrer")
-                        enabledSwipeOut = call.argument<Boolean?>("enableSwipeOut") ?: false
-                        radius = (call.argument<Double?>("pipRadius") ?: 0.0).toFloat().dpToPx(activity)
-                        width = (call.argument<Double?>("pipMaxSize") ?: 0).toFloat().dpToPx(activity).toInt()
-                        height = (call.argument<Double?>("pipMaxSize") ?: 0).toFloat().dpToPx(activity).toInt()
-                        marginTop = (call.argument<Double?>("marginTop") ?: 0).toFloat().dpToPx(activity).toInt()
-                        marginBottom = (call.argument<Double?>("marginBottom") ?: 0).toFloat().dpToPx(activity).toInt()
-                        marginLeft = (call.argument<Double?>("marginLeft") ?: 0).toFloat().dpToPx(activity).toInt()
-                        marginRight = (call.argument<Double?>("marginRight") ?: 0).toFloat().dpToPx(activity).toInt()
-                        position = when (call.argument<String?>("position")) {
-                            "TOP_LEFT" -> ShopLivePreviewPositionConfig.TOP_LEFT
-                            "TOP_RIGHT" -> ShopLivePreviewPositionConfig.TOP_RIGHT
-                            "BOTTOM_LEFT" -> ShopLivePreviewPositionConfig.BOTTOM_LEFT
-                            "BOTTOM_RIGHT" -> ShopLivePreviewPositionConfig.BOTTOM_RIGHT
-                            else -> ShopLivePreviewPositionConfig.BOTTOM_RIGHT
-                        }
-                    }
-                )
+                showPreview(campaignKey)
+            }
+
+            "player_setPreviewOption" -> {
+                val campaignKey: String = call.argument<String?>("campaignKey") ?: ""
+                setPreviewOption(call, campaignKey)
+                result.success(null)
+                return
             }
 
             "player_hidePreview" -> {
@@ -259,15 +250,69 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
         ShopLive.play(context, data)
     }
 
-    private fun showPreview(data: ShopLivePreviewData) {
+    private fun showPreview(campaignKey: String) {
         ShopLive.setHandler(shopLiveHandler)
         setOption()
 
-        ShopLive.showPreviewPopup(activity, data)
+        ShopLive.showPreviewPopup(activity, campaignKey)
     }
 
     private fun hidePreview() {
         ShopLive.hidePreviewPopup()
+    }
+
+    private fun setPreviewOption(call: MethodCall, campaignKey: String) {
+        val previewData = ShopLivePreviewData(campaignKey).apply {
+            useCloseButton = call.argument<Boolean?>("useCloseButton") ?: false
+            referrer = call.argument<String?>("referrer")
+            enabledSwipeOut = call.argument<Boolean?>("enableSwipeOut") ?: false
+            radius = (call.argument<Double?>("pipRadius") ?: 0.0).toFloat().dpToPx(activity)
+            width = (call.argument<Double?>("pipMaxSize") ?: 0).toFloat().dpToPx(activity).toInt()
+            height = (call.argument<Double?>("pipMaxSize") ?: 0).toFloat().dpToPx(activity).toInt()
+            marginTop = (call.argument<Double?>("marginTop") ?: 0).toFloat().dpToPx(activity).toInt()
+            marginBottom = (call.argument<Double?>("marginBottom") ?: 0).toFloat().dpToPx(activity).toInt()
+            marginLeft = (call.argument<Double?>("marginLeft") ?: 0).toFloat().dpToPx(activity).toInt()
+            marginRight = (call.argument<Double?>("marginRight") ?: 0).toFloat().dpToPx(activity).toInt()
+            position = when (call.argument<String?>("position")) {
+                "TOP_LEFT" -> ShopLivePreviewPositionConfig.TOP_LEFT
+                "TOP_RIGHT" -> ShopLivePreviewPositionConfig.TOP_RIGHT
+                "BOTTOM_LEFT" -> ShopLivePreviewPositionConfig.BOTTOM_LEFT
+                "BOTTOM_RIGHT" -> ShopLivePreviewPositionConfig.BOTTOM_RIGHT
+                else -> ShopLivePreviewPositionConfig.BOTTOM_RIGHT
+            }
+            
+            val closeButtonConfigMap = call.argument<Map<String, Any?>?>("closeButtonConfig")
+            if (closeButtonConfigMap != null) {
+                setCloseButtonConfig(closeButtonConfigMap)
+            }
+        }
+        
+        ShopLive.setPreviewOptions(previewData)
+    }
+
+    private fun ShopLivePreviewData.setCloseButtonConfig(configMap: Map<String, Any?>) {
+        runCatching {
+            val config = ShopLivePreviewData.CloseButtonConfig(
+                position = runCatching {
+                    ShopLivePreviewCloseButtonPositionConfig.valueOf((configMap["position"] as? String) ?: "TOP_RIGHT")
+                }.getOrDefault(ShopLivePreviewCloseButtonPositionConfig.TOP_RIGHT),
+                width = (configMap["width"] as? Double)?.toFloat(),
+                height = (configMap["height"] as? Double)?.toFloat(),
+                offsetX = (configMap["offsetX"] as? Double)?.toFloat(),
+                offsetY = (configMap["offsetY"] as? Double)?.toFloat(),
+                color = (configMap["color"] as? String)?.toColorIntOrNull(),
+                shadowOffsetX = (configMap["shadowOffsetX"] as? Double)?.toFloat(),
+                shadowOffsetY = (configMap["shadowOffsetY"] as? Double)?.toFloat(),
+                shadowBlur = (configMap["shadowBlur"] as? Double)?.toFloat(),
+                shadowBlurStyle = runCatching {
+                    BlurMaskFilter.Blur.valueOf((configMap["shadowBlurStyle"] as? String) ?: "NORMAL")
+                }.getOrDefault(BlurMaskFilter.Blur.NORMAL),
+                shadowColor = (configMap["shadowColor"] as? String)?.toColorIntOrNull(),
+                imageStr = configMap["imageStr"] as? String
+            )
+
+            setCloseButtonConfig(config)
+        }.onFailure { it.printStackTrace() }
     }
 
     private fun setShareScheme(shareSchemeUrl: String?) {
