@@ -214,8 +214,17 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
     }
 
     private func setPreviewOption(args: [String: Any]?) {
-        let positionString = args?["position"] as? String ?? "topLeft"
+        let positionString = args?["position"] as? String ?? "TOP_LEFT"
         
+        let pipPosition: ShopLive.PipPosition = {
+            switch positionString {
+            case "TOP_LEFT": return .topLeft
+            case "TOP_RIGHT": return .topRight
+            case "BOTTOM_LEFT": return .bottomLeft
+            case "BOTTOM_RIGHT": return .bottomRight
+            default: return .bottomRight
+            }
+        }()
 
         let marginTop = args?["marginTop"] as? CGFloat ?? 0
         let marginBottom = args?["marginBottom"] as? CGFloat ?? 0
@@ -287,10 +296,7 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         
         let inAppPipConfig = ShopLiveInAppPipConfiguration(
             useCloseButton: args?["useCloseButton"] as? Bool ?? false,
-            pipPosition: positionString == "topLeft" ? .topLeft :
-                       positionString == "topRight" ? .topRight :
-                       positionString == "bottomLeft" ? .bottomLeft :
-                       positionString == "bottomRight" ? .bottomRight : .bottomRight,
+            pipPosition: pipPosition,
             enableSwipeOut: args?["enableSwipeOut"] as? Bool ?? true,
             pipSize: .init(pipMaxSize: args?["pipMaxSize"] as? CGFloat ?? 300),
             pipRadius: args?["pipRadius"] as? CGFloat ?? 0,
