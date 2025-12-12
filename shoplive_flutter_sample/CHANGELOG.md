@@ -1,3 +1,6 @@
+## 1.8.2
+* Bump version to v1.8.2
+
 ## 1.8.0
 * Bump version to v1.8.0
 
