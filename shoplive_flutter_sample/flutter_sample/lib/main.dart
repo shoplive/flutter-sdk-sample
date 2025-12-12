@@ -41,8 +41,8 @@ class ShopLiveTestPage extends StatefulWidget {
 class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
   final CompositeSubscription _compositeSubscription = CompositeSubscription();
 
-  final String _accessKey = "";
-  final String _campaignKey = "";
+  final String _accessKey = "q3hZYwpJ1xukW8bTDsxj";
+  final String _campaignKey = "67331853a0c9";
   late final _shopLiveCommonPlugin = ShopLiveCommon();
   late final _shopLivePlayerPlugin = ShopLivePlayer();
   late final _shopLiveShortformPlugin = ShopLiveShortform();
@@ -280,21 +280,47 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
 
                   _shopLiveCommonPlugin.setAccessKey(
                       accessKey: _accessKeyController.text);
-                  _shopLivePlayerPlugin.showPreview(
+
+                  _shopLivePlayerPlugin.setPreviewOption(
                       data: ShopLivePlayerPreviewData(
-                    campaignKey: _campaignKeyController.text,
-                    useCloseButton: true,
-                    enableSwipeOut: true,
-                    pipRadius: 10,
-                    pipMaxSize: 400,
-                    marginTop: 10,
-                    marginBottom: 10,
-                    marginLeft: 10,
-                    marginRight: 10,
-                    position: "TOP_LEFT",
-                  ));
+                          campaignKey: _campaignKeyController.text,
+                          useCloseButton: true,
+                          enableSwipeOut: true,
+                          pipRadius: 10,
+                          pipMaxSize: 400,
+                          marginTop: 10,
+                          marginBottom: 10,
+                          marginLeft: 10,
+                          marginRight: 10,
+                          position: "BOTTOM_RIGHT",
+                          closeButtonConfig: ShopLiveCloseButtonConfig(
+                            position: "TOP_RIGHT",
+                            width: 30,
+                            height: 30,
+                            offsetX: 0,
+                            offsetY: 0,
+                            color: "#FFFFFF",
+                            shadowOffsetX: 2,
+                            shadowOffsetY: 2,
+                            shadowBlur: 3,
+                            shadowBlurStyle: "NORMAL",
+                            shadowColor: "#AAAAAA",
+                            imageStr: null,
+                          )
+                      )
+                  );
+
+                  _shopLivePlayerPlugin.showPreview(
+                      campaignKey: _campaignKeyController.text
+                  );
                 },
                 child: const Text('LivePreview PLAY'),
+              ),
+              TextButton(
+                onPressed: () {
+                  _shopLivePlayerPlugin.hidePreview();
+                },
+                child: const Text('HidePreview'),
               ),
               TextButton(
                 onPressed: () {
