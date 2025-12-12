@@ -101,9 +101,15 @@ class ShopLivePlayer {
   }
 
   void showPreview({
+    required String campaignKey,
+  }) {
+    return ShoplivePlayerPlatform.instance.showPreview(campaignKey: campaignKey);
+  }
+
+  void setPreviewOption({
     required ShopLivePlayerPreviewData data,
   }) {
-    return ShoplivePlayerPlatform.instance.showPreview(data: data.toPackageType());
+    return ShoplivePlayerPlatform.instance.setPreviewOption(data: data.toPackageType());
   }
 
   void hidePreview() {
@@ -250,6 +256,7 @@ class ShopLivePlayerPreviewData {
   double? marginLeft;
   double? marginRight;
   String? position;
+  ShopLiveCloseButtonConfig? closeButtonConfig;
 
   ShopLivePlayerPreviewData({
     required this.campaignKey,
@@ -263,6 +270,7 @@ class ShopLivePlayerPreviewData {
     this.marginLeft,
     this.marginRight,
     this.position,
+    this.closeButtonConfig,
   });
 
   shoplive_player.ShopLivePlayerPreviewData toPackageType() {
@@ -278,6 +286,54 @@ class ShopLivePlayerPreviewData {
       marginLeft: marginLeft,
       marginRight: marginRight,
       position: position,
+      closeButtonConfig: closeButtonConfig?.toPackageType(),
+    );
+  }
+}
+
+class ShopLiveCloseButtonConfig {
+  String? position;
+  double? width;
+  double? height;
+  double? offsetX;
+  double? offsetY;
+  String? color;
+  double? shadowOffsetX;
+  double? shadowOffsetY;
+  double? shadowBlur;
+  String? shadowBlurStyle;
+  String? shadowColor;
+  String? imageStr;
+
+  ShopLiveCloseButtonConfig({
+    this.position,
+    this.width,
+    this.height,
+    this.offsetX,
+    this.offsetY,
+    this.color,
+    this.shadowOffsetX,
+    this.shadowOffsetY,
+    this.shadowBlur,
+    this.shadowBlurStyle,
+    this.shadowColor,
+    this.imageStr
+  });
+
+  shoplive_player.ShopLiveCloseButtonConfig toPackageType() {
+    return shoplive_player.ShopLiveCloseButtonConfig(
+      position: position,
+      width: width,
+      height: height,
+      offsetX: offsetX,
+      offsetY: offsetY,
+      color: color,
+      shadowOffsetX: shadowOffsetX,
+      shadowOffsetY: shadowOffsetY,
+      shadowBlur: shadowBlur,
+      shadowBlurStyle: shadowBlurStyle,
+      shadowColor: shadowColor,
+      imageStr: imageStr,
     );
   }
 }

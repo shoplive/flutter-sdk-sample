@@ -42,10 +42,20 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
 
   @override
   void showPreview({
-    required ShopLivePlayerPreviewData data,
+    required String campaignKey,
   }) async {
     return await methodChannel
         .invokeMethod<void>('player_showPreview', <String, dynamic>{
+      'campaignKey': campaignKey,
+    });
+  }
+
+  @override
+  void setPreviewOption({
+    required ShopLivePlayerPreviewData data,
+  }) async {
+    return await methodChannel
+        .invokeMethod<void>('player_setPreviewOption', <String, dynamic>{
       'campaignKey': data.campaignKey,
       'useCloseButton': data.useCloseButton,
       'enableSwipeOut': data.enableSwipeOut,
@@ -57,6 +67,20 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
       'marginLeft': data.marginLeft,
       'marginRight': data.marginRight,
       'position': data.position,
+      'closeButtonConfig': data.closeButtonConfig != null ? {
+        'position': data.closeButtonConfig?.position,
+        'width': data.closeButtonConfig?.width,
+        'height': data.closeButtonConfig?.height,
+        'offsetX': data.closeButtonConfig?.offsetX,
+        'offsetY': data.closeButtonConfig?.offsetY,
+        'color': data.closeButtonConfig?.color,
+        'shadowOffsetX': data.closeButtonConfig?.shadowOffsetX,
+        'shadowOffsetY': data.closeButtonConfig?.shadowOffsetY,
+        'shadowBlur': data.closeButtonConfig?.shadowBlur,
+        'shadowBlurStyle': data.closeButtonConfig?.shadowBlurStyle,
+        'shadowColor': data.closeButtonConfig?.shadowColor,
+        'imageStr': data.closeButtonConfig?.imageStr,
+      } : null,
     });
   }
 

@@ -43,9 +43,15 @@ abstract class ShoplivePlayerPlatform extends PlatformInterface {
   }
 
   void showPreview({
-    required ShopLivePlayerPreviewData data,
+    required String campaignKey,
   }) {
     throw UnimplementedError('showPreview() has not been implemented.');
+  }
+
+  void setPreviewOption({
+    required ShopLivePlayerPreviewData data,
+  }) {
+    throw UnimplementedError('setPreviewOption() has not been implemented.');
   }
 
   void hidePreview() {

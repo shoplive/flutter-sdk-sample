@@ -86,30 +86,13 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
                 keepWindowStateOnPlayExecuted: args?["keepWindowStateOnPlayExecuted"] as? Bool
             )
             break
-        case "player_showPreview" :
-            let positionString = args?["position"] as? String ?? "BOTTOM_RIGHT"
-            
-            let inAppPipConfig = ShopLiveInAppPipConfiguration(
-                useCloseButton: args?["useCloseButton"] as? Bool ?? false,
-                pipPosition: positionString == "TOP_LEFT" ? .topLeft :
-                           positionString == "TOP_RIGHT" ? .topRight :
-                           positionString == "BOTTOM_LEFT" ? .bottomLeft :
-                           positionString == "BOTTOM_RIGHT" ? .bottomRight : .bottomRight,
-                enableSwipeOut: args?["enableSwipeOut"] as? Bool ?? true,
-                pipSize: .init(pipMaxSize: args?["pipMaxSize"] as? CGFloat ?? 300),
-                pipRadius: args?["pipRadius"] as? CGFloat ?? 0
-            )
+        case "player_setPreviewOption" :
+            setPreviewOption(args: args)
+            result(nil)
+            break
 
-            let marginTop = args?["marginTop"] as? CGFloat ?? 0
-            let marginBottom = args?["marginBottom"] as? CGFloat ?? 0
-            let marginLeft = args?["marginLeft"] as? CGFloat ?? 0
-            let marginRight = args?["marginRight"] as? CGFloat ?? 0
-            
-            showPreview(
-                campaignKey: args?["campaignKey"] as? String,
-                inAppPipConfig: inAppPipConfig,
-                padding: (top: marginTop, bottom: marginBottom, left: marginLeft, right: marginRight)
-            )
+        case "player_showPreview" :
+            showPreview(campaignKey: args?["campaignKey"] as? String)
             break
         case "player_hidePreview" :
             hidePreview()
@@ -230,14 +213,106 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         ShopLive.play(with: campaignKey, keepWindowStateOnPlayExecuted: keepWindowStateOnPlayExecuted)
     }
 
-    private func showPreview(campaignKey: String?, inAppPipConfig: ShopLiveInAppPipConfiguration, padding: (top: CGFloat, bottom: CGFloat, left: CGFloat, right: CGFloat)) {
+    private func setPreviewOption(args: [String: Any]?) {
+        let positionString = args?["position"] as? String ?? "TOP_LEFT"
+        
+        let pipPosition: ShopLive.PipPosition = {
+            switch positionString {
+            case "TOP_LEFT": return .topLeft
+            case "TOP_RIGHT": return .topRight
+            case "BOTTOM_LEFT": return .bottomLeft
+            case "BOTTOM_RIGHT": return .bottomRight
+            default: return .bottomRight
+            }
+        }()
+
+        let marginTop = args?["marginTop"] as? CGFloat ?? 0
+        let marginBottom = args?["marginBottom"] as? CGFloat ?? 0
+        let marginLeft = args?["marginLeft"] as? CGFloat ?? 0
+        let marginRight = args?["marginRight"] as? CGFloat ?? 0
+        
+        let closeButtonConfigMap = (args?["closeButtonConfig"] as? [String: Any]) ?? [:]
+        let closeButtonPositionString = closeButtonConfigMap["position"] as? String ?? "TOP_LEFT"
+        let closeButtonPosition: ShopLive.PreviewCloseButtonPositionConfig = {
+            switch closeButtonPositionString {
+            case "TOP_LEFT": return .topLeft
+            case "TOP_RIGHT": return .topRight
+            default: return .topLeft
+            }
+        }()
+        
+        let width = closeButtonConfigMap["width"] as? CGFloat
+        let height = closeButtonConfigMap["height"] as? CGFloat
+        let offsetX = closeButtonConfigMap["offsetX"] as? CGFloat ?? 0
+        let offsetY = closeButtonConfigMap["offsetY"] as? CGFloat ?? 0
+        
+        let colorString = closeButtonConfigMap["color"] as? String
+        let color: UIColor? = colorString != nil ? UIColor(hexString: colorString!) : .white
+        
+        let shadowOffsetX = closeButtonConfigMap["shadowOffsetX"] as? CGFloat ?? 0
+        let shadowOffsetY = closeButtonConfigMap["shadowOffsetY"] as? CGFloat ?? 0
+        let shadowBlur = closeButtonConfigMap["shadowBlur"] as? CGFloat ?? 0
+        
+        let shadowBlurStyle: ShopLiveBlurMaskStyle? = {
+            if let styleInt = closeButtonConfigMap["shadowBlurStyle"] as? Int {
+                return ShopLiveBlurMaskStyle(rawValue: styleInt)
+            }
+            if let styleNumber = closeButtonConfigMap["shadowBlurStyle"] as? NSNumber {
+                return ShopLiveBlurMaskStyle(rawValue: styleNumber.intValue)
+            }
+            if let styleString = closeButtonConfigMap["shadowBlurStyle"] as? String {
+                guard !styleString.isEmpty, styleString != "NORMAL" else {
+                    return nil
+                }
+                switch styleString {
+                case "SOLID": return .solid
+                case "OUTER": return .outer
+                case "INNER": return .inner
+                default: return nil
+                }
+            }
+            return nil
+        }()
+        
+        let shadowColorString = closeButtonConfigMap["shadowColor"] as? String
+        let shadowColor: UIColor? = shadowColorString != nil ? UIColor(hexString: shadowColorString!) : nil
+        
+        let imageStr = closeButtonConfigMap["imageStr"] as? String
+        
+        let closeButtonConfig = ShopLiveCloseButtonConfig(
+            position: closeButtonPosition,
+            width: width,
+            height: height,
+            offsetX: offsetX,
+            offsetY: offsetY,
+            color: color,
+            shadowOffsetX: shadowOffsetX,
+            shadowOffsetY: shadowOffsetY,
+            shadowBlur: shadowBlur,
+            shadowBlurStyle: shadowBlurStyle,
+            shadowColor: shadowColor,
+            imageStr: imageStr
+        )
+        
+        let inAppPipConfig = ShopLiveInAppPipConfiguration(
+            useCloseButton: args?["useCloseButton"] as? Bool ?? false,
+            pipPosition: pipPosition,
+            enableSwipeOut: args?["enableSwipeOut"] as? Bool ?? true,
+            pipSize: .init(pipMaxSize: args?["pipMaxSize"] as? CGFloat ?? 300),
+            pipRadius: args?["pipRadius"] as? CGFloat ?? 0,
+            closeButtonConfig: closeButtonConfig
+        )
+        
+        ShopLive.setPictureInPicturePadding(padding: .init(top: marginTop, left: marginLeft, bottom: marginBottom, right: marginRight))
+        ShopLive.setInAppPipConfiguration(config: inAppPipConfig)
+    }
+
+    private func showPreview(campaignKey: String?) {
         guard campaignKey != nil else { return }
 
         ShopLive.delegate = self
 
         setOption()
-        ShopLive.setPictureInPicturePadding(padding: .init(top: padding.top, left: padding.left, bottom: padding.bottom, right: padding.right))
-        ShopLive.setInAppPipConfiguration(config: inAppPipConfig)
         ShopLive.preview(with: campaignKey)
     }
 
@@ -701,6 +776,36 @@ fileprivate class StreamHandler: NSObject, FlutterStreamHandler {
     
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
         return nil
+    }
+}
+
+extension UIColor {
+    convenience init?(hexString: String) {
+        var hexSanitized = hexString.trimmingCharacters(in: .whitespacesAndNewlines)
+        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+        
+        var rgb: UInt64 = 0
+        
+        guard Scanner(string: hexSanitized).scanHexInt64(&rgb) else {
+            return nil
+        }
+        
+        let red, green, blue, alpha: CGFloat
+        if hexSanitized.count == 8 {
+            alpha = CGFloat((rgb & 0xFF000000) >> 24) / 255.0
+            red = CGFloat((rgb & 0x00FF0000) >> 16) / 255.0
+            green = CGFloat((rgb & 0x0000FF00) >> 8) / 255.0
+            blue = CGFloat(rgb & 0x000000FF) / 255.0
+        } else if hexSanitized.count == 6 {
+            alpha = 1.0
+            red = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
+            green = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
+            blue = CGFloat(rgb & 0x0000FF) / 255.0
+        } else {
+            return nil
+        }
+        
+        self.init(red: red, green: green, blue: blue, alpha: alpha)
     }
 }
 
