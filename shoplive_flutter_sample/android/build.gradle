@@ -24,14 +24,14 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
-def shoplive_sdk_version = "1.8.2"
+def shoplive_sdk_version = "1.8.4"
 def shoplive_exoplayer_version = "2.19.1.16"
 
 // pubspec.yaml에서 버전 가져오기
 def pubspecFile = file('../pubspec.yaml')
 def pubspecContent = pubspecFile.text
 def versionMatch = pubspecContent =~ /version:\s*(.+)/
-def plugin_version = versionMatch ? versionMatch[0][1].trim() : "1.7.4"
+def plugin_version = versionMatch ? versionMatch[0][1].trim() : "1.8.4"
 
 android {
     namespace "cloud.shoplive.shoplive_player"
