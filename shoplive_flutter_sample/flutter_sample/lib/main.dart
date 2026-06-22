@@ -41,8 +41,8 @@ class ShopLiveTestPage extends StatefulWidget {
 class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
   final CompositeSubscription _compositeSubscription = CompositeSubscription();
 
-  final String _accessKey = "";
-  final String _campaignKey = "";
+  final String _accessKey = "uv9CGthPzlvsInZerCw0";
+  final String _campaignKey = "2551fcb165c3";
   late final _shopLiveCommonPlugin = ShopLiveCommon();
   late final _shopLivePlayerPlugin = ShopLivePlayer();
   late final _shopLiveShortformPlugin = ShopLiveShortform();
@@ -61,7 +61,7 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
 
   void initListener() {
     _shopLivePlayerPlugin.handleNavigation.listen((data) {
-      _showToast("handleNavigation : ${data.url}");
+      debugPrint("handleNavigation : ${data.url}");
     }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.handleDownloadCoupon.listen((data) async {
@@ -81,23 +81,23 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
           popupStatus: "KEEP",
           alertType: "ALERT",
         );
-        _showToast("쿠폰 다운로드 결과 전송 성공 handleDownloadCoupon : ${data.couponId}");
+        debugPrint("쿠폰 다운로드 결과 전송 성공 handleDownloadCoupon : ${data.couponId}");
       } catch (e) {
-        _showToast("쿠폰 다운로드 결과 전송 실패 handleDownloadCoupon : ${data.couponId} : $e");
+        debugPrint("쿠폰 다운로드 결과 전송 실패 handleDownloadCoupon : ${data.couponId} : $e");
       }
     }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.changeCampaignStatus.listen((data) {
-      _showToast("changeCampaignStatus : ${data.campaignStatus}");
+      debugPrint("changeCampaignStatus : ${data.campaignStatus}");
     }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.campaignInfo.listen((data) {
-      _showToast(
+      debugPrint(
           "campaignInfo : ${const JsonEncoder().convert(data.campaignInfo)}");
     }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.handleCustomAction.listen((data) async {
-      _showToast(
+      debugPrint(
           "handleCustomAction : ${data.id}, ${data.type}, ${data.payload}");
 
       try {
@@ -108,57 +108,61 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
           popupStatus: "HIDE",
           alertType: "ALERT",
         );
-        _showToast("커스텀 액션 결과 전송 성공 handleCustomAction : ${data.id}");
+        debugPrint("커스텀 액션 결과 전송 성공 handleCustomAction : ${data.id}");
       } catch (e) {
-        _showToast("커스텀 액션 결과 전송 실패 handleCustomAction : ${data.id} : $e");
+        debugPrint("커스텀 액션 결과 전송 실패 handleCustomAction : ${data.id} : $e");
       }
     }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.changedPlayerStatus.listen((data) {
-      _showToast("changedPlayerStatus: ${data.status}");
+      debugPrint("changedPlayerStatus: ${data.status}");
     }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.userInfo.listen((data) {
-      _showToast("userInfo : ${const JsonEncoder().convert(data.userInfo)}");
+      debugPrint("userInfo : ${const JsonEncoder().convert(data.userInfo)}");
     }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.error.listen((data) {
-      _showToast("error : ${data.code}, ${data.message}");
+      debugPrint("error : ${data.code}, ${data.message}");
     }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.receivedCommand.listen((data) {
-      _showToast(
+      debugPrint(
           "receivedCommand : ${data.command}, ${const JsonEncoder().convert(data.data)}");
     }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.log.listen((data) {
-      _showToast(
+      debugPrint(
           "clickLog : ${data.name}, ${data.feature}, ${data.campaignKey}, ${const JsonEncoder().convert(data.payload)}");
+    }).addTo(_compositeSubscription);
+
+    _shopLivePlayerPlugin.previewClose.listen((data) {
+      debugPrint("previewClose : ${data.campaignKey}, ${data.reason.toReasonString()}");
     }).addTo(_compositeSubscription);
 
     //shortform event listener
     _shopLiveShortformPlugin.onClickProduct.listen((data) {
-      _showToast("onClickProduct : ${data.productId} ");
+      debugPrint("onClickProduct : ${data.productId} ");
     }).addTo(_compositeSubscription);
 
     _shopLiveShortformPlugin.onClickBanner.listen((data) {
-      _showToast("onClickBanner : ${data.url} ");
+      debugPrint("onClickBanner : ${data.url} ");
     }).addTo(_compositeSubscription);
 
     _shopLiveShortformPlugin.onShare.listen((data) {
-      _showToast("onClickShare : ${data.shortsId}, ${data.title}  ");
+      debugPrint("onClickShare : ${data.shortsId}, ${data.title}  ");
     }).addTo(_compositeSubscription);
 
     _shopLiveShortformPlugin.onStart.listen((data) {
-      _showToast("onShortformStarted");
+      debugPrint("onShortformStarted");
     }).addTo(_compositeSubscription);
 
     _shopLiveShortformPlugin.onClose.listen((data) {
-      _showToast("onShortformClosed");
+      debugPrint("onShortformClosed");
     }).addTo(_compositeSubscription);
 
     _shopLiveShortformPlugin.log.listen((data) {
-      _showToast("onShortformEventLog : ${data.command}, ${data.payload} ");
+      debugPrint("onShortformEventLog : ${data.command}, ${data.payload} ");
     }).addTo(_compositeSubscription);
     //shortform event listener end
   }
@@ -227,16 +231,16 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
                           ? _shareSchemeUrlController.text
                           : "http://google.com");
 
-                  _shopLiveCommonPlugin.setUser(
-                      accessKey: _accessKeyController.text,
-                      user: ShopLiveCommonUser(
-                        userId: "userId",
-                        userName: "TestUser",
-                        userScore: 0,
-                        gender: ShopLiveCommonUserGender.NEUTRAL,
-                        age: 20,
-                        custom: {"key": "value"},
-                      ));
+                  // _shopLiveCommonPlugin.setUser(
+                  //     accessKey: _accessKeyController.text,
+                  //     user: ShopLiveCommonUser(
+                  //       userId: "userId",
+                  //       userName: "TestUser",
+                  //       userScore: 0,
+                  //       gender: ShopLiveCommonUserGender.NEUTRAL,
+                  //       age: 20,
+                  //       custom: {"key": "value"},
+                  //     ));
 
                   _shopLiveCommonPlugin.setAccessKey(
                       accessKey: _accessKeyController.text);
@@ -267,16 +271,16 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
                           ? _shareSchemeUrlController.text
                           : "http://google.com");
 
-                  _shopLiveCommonPlugin.setUser(
-                      accessKey: _accessKeyController.text,
-                      user: ShopLiveCommonUser(
-                        userId: "userId",
-                        userName: "TestUser",
-                        userScore: 0,
-                        gender: ShopLiveCommonUserGender.NEUTRAL,
-                        age: 20,
-                        custom: {"key": "value"},
-                      ));
+                  // _shopLiveCommonPlugin.setUser(
+                  //     accessKey: _accessKeyController.text,
+                  //     user: ShopLiveCommonUser(
+                  //       userId: "userId",
+                  //       userName: "TestUser",
+                  //       userScore: 0,
+                  //       gender: ShopLiveCommonUserGender.NEUTRAL,
+                  //       age: 20,
+                  //       custom: {"key": "value"},
+                  //     ));
 
                   _shopLiveCommonPlugin.setAccessKey(
                       accessKey: _accessKeyController.text);
@@ -329,16 +333,16 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
                     return;
                   }
 
-                  _shopLiveCommonPlugin.setUser(
-                      accessKey: _accessKeyController.text,
-                      user: ShopLiveCommonUser(
-                        userId: "userId",
-                        userName: "TestUser",
-                        userScore: 0,
-                        gender: ShopLiveCommonUserGender.NEUTRAL,
-                        age: 20,
-                        custom: {"key": "value"},
-                      ));
+                  // _shopLiveCommonPlugin.setUser(
+                  //     accessKey: _accessKeyController.text,
+                  //     user: ShopLiveCommonUser(
+                  //       userId: "userId",
+                  //       userName: "TestUser",
+                  //       userScore: 0,
+                  //       gender: ShopLiveCommonUserGender.NEUTRAL,
+                  //       age: 20,
+                  //       custom: {"key": "value"},
+                  //     ));
 
                   _shopLiveCommonPlugin.setAccessKey(
                     accessKey: _accessKeyController.text,

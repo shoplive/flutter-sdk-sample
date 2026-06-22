@@ -1,5 +1,6 @@
 import Flutter
 import UIKit
+import ObjectiveC
 import ShopliveSDKCommon
 import ShopLiveSDK
 
@@ -15,6 +16,7 @@ struct SwiftShoplivePlayerModuleEventName {
     static let EVENT_PLAYER_SET_USER_NAME = "event_player_set_user_name"
     static let EVENT_PLAYER_RECEIVED_COMMAND = "event_player_received_command"
     static let EVENT_PLAYER_LOG = "event_player_log"
+    static let EVENT_PLAYER_PREVIEW_CLOSE = "event_player_preview_close"
 }
 
 class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
@@ -30,6 +32,33 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
     // 타임아웃 시간 (5초)
     private let callbackTimeoutSeconds: TimeInterval = 5.0
 
+    private var previewCloseInitiatedByApp = false
+    private var currentPreviewCampaignKey: String?
+    private var isPreviewShowing = false
+    private var lastPreviewCloseEmitAt: TimeInterval = 0
+    private let previewCloseDebounceInterval: TimeInterval = 0.3
+    private var previewCloseEmitted = false
+
+    private func resetPreviewCloseState(campaignKey: String?) {
+        currentPreviewCampaignKey = campaignKey
+        isPreviewShowing = true
+        previewCloseEmitted = false
+        previewCloseInitiatedByApp = false
+    }
+
+    private func finishPreviewClose(campaignKey: String, reason: String) {
+        guard !previewCloseEmitted else { return }
+        let now = Date().timeIntervalSince1970
+        if now - lastPreviewCloseEmitAt < previewCloseDebounceInterval {
+            return
+        }
+        lastPreviewCloseEmitAt = now
+        previewCloseEmitted = true
+        isPreviewShowing = false
+        previewCloseInitiatedByApp = false
+        emitPreviewClose(campaignKey: campaignKey, reason: reason)
+    }
+
     public static var eventHandleNavigation = ShopliveEventData(eventName: eventName.EVENT_PLAYER_HANDLE_NAVIGATION, flutterEventSink: nil)
     public static var eventHandleDownloadCoupon = ShopliveEventData(eventName: eventName.EVENT_PLAYER_HANDLE_DOWNLOAD_COUPON, flutterEventSink: nil)
     public static var eventChangeCampaignStatus = ShopliveEventData(eventName: eventName.EVENT_PLAYER_CHANGE_CAMPAIGN_STATUS, flutterEventSink: nil)
@@ -40,7 +69,8 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
     public static var eventSetUserName = ShopliveEventData(eventName: eventName.EVENT_PLAYER_SET_USER_NAME, flutterEventSink: nil)
     public static var eventReceivedCommand = ShopliveEventData(eventName: eventName.EVENT_PLAYER_RECEIVED_COMMAND, flutterEventSink: nil)
     public static var eventLog = ShopliveEventData(eventName: eventName.EVENT_PLAYER_LOG, flutterEventSink: nil)
-    
+    public static var eventPreviewClose = ShopliveEventData(eventName: eventName.EVENT_PLAYER_PREVIEW_CLOSE, flutterEventSink: nil)
+
     
     override var eventPairs: [String] {
         get {
@@ -54,7 +84,8 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
                 eventName.EVENT_PLAYER_CHANGED_PLAYER_STATUS,
                 eventName.EVENT_PLAYER_SET_USER_NAME,
                 eventName.EVENT_PLAYER_RECEIVED_COMMAND,
-                eventName.EVENT_PLAYER_LOG
+                eventName.EVENT_PLAYER_LOG,
+                eventName.EVENT_PLAYER_PREVIEW_CLOSE
             ]
         }
         set {
@@ -313,11 +344,23 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         ShopLive.delegate = self
 
         setOption()
+        ShopLivePreviewCloseInterceptor.installIfNeeded()
+        ShopLivePreviewCloseInterceptor.moduleCampaignKeyProvider = { [weak self] in
+            self?.currentPreviewCampaignKey
+        }
+        ShopLivePreviewCloseInterceptor.shared.onPreviewClose = { [weak self] campaignKey, reason in
+            self?.finishPreviewClose(campaignKey: campaignKey, reason: reason)
+        }
+        resetPreviewCloseState(campaignKey: campaignKey)
         ShopLive.preview(with: campaignKey)
     }
 
     private func hidePreview() {
+        previewCloseInitiatedByApp = true
+        ShopLivePreviewCloseInterceptor.shared.previewCloseInitiatedByApp = true
+        let campaignKey = currentPreviewCampaignKey ?? ""
         ShopLive.close()
+        scheduleProgrammaticPreviewCloseFallback(campaignKey: campaignKey)
     }
 
     private func setShareScheme(shareSchemeUrl: String?) {
@@ -371,7 +414,15 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
     }
     
     private func close() {
-        ShopLive.close()
+        if ShopLive.playerMode == .preview {
+            previewCloseInitiatedByApp = true
+            ShopLivePreviewCloseInterceptor.shared.previewCloseInitiatedByApp = true
+            let campaignKey = currentPreviewCampaignKey ?? ""
+            ShopLive.close()
+            scheduleProgrammaticPreviewCloseFallback(campaignKey: campaignKey)
+        } else {
+            ShopLive.close()
+        }
     }
 
     private func startPictureInPicture() {
@@ -534,6 +585,80 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
             try container.encode(payload, forKey: .payload)
         }
     }
+
+    private struct PreviewClose: Codable {
+        let campaignKey: String
+        let reason: String
+    }
+
+    private func emitPreviewClose(campaignKey: String, reason: String) {
+        if let json = try? JSONEncoder().encode(PreviewClose(campaignKey: campaignKey, reason: reason)) {
+            if let eventSink = Self.eventPreviewClose.flutterEventSink {
+                eventSink(String(data: json, encoding: .utf8))
+            }
+        }
+    }
+
+    private func scheduleProgrammaticPreviewCloseFallback(campaignKey: String) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+            guard let self = self, self.previewCloseInitiatedByApp, !self.previewCloseEmitted else { return }
+            self.finishPreviewClose(campaignKey: campaignKey, reason: "programmatic")
+        }
+    }
+
+    private func resolvePreviewCloseReason(command: String, actionType: String?) -> String? {
+        if previewCloseInitiatedByApp {
+            return "programmatic"
+        }
+
+        if actionType == "onBtnTapped" {
+            return "close_button"
+        }
+        if actionType == "onSwipeOut" {
+            return "swipe_out"
+        }
+        if command == "CLOSE_FROM_PREVIEW" {
+            return "swipe_out"
+        }
+        if command == "viewDidDisAppear" || command == "viewDidDisappear" {
+            return actionType == nil ? "unknown" : nil
+        }
+        return nil
+    }
+
+    private func tryHandlePreviewClose(command: String, payload: [String: Any]) {
+        let actionType = payload["viewHiddenActionType"] as? String
+        let isPreviewCloseCommand = command == "CLOSE_FROM_PREVIEW"
+            || command == "viewDidDisAppear"
+            || command == "viewDidDisappear"
+            || actionType == "onBtnTapped"
+            || actionType == "onSwipeOut"
+
+        guard isPreviewCloseCommand else { return }
+        guard isPreviewShowing || previewCloseInitiatedByApp else { return }
+
+        guard let reason = resolvePreviewCloseReason(command: command, actionType: actionType) else {
+            return
+        }
+
+        let campaignKey = (payload["campaignKey"] as? String)
+            ?? currentPreviewCampaignKey
+            ?? ""
+        finishPreviewClose(campaignKey: campaignKey, reason: reason)
+    }
+
+    private func forwardReceivedCommand(command: String, payload: [String: Any]) {
+        if let json = try? JSONEncoder().encode(ReceivedCommand(command: command, data: payload)) {
+            if let eventSink = Self.eventReceivedCommand.flutterEventSink {
+                eventSink(String(data: json, encoding: .utf8))
+            }
+        }
+    }
+
+    private func processCommand(_ command: String, payload: [String: Any]) {
+        tryHandlePreviewClose(command: command, payload: payload)
+        forwardReceivedCommand(command: command, payload: payload)
+    }
     
     private func setOption() {
         // tablet 화면 비율
@@ -680,12 +805,7 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
         guard let payload = (payload ?? [String: Any]()) as? Dictionary<String, Any> else {
             return
         }
-        
-        if let json = try? JSONEncoder().encode(ReceivedCommand(command: command, data: payload)) {
-            if let eventSink = Self.eventReceivedCommand.flutterEventSink {
-                eventSink(String(data: json, encoding: .utf8))
-            }
-        }
+        processCommand(command, payload: payload)
     }
     
     public func onSetUserName(_ payload: [String : Any]) {
@@ -700,12 +820,12 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
         guard let payload = (payload ?? [String: Any]()) as? Dictionary<String, Any> else {
             return
         }
-        
-        if let json = try? JSONEncoder().encode(ReceivedCommand(command: command, data: payload)) {
-            if let eventSink = Self.eventReceivedCommand.flutterEventSink {
-                eventSink(String(data: json, encoding: .utf8))
-            }
-        }
+        processCommand(command, payload: payload)
+    }
+
+    public func handleReceivedCommand(_ command: String, data: [String: Any]?) {
+        let payload = data ?? [:]
+        processCommand(command, payload: payload)
     }
     
     public func handleChangedPlayerStatus(status: String) {
@@ -769,6 +889,9 @@ fileprivate class StreamHandler: NSObject, FlutterStreamHandler {
         case eventName.EVENT_PLAYER_LOG :
             module.eventLog.flutterEventSink = events
             break
+        case eventName.EVENT_PLAYER_PREVIEW_CLOSE :
+            module.eventPreviewClose.flutterEventSink = events
+            break
         default: return nil
         }
         return nil
@@ -809,4 +932,60 @@ extension UIColor {
     }
 }
 
+final class ShopLivePreviewCloseInterceptor {
+    static let shared = ShopLivePreviewCloseInterceptor()
 
+    var previewCloseInitiatedByApp = false
+    var onPreviewClose: ((String, String) -> Void)?
+
+    static var moduleCampaignKeyProvider: (() -> String?)?
+
+    private static var isInstalled = false
+
+    static func installIfNeeded() {
+        guard !isInstalled else { return }
+        isInstalled = true
+
+        let selector = NSSelectorFromString("closeWithActionType:")
+        guard let method = class_getClassMethod(object_getClass(ShopLive.self), selector) else {
+            return
+        }
+
+        let originalIMP = method_getImplementation(method)
+        let block: @convention(block) (ShopLiveViewHiddenActionType) -> Void = { actionType in
+            ShopLivePreviewCloseInterceptor.shared.handleClose(actionType: actionType)
+
+            typealias CloseFunction = @convention(c) (
+                AnyClass,
+                Selector,
+                ShopLiveViewHiddenActionType
+            ) -> Void
+            let original = unsafeBitCast(originalIMP, to: CloseFunction.self)
+            original(object_getClass(ShopLive.self)!, selector, actionType)
+        }
+
+        method_setImplementation(method, imp_implementationWithBlock(block))
+    }
+
+    private func handleClose(actionType: ShopLiveViewHiddenActionType) {
+        guard ShopLive.playerMode == .preview else { return }
+
+        let reason: String
+        if previewCloseInitiatedByApp {
+            reason = "programmatic"
+        } else {
+            switch actionType {
+            case .onBtnTapped:
+                reason = "close_button"
+            case .onSwipeOut:
+                reason = "swipe_out"
+            default:
+                reason = "unknown"
+            }
+        }
+
+        previewCloseInitiatedByApp = false
+        let campaignKey = ShopLivePreviewCloseInterceptor.moduleCampaignKeyProvider?() ?? ""
+        onPreviewClose?(campaignKey, reason)
+    }
+}

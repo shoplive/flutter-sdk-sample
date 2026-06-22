@@ -5,9 +5,11 @@ import android.graphics.BlurMaskFilter
 import android.util.TypedValue
 import android.os.Handler
 import android.os.Looper
+import android.view.View
 import android.util.Log
 import androidx.annotation.Keep
 import cloud.shoplive.sdk.*
+import cloud.shoplive.sdk.common.ShopLiveBasePreview
 import cloud.shoplive.sdk.common.ShopLivePreviewCloseButtonPositionConfig
 import cloud.shoplive.sdk.common.ShopLivePreviewPositionConfig
 import cloud.shoplive.sdk.common.extension.toColorIntOrNull
@@ -43,9 +45,21 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
         private const val EVENT_PLAYER_SET_USER_NAME = "event_player_set_user_name"
         private const val EVENT_PLAYER_RECEIVED_COMMAND = "event_player_received_command"
         private const val EVENT_PLAYER_LOG = "event_player_log"
+        private const val EVENT_PLAYER_PREVIEW_CLOSE = "event_player_preview_close"
+
+        private const val PREVIEW_CLOSE_REASON_CLOSE_BUTTON = "close_button"
+        private const val PREVIEW_CLOSE_REASON_SWIPE_OUT = "swipe_out"
+        private const val PREVIEW_CLOSE_REASON_PROGRAMMATIC = "programmatic"
+        private const val PREVIEW_CLOSE_REASON_UNKNOWN = "unknown"
     }
-    
-    // callback 객체를 임시 저장하는 Map (id를 key로 사용)
+
+    private var previewCloseInitiatedByApp = false
+    private var pendingPreviewCloseButtonClick = false
+    private var isPreviewShowing = false
+    private var previewCloseEmitted = false
+    private var currentPreviewCampaignKey: String? = null
+    private var attachedPreview: ShopLivePreview? = null
+    private var previewDetachListener: View.OnAttachStateChangeListener? = null
     private val pendingCallbacks = ConcurrentHashMap<String, ShopLiveHandlerCallback>()
     
     // 타임아웃 관리를 위한 스케줄러
@@ -64,6 +78,7 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
     private val eventSetUserName = AtomicReference<EventChannel.EventSink?>(null)
     private val eventReceivedCommand = AtomicReference<EventChannel.EventSink?>(null)
     private val eventLog = AtomicReference<EventChannel.EventSink?>(null)
+    private val eventPreviewClose = AtomicReference<EventChannel.EventSink?>(null)
 
     private val eventPairs = listOf(
         EVENT_PLAYER_HANDLE_NAVIGATION to eventHandleNavigation,
@@ -75,7 +90,8 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
         EVENT_PLAYER_CHANGED_PLAYER_STATUS to eventChangedPlayerStatus,
         EVENT_PLAYER_SET_USER_NAME to eventSetUserName,
         EVENT_PLAYER_RECEIVED_COMMAND to eventReceivedCommand,
-        EVENT_PLAYER_LOG to eventLog
+        EVENT_PLAYER_LOG to eventLog,
+        EVENT_PLAYER_PREVIEW_CLOSE to eventPreviewClose
     )
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
@@ -253,11 +269,18 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
     private fun showPreview(campaignKey: String) {
         ShopLive.setHandler(shopLiveHandler)
         setOption()
+        ensurePreviewCloseListeners(campaignKey)
 
-        ShopLive.showPreviewPopup(activity, campaignKey)
+        currentPreviewCampaignKey = campaignKey
+        isPreviewShowing = true
+        previewCloseEmitted = false
+
+        val preview = ShopLive.showPreviewPopup(activity, campaignKey) ?: return
+        attachPreviewDetachListener(preview)
     }
 
     private fun hidePreview() {
+        previewCloseInitiatedByApp = true
         ShopLive.hidePreviewPopup()
     }
 
@@ -285,9 +308,91 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
             if (closeButtonConfigMap != null) {
                 setCloseButtonConfig(closeButtonConfigMap)
             }
+            applyPreviewCloseListeners(this)
         }
         
         ShopLive.setPreviewOptions(previewData)
+    }
+
+    private fun ensurePreviewCloseListeners(campaignKey: String) {
+        val previewData = ShopLive.getPreviewOptions() ?: ShopLivePreviewData(campaignKey)
+        if (previewData.campaignKey != campaignKey) {
+            previewData.campaignKey = campaignKey
+        }
+        applyPreviewCloseListeners(previewData)
+        ShopLive.setPreviewOptions(previewData)
+    }
+
+    private fun applyPreviewCloseListeners(previewData: ShopLivePreviewData) {
+        previewData.onCloseButtonClickListener =
+            ShopLivePreview.OnCloseButtonClickListener {
+                pendingPreviewCloseButtonClick = true
+            }
+        previewData.onCloseListener = ShopLivePreview.OnCloseListener { preview ->
+            finishPreviewClose(preview.campaignKey, resolvePreviewCloseReason())
+        }
+    }
+
+    private fun resolvePreviewCloseReason(): String {
+        return when {
+            previewCloseInitiatedByApp -> PREVIEW_CLOSE_REASON_PROGRAMMATIC
+            pendingPreviewCloseButtonClick -> PREVIEW_CLOSE_REASON_CLOSE_BUTTON
+            ShopLiveBasePreview.wasLastDismissSwipeOut() -> PREVIEW_CLOSE_REASON_SWIPE_OUT
+            else -> PREVIEW_CLOSE_REASON_UNKNOWN
+        }
+    }
+
+    private fun finishPreviewClose(campaignKey: String?, reason: String) {
+        if (previewCloseEmitted) return
+        previewCloseEmitted = true
+        isPreviewShowing = false
+        previewCloseInitiatedByApp = false
+        pendingPreviewCloseButtonClick = false
+        detachPreviewDetachListener()
+        emitPreviewClose(campaignKey ?: currentPreviewCampaignKey, reason)
+    }
+
+    private fun attachPreviewDetachListener(preview: ShopLivePreview) {
+        detachPreviewDetachListener()
+        attachedPreview = preview
+
+        val listener = object : View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(v: View) = Unit
+
+            override fun onViewDetachedFromWindow(v: View) {
+                preview.removeOnAttachStateChangeListener(this)
+                if (attachedPreview === preview) {
+                    attachedPreview = null
+                    previewDetachListener = null
+                }
+                if (!isPreviewShowing || previewCloseEmitted) return
+                finishPreviewClose(preview.campaignKey, resolvePreviewCloseReason())
+            }
+        }
+
+        previewDetachListener = listener
+        preview.addOnAttachStateChangeListener(listener)
+    }
+
+    private fun detachPreviewDetachListener() {
+        previewDetachListener?.let { listener ->
+            attachedPreview?.removeOnAttachStateChangeListener(listener)
+        }
+        previewDetachListener = null
+        attachedPreview = null
+    }
+
+    private fun emitPreviewClose(campaignKey: String?, reason: String) {
+        Handler(Looper.getMainLooper()).post {
+            eventPreviewClose.get()?.success(
+                Gson().toJson(
+                    PreviewClose(
+                        campaignKey = campaignKey ?: "",
+                        reason = reason,
+                    )
+                )
+            )
+        }
     }
 
     private fun ShopLivePreviewData.setCloseButtonConfig(configMap: Map<String, Any?>) {
@@ -355,6 +460,7 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
     }
 
     private fun close() {
+        previewCloseInitiatedByApp = true
         ShopLive.close()
         ShopLive.hidePreviewPopup()
     }
@@ -544,6 +650,12 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
         val feature: String,
         val campaignKey: String,
         val payload: Map<String, Any?>?
+    )
+
+    @Keep
+    private data class PreviewClose(
+        val campaignKey: String,
+        val reason: String,
     )
 
 

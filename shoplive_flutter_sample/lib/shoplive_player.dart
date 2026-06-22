@@ -19,6 +19,7 @@ const String _EVENT_PLAYER_CHANGED_PLAYER_STATUS =
 const String _EVENT_PLAYER_SET_USER_NAME = "event_player_set_user_name";
 const String _EVENT_PLAYER_RECEIVED_COMMAND = "event_player_received_command";
 const String _EVENT_PLAYER_LOG = "event_player_log";
+const String _EVENT_PLAYER_PREVIEW_CLOSE = "event_player_preview_close";
 
 class ShopLivePlayer {
   late final Stream<ShopLiveHandleNavigation> handleNavigation =
@@ -80,6 +81,12 @@ class ShopLivePlayer {
           .receiveBroadcastStream()
           .map((jsonString) => const JsonDecoder().convert(jsonString))
           .map((json) => ShopLivePlayerLog.fromJson(json));
+
+  late final Stream<ShopLivePreviewClose> previewClose =
+      const EventChannel(_EVENT_PLAYER_PREVIEW_CLOSE)
+          .receiveBroadcastStream()
+          .map((jsonString) => const JsonDecoder().convert(jsonString))
+          .map((json) => ShopLivePreviewClose.fromJson(json));
 
   void setMixWithOthers({
     required bool isMixAudio,
@@ -514,6 +521,60 @@ class ShopLivePlayerLog {
       feature: json['feature'],
       campaignKey: json['campaignKey'],
       payload: json['payload'],
+    );
+  }
+}
+
+enum ShopLivePreviewCloseReason {
+  closeButton,
+  swipeOut,
+  programmatic,
+  unknown,
+}
+
+extension ShopLivePreviewCloseReasonExtension on ShopLivePreviewCloseReason {
+  static ShopLivePreviewCloseReason fromString(String value) {
+    switch (value) {
+      case 'close_button':
+        return ShopLivePreviewCloseReason.closeButton;
+      case 'swipe_out':
+        return ShopLivePreviewCloseReason.swipeOut;
+      case 'programmatic':
+        return ShopLivePreviewCloseReason.programmatic;
+      default:
+        return ShopLivePreviewCloseReason.unknown;
+    }
+  }
+
+  String toReasonString() {
+    switch (this) {
+      case ShopLivePreviewCloseReason.closeButton:
+        return 'close_button';
+      case ShopLivePreviewCloseReason.swipeOut:
+        return 'swipe_out';
+      case ShopLivePreviewCloseReason.programmatic:
+        return 'programmatic';
+      case ShopLivePreviewCloseReason.unknown:
+        return 'unknown';
+    }
+  }
+}
+
+class ShopLivePreviewClose {
+  final String campaignKey;
+  final ShopLivePreviewCloseReason reason;
+
+  ShopLivePreviewClose({
+    required this.campaignKey,
+    required this.reason,
+  });
+
+  factory ShopLivePreviewClose.fromJson(Map<String, dynamic> json) {
+    return ShopLivePreviewClose(
+      campaignKey: json['campaignKey'] ?? '',
+      reason: ShopLivePreviewCloseReasonExtension.fromString(
+        json['reason'] ?? 'unknown',
+      ),
     );
   }
 }
