@@ -344,6 +344,12 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
 
     private fun finishPreviewClose(campaignKey: String?, reason: String) {
         if (previewCloseEmitted) return
+        if (reason == PREVIEW_CLOSE_REASON_UNKNOWN) {
+            previewCloseInitiatedByApp = false
+            pendingPreviewCloseButtonClick = false
+            detachPreviewDetachListener()
+            return
+        }
         previewCloseEmitted = true
         isPreviewShowing = false
         previewCloseInitiatedByApp = false
