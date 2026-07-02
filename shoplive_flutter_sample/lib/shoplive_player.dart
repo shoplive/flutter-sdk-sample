@@ -528,6 +528,7 @@ class ShopLivePlayerLog {
 enum ShopLivePreviewCloseReason {
   closeButton,
   swipeOut,
+  broadcastEnded,
   programmatic,
   unknown,
 }
@@ -539,6 +540,8 @@ extension ShopLivePreviewCloseReasonExtension on ShopLivePreviewCloseReason {
         return ShopLivePreviewCloseReason.closeButton;
       case 'swipe_out':
         return ShopLivePreviewCloseReason.swipeOut;
+      case 'broadcast_ended':
+        return ShopLivePreviewCloseReason.broadcastEnded;
       case 'programmatic':
         return ShopLivePreviewCloseReason.programmatic;
       default:
@@ -552,6 +555,8 @@ extension ShopLivePreviewCloseReasonExtension on ShopLivePreviewCloseReason {
         return 'close_button';
       case ShopLivePreviewCloseReason.swipeOut:
         return 'swipe_out';
+      case ShopLivePreviewCloseReason.broadcastEnded:
+        return 'broadcast_ended';
       case ShopLivePreviewCloseReason.programmatic:
         return 'programmatic';
       case ShopLivePreviewCloseReason.unknown:

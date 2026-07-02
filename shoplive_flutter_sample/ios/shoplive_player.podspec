@@ -2,9 +2,13 @@
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
 # Run `pod lib lint shoplive_player.podspec` to validate before publishing.
 #
+require 'yaml'
+
+pubspec = YAML.load_file(File.join(__dir__, '..', 'pubspec.yaml'))
+
 Pod::Spec.new do |s|
   s.name             = 'shoplive_player'
-  s.version          = '0.0.1'
+  s.version          = pubspec['version']
   s.summary          = 'A new Flutter plugin project.'
   s.description      = <<-DESC
 A new Flutter plugin project.

@@ -129,6 +129,13 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
     _shopLivePlayerPlugin.receivedCommand.listen((data) {
       debugPrint(
           "receivedCommand : ${data.command}, ${const JsonEncoder().convert(data.data)}");
+
+      // 앱 레벨 워크어라운드: iOS 데모 앱(PlayerDemo)의 handleReceivedCommand가
+      // CLICK_BACK_BUTTON을 받아서 앱이 직접 preview()로 되돌리는 것과 동일한 패턴.
+      // SDK는 이 커맨드를 그대로 전달만 하고, 뭘 할지는 앱이 정하도록 설계돼 있다.
+      if (data.command == "back_button" || data.command == "CLICK_BACK_BUTTON") {
+        _shopLivePlayerPlugin.startPictureInPicture();
+      }
     }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.log.listen((data) {
@@ -246,7 +253,8 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
                       accessKey: _accessKeyController.text);
                   _shopLivePlayerPlugin.play(
                       data: ShopLivePlayerData(
-                          campaignKey: _campaignKeyController.text));
+                          campaignKey: _campaignKeyController.text,
+                          referrer: "test-referrer-from-flutter"));
                 },
                 child: const Text('LivePlayer PLAY'),
               ),
