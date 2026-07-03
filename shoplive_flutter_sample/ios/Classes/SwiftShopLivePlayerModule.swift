@@ -356,9 +356,6 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         ShopLive.setCloseHandler { [weak self] actionType in
             self?.handlePreviewCloseAction(actionType: actionType)
         }
-        ShopLive.setCloseButtonClickHandler { [weak self] actionType in
-            self?.handlePreviewCloseAction(actionType: actionType)
-        }
         resetPreviewCloseState(campaignKey: campaignKey)
         ShopLive.preview(with: campaignKey)
     }
