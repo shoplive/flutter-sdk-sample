@@ -50,6 +50,7 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
         private const val PREVIEW_CLOSE_REASON_CLOSE_BUTTON = "close_button"
         private const val PREVIEW_CLOSE_REASON_SWIPE_OUT = "swipe_out"
         private const val PREVIEW_CLOSE_REASON_PROGRAMMATIC = "programmatic"
+        private const val PREVIEW_CLOSE_REASON_BROADCAST_ENDED = "broadcast_ended"
         private const val PREVIEW_CLOSE_REASON_UNKNOWN = "unknown"
     }
 
@@ -274,6 +275,8 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
         currentPreviewCampaignKey = campaignKey
         isPreviewShowing = true
         previewCloseEmitted = false
+        previewCloseInitiatedByApp = false
+        pendingPreviewCloseButtonClick = false
 
         val preview = ShopLive.showPreviewPopup(activity, campaignKey) ?: return
         attachPreviewDetachListener(preview)
@@ -336,6 +339,7 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
     private fun resolvePreviewCloseReason(): String {
         return when {
             previewCloseInitiatedByApp -> PREVIEW_CLOSE_REASON_PROGRAMMATIC
+            ShopLiveBasePreview.wasLastDismissBroadcastEnded() -> PREVIEW_CLOSE_REASON_BROADCAST_ENDED
             pendingPreviewCloseButtonClick -> PREVIEW_CLOSE_REASON_CLOSE_BUTTON
             ShopLiveBasePreview.wasLastDismissSwipeOut() -> PREVIEW_CLOSE_REASON_SWIPE_OUT
             else -> PREVIEW_CLOSE_REASON_UNKNOWN
