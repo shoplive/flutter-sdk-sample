@@ -275,9 +275,6 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
         currentPreviewCampaignKey = campaignKey
         isPreviewShowing = true
         previewCloseEmitted = false
-        // 새 preview 세션 시작 시 직전 세션의 종료 사유 상태를 초기화한다.
-        // close()/hidePreview()가 set한 previewCloseInitiatedByApp가 리셋되지 않으면,
-        // 이후 사용자가 직접 닫아도 reason이 programmatic으로 오보된다(SMV-1392 #14).
         previewCloseInitiatedByApp = false
         pendingPreviewCloseButtonClick = false
 
