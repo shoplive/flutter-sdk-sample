@@ -1,6 +1,5 @@
 import Flutter
 import UIKit
-import ObjectiveC
 import ShopliveSDKCommon
 import ShopLiveSDK
 
@@ -114,7 +113,8 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         case "player_play" :
             play(
                 campaignKey: args?["campaignKey"] as? String,
-                keepWindowStateOnPlayExecuted: args?["keepWindowStateOnPlayExecuted"] as? Bool
+                keepWindowStateOnPlayExecuted: args?["keepWindowStateOnPlayExecuted"] as? Bool,
+                referrer: args?["referrer"] as? String
             )
             break
         case "player_setPreviewOption" :
@@ -225,23 +225,32 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
             
             result(nil)
             break
+        case "player_getSdkVersion" :
+            result(ShopLive.sdkVersion)
+            break
+        case "player_getPluginVersion" :
+            result(Self.pluginVersion)
+            break
         default : break
         }
     }
-    
-    
+
+    static var pluginVersion: String {
+        Bundle(for: SwiftShopLivePlayerModule.self).infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
+    }
+
     // region ShopLive Public class
-    private func play(campaignKey: String?, keepWindowStateOnPlayExecuted: Bool?) {
+    private func play(campaignKey: String?, keepWindowStateOnPlayExecuted: Bool?, referrer: String?) {
         guard campaignKey != nil else { return }
-        
+
         ShopLive.delegate = self
-        
+
         setOption()
         guard let keepWindowStateOnPlayExecuted = keepWindowStateOnPlayExecuted else {
-            ShopLive.play(with: campaignKey)
+            ShopLive.play(with: campaignKey, referrer: referrer)
             return
         }
-        ShopLive.play(with: campaignKey, keepWindowStateOnPlayExecuted: keepWindowStateOnPlayExecuted)
+        ShopLive.play(with: campaignKey, keepWindowStateOnPlayExecuted: keepWindowStateOnPlayExecuted, referrer: referrer)
     }
 
     private func setPreviewOption(args: [String: Any]?) {
@@ -344,20 +353,41 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         ShopLive.delegate = self
 
         setOption()
-        ShopLivePreviewCloseInterceptor.installIfNeeded()
-        ShopLivePreviewCloseInterceptor.moduleCampaignKeyProvider = { [weak self] in
-            self?.currentPreviewCampaignKey
+        ShopLive.setCloseHandler { [weak self] actionType in
+            self?.handlePreviewCloseAction(actionType: actionType)
         }
-        ShopLivePreviewCloseInterceptor.shared.onPreviewClose = { [weak self] campaignKey, reason in
-            self?.finishPreviewClose(campaignKey: campaignKey, reason: reason)
+        ShopLive.setCloseButtonClickHandler { [weak self] actionType in
+            self?.handlePreviewCloseAction(actionType: actionType)
         }
         resetPreviewCloseState(campaignKey: campaignKey)
         ShopLive.preview(with: campaignKey)
     }
 
+    private func handlePreviewCloseAction(actionType: ShopLiveViewHiddenActionType) {
+        guard ShopLive.playerMode == .preview else { return }
+
+        let reason: String
+        if previewCloseInitiatedByApp {
+            reason = "programmatic"
+        } else {
+            switch actionType {
+            case .onBtnTapped:
+                reason = "close_button"
+            case .onSwipeOut:
+                reason = "swipe_out"
+            case .onBroadcastEnded:
+                reason = "broadcast_ended"
+            default:
+                reason = "unknown"
+            }
+        }
+
+        let campaignKey = currentPreviewCampaignKey ?? ""
+        finishPreviewClose(campaignKey: campaignKey, reason: reason)
+    }
+
     private func hidePreview() {
         previewCloseInitiatedByApp = true
-        ShopLivePreviewCloseInterceptor.shared.previewCloseInitiatedByApp = true
         let campaignKey = currentPreviewCampaignKey ?? ""
         ShopLive.close()
         scheduleProgrammaticPreviewCloseFallback(campaignKey: campaignKey)
@@ -416,7 +446,6 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
     private func close() {
         if ShopLive.playerMode == .preview {
             previewCloseInitiatedByApp = true
-            ShopLivePreviewCloseInterceptor.shared.previewCloseInitiatedByApp = true
             let campaignKey = currentPreviewCampaignKey ?? ""
             ShopLive.close()
             scheduleProgrammaticPreviewCloseFallback(campaignKey: campaignKey)
@@ -611,6 +640,9 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
             return "programmatic"
         }
 
+        if actionType == "onBroadcastEnded" {
+            return "broadcast_ended"
+        }
         if actionType == "onBtnTapped" {
             return "close_button"
         }
@@ -656,6 +688,9 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
     }
 
     private func processCommand(_ command: String, payload: [String: Any]) {
+        if command == ShopLiveViewTrackEvent.fullScreenWillAppear.name {
+            isPreviewShowing = false
+        }
         tryHandlePreviewClose(command: command, payload: payload)
         forwardReceivedCommand(command: command, payload: payload)
     }
@@ -929,63 +964,5 @@ extension UIColor {
         }
         
         self.init(red: red, green: green, blue: blue, alpha: alpha)
-    }
-}
-
-final class ShopLivePreviewCloseInterceptor {
-    static let shared = ShopLivePreviewCloseInterceptor()
-
-    var previewCloseInitiatedByApp = false
-    var onPreviewClose: ((String, String) -> Void)?
-
-    static var moduleCampaignKeyProvider: (() -> String?)?
-
-    private static var isInstalled = false
-
-    static func installIfNeeded() {
-        guard !isInstalled else { return }
-        isInstalled = true
-
-        let selector = NSSelectorFromString("closeWithActionType:")
-        guard let method = class_getClassMethod(object_getClass(ShopLive.self), selector) else {
-            return
-        }
-
-        let originalIMP = method_getImplementation(method)
-        let block: @convention(block) (ShopLiveViewHiddenActionType) -> Void = { actionType in
-            ShopLivePreviewCloseInterceptor.shared.handleClose(actionType: actionType)
-
-            typealias CloseFunction = @convention(c) (
-                AnyClass,
-                Selector,
-                ShopLiveViewHiddenActionType
-            ) -> Void
-            let original = unsafeBitCast(originalIMP, to: CloseFunction.self)
-            original(object_getClass(ShopLive.self)!, selector, actionType)
-        }
-
-        method_setImplementation(method, imp_implementationWithBlock(block))
-    }
-
-    private func handleClose(actionType: ShopLiveViewHiddenActionType) {
-        guard ShopLive.playerMode == .preview else { return }
-
-        let reason: String
-        if previewCloseInitiatedByApp {
-            reason = "programmatic"
-        } else {
-            switch actionType {
-            case .onBtnTapped:
-                reason = "close_button"
-            case .onSwipeOut:
-                reason = "swipe_out"
-            default:
-                reason = "unknown"
-            }
-        }
-
-        previewCloseInitiatedByApp = false
-        let campaignKey = ShopLivePreviewCloseInterceptor.moduleCampaignKeyProvider?() ?? ""
-        onPreviewClose?(campaignKey, reason)
     }
 }

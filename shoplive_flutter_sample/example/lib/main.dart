@@ -129,6 +129,10 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
     _shopLivePlayerPlugin.receivedCommand.listen((data) {
       debugPrint(
           "receivedCommand : ${data.command}, ${const JsonEncoder().convert(data.data)}");
+
+      if (data.command == "back_button" || data.command == "CLICK_BACK_BUTTON") {
+        _shopLivePlayerPlugin.startPictureInPicture();
+      }
     }).addTo(_compositeSubscription);
 
     _shopLivePlayerPlugin.log.listen((data) {
@@ -246,7 +250,8 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
                       accessKey: _accessKeyController.text);
                   _shopLivePlayerPlugin.play(
                       data: ShopLivePlayerData(
-                          campaignKey: _campaignKeyController.text));
+                          campaignKey: _campaignKeyController.text,
+                          referrer: "test-referrer-from-flutter"));
                 },
                 child: const Text('LivePlayer PLAY'),
               ),

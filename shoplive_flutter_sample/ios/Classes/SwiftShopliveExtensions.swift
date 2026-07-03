@@ -1,3 +1,4 @@
+import Foundation
 
 struct JSONCodingKeys: CodingKey {
     public var stringValue: String
@@ -81,15 +82,15 @@ extension KeyedEncodingContainerProtocol where Key == JSONCodingKeys {
         try value.forEach({ (key, value) in
             let key = JSONCodingKeys(stringValue: key)
             switch value {
-            case let value as Bool:
-                try encode(value, forKey: key)
-            case let value as Int:
-                try encode(value, forKey: key)
+            case let value as NSNumber:
+                if CFGetTypeID(value) == CFBooleanGetTypeID() {
+                    try encode(value.boolValue, forKey: key)
+                } else if CFNumberIsFloatType(value) {
+                    try encode(value.doubleValue, forKey: key)
+                } else {
+                    try encode(value.intValue, forKey: key)
+                }
             case let value as String:
-                try encode(value, forKey: key)
-            case let value as Double:
-                try encode(value, forKey: key)
-            case let value as CGFloat:
                 try encode(value, forKey: key)
             case let value as Dictionary<String, Any>:
                 try encode(value, forKey: key)
@@ -124,15 +125,15 @@ extension UnkeyedEncodingContainer {
     mutating func encode(_ value: Array<Any>) throws {
         try value.enumerated().forEach({ (index, value) in
             switch value {
-            case let value as Bool:
-                try encode(value)
-            case let value as Int:
-                try encode(value)
+            case let value as NSNumber:
+                if CFGetTypeID(value) == CFBooleanGetTypeID() {
+                    try encode(value.boolValue)
+                } else if CFNumberIsFloatType(value) {
+                    try encode(value.doubleValue)
+                } else {
+                    try encode(value.intValue)
+                }
             case let value as String:
-                try encode(value)
-            case let value as Double:
-                try encode(value)
-            case let value as CGFloat:
                 try encode(value)
             case let value as Dictionary<String, Any>:
                 try encode(value)
