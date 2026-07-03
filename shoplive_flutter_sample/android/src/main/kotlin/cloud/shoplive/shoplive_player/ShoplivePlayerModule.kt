@@ -50,6 +50,7 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
         private const val PREVIEW_CLOSE_REASON_CLOSE_BUTTON = "close_button"
         private const val PREVIEW_CLOSE_REASON_SWIPE_OUT = "swipe_out"
         private const val PREVIEW_CLOSE_REASON_PROGRAMMATIC = "programmatic"
+        private const val PREVIEW_CLOSE_REASON_BROADCAST_ENDED = "broadcast_ended"
         private const val PREVIEW_CLOSE_REASON_UNKNOWN = "unknown"
     }
 
@@ -274,6 +275,11 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
         currentPreviewCampaignKey = campaignKey
         isPreviewShowing = true
         previewCloseEmitted = false
+        // 새 preview 세션 시작 시 직전 세션의 종료 사유 상태를 초기화한다.
+        // close()/hidePreview()가 set한 previewCloseInitiatedByApp가 리셋되지 않으면,
+        // 이후 사용자가 직접 닫아도 reason이 programmatic으로 오보된다(SMV-1392 #14).
+        previewCloseInitiatedByApp = false
+        pendingPreviewCloseButtonClick = false
 
         val preview = ShopLive.showPreviewPopup(activity, campaignKey) ?: return
         attachPreviewDetachListener(preview)
@@ -336,6 +342,7 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
     private fun resolvePreviewCloseReason(): String {
         return when {
             previewCloseInitiatedByApp -> PREVIEW_CLOSE_REASON_PROGRAMMATIC
+            ShopLiveBasePreview.wasLastDismissBroadcastEnded() -> PREVIEW_CLOSE_REASON_BROADCAST_ENDED
             pendingPreviewCloseButtonClick -> PREVIEW_CLOSE_REASON_CLOSE_BUTTON
             ShopLiveBasePreview.wasLastDismissSwipeOut() -> PREVIEW_CLOSE_REASON_SWIPE_OUT
             else -> PREVIEW_CLOSE_REASON_UNKNOWN
