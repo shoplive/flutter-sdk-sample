@@ -4,7 +4,7 @@
 #
 require 'yaml'
 
-pubspec = YAML.load_file(File.join(__dir__, '..', 'pubspec.yaml'))
+pubspec = YAML.safe_load_file(File.join(__dir__, '..', 'pubspec.yaml'))
 
 Pod::Spec.new do |s|
   s.name             = 'shoplive_player'

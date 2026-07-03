@@ -235,8 +235,6 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         }
     }
 
-    // shoplive_player.podspec의 s.version(pubspec.yaml에서 동적으로 읽어옴)이
-    // 빌드 시 이 pod 프레임워크의 CFBundleShortVersionString으로 박히므로 런타임에 조회한다.
     static var pluginVersion: String {
         Bundle(for: SwiftShopLivePlayerModule.self).infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
     }
@@ -365,9 +363,6 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         ShopLive.preview(with: campaignKey)
     }
 
-    // ShopLive.setCloseHandler/setCloseButtonClickHandler(matrix-sdk-ios)로 전달받은 닫힘 사유를
-    // previewClose 이벤트 reason으로 변환한다. 과거엔 ShopLive.close(actionType:)를
-    // 런타임 스위즐링으로 가로채 얻었으나, SDK가 정식 콜백을 제공하면서 대체됨.
     private func handlePreviewCloseAction(actionType: ShopLiveViewHiddenActionType) {
         guard ShopLive.playerMode == .preview else { return }
 
@@ -387,7 +382,6 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
             }
         }
 
-        previewCloseInitiatedByApp = false
         let campaignKey = currentPreviewCampaignKey ?? ""
         finishPreviewClose(campaignKey: campaignKey, reason: reason)
     }
@@ -694,8 +688,6 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
     }
 
     private func processCommand(_ command: String, payload: [String: Any]) {
-        // fullScreen으로 전환되면 더 이상 preview 상태가 아니므로, 이후 fullScreen에서
-        // 발생하는 닫힘(viewDidDisAppear/onSwipeOut/onBtnTapped 등)이 previewClose로 잘못 발행되지 않게 막는다.
         if command == ShopLiveViewTrackEvent.fullScreenWillAppear.name {
             isPreviewShowing = false
         }
