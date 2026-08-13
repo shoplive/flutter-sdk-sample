@@ -95,6 +95,12 @@ abstract class ShoplivePlayerPlatform extends PlatformInterface {
     throw UnimplementedError('setNextActionOnHandleNavigation() has not been implemented.');
   }
 
+  void setResizeMode({
+    required ShopLiveResizeMode mode,
+  }) {
+    throw UnimplementedError('setResizeMode() has not been implemented.');
+  }
+
   void setEnterPipModeOnBackPressed({
     required bool isEnterPipMode,
   }) {
