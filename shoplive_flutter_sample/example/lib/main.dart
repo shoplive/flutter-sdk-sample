@@ -53,6 +53,8 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
   late final _shareSchemeUrlController =
       TextEditingController(text: "http://google.com");
 
+  ShopLiveResizeMode _resizeMode = ShopLiveResizeMode.centerCrop;
+
   @override
   void initState() {
     super.initState();
@@ -214,6 +216,29 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
                   ),
                 ),
               ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: ShopLiveResizeMode.values.map((mode) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _resizeMode = mode;
+                        });
+                        _shopLivePlayerPlugin.setResizeMode(mode: mode);
+                        _showToast("setResizeMode : ${mode.parseValue()}");
+                      },
+                      style: TextButton.styleFrom(
+                        backgroundColor: _resizeMode == mode
+                            ? Colors.blue.shade100
+                            : Colors.transparent,
+                      ),
+                      child: Text(mode.parseValue()),
+                    ),
+                  );
+                }).toList(),
+              ),
               TextButton(
                 onPressed: () {
                   if (_accessKeyController.text.isEmpty) {
@@ -230,6 +255,7 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
                   _shopLivePlayerPlugin.setMuteWhenPlayStart(isMute: false);
                   _shopLivePlayerPlugin.setMixWithOthers(isMixAudio: true);
                   _shopLivePlayerPlugin.useCloseButton(canUse: true);
+                  _shopLivePlayerPlugin.setResizeMode(mode: _resizeMode);
                   _shopLivePlayerPlugin.setShareScheme(
                       shareSchemeUrl: _shareSchemeUrlController.text.isNotEmpty
                           ? _shareSchemeUrlController.text

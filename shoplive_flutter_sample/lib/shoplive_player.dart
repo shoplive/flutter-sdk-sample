@@ -163,6 +163,12 @@ class ShopLivePlayer {
         .setNextActionOnHandleNavigation(type: type.toPackageType());
   }
 
+  void setResizeMode({
+    required ShopLiveResizeMode mode,
+  }) {
+    return ShoplivePlayerPlatform.instance.setResizeMode(mode: mode);
+  }
+
   void setEnterPipModeOnBackPressed({
     required bool isEnterPipMode,
   }) {
@@ -366,6 +372,23 @@ extension ShopLiveActionTypeExtension on ShopLiveActionType {
         return 'hide';
       case ShopLiveActionType.keep:
         return 'keep';
+    }
+  }
+}
+
+enum ShopLiveResizeMode { auto, centerCrop, fit }
+
+extension ShopLiveResizeModeExtension on ShopLiveResizeMode {
+  /// iOS/Android 의 ShopLiveResizeMode 는 선언 순서가 서로 달라
+  /// 정수(rawValue/ordinal)로는 값이 어긋난다. 반드시 이름으로 전달한다.
+  String parseValue() {
+    switch (this) {
+      case ShopLiveResizeMode.auto:
+        return 'AUTO';
+      case ShopLiveResizeMode.centerCrop:
+        return 'CENTER_CROP';
+      case ShopLiveResizeMode.fit:
+        return 'FIT';
     }
   }
 }

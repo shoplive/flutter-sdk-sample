@@ -149,6 +149,16 @@ class MethodChannelShoplivePlayer extends ShoplivePlayerPlatform {
   }
 
   @override
+  void setResizeMode({
+    required ShopLiveResizeMode mode,
+  }) async {
+    return await methodChannel
+        .invokeMethod<void>('player_setResizeMode', <String, dynamic>{
+      'mode': mode.parseValue(),
+    });
+  }
+
+  @override
   void setEnterPipModeOnBackPressed({
     required bool isEnterPipMode,
   }) async {

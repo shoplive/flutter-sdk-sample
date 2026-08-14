@@ -12,6 +12,7 @@ import cloud.shoplive.sdk.*
 import cloud.shoplive.sdk.common.ShopLiveBasePreview
 import cloud.shoplive.sdk.common.ShopLivePreviewCloseButtonPositionConfig
 import cloud.shoplive.sdk.common.ShopLivePreviewPositionConfig
+import cloud.shoplive.sdk.common.ShopLiveResizeMode
 import cloud.shoplive.sdk.common.extension.toColorIntOrNull
 import com.google.gson.*
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -143,6 +144,10 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
 
             "player_setNextActionOnHandleNavigation" -> setNextActionOnHandleNavigation(
                 call.argument<Int>("type"),
+            )
+
+            "player_setResizeMode" -> setResizeMode(
+                call.argument<String>("mode"),
             )
 
             "player_setEnterPipModeOnBackPressed" -> setEnterPipModeOnBackPressed(
@@ -448,6 +453,16 @@ class ShoplivePlayerModule : ShopliveBaseModule() {
             else -> ShopLive.ActionType.PIP
         }
         ShopLive.setNextActionOnHandleNavigation(action)
+    }
+
+    private fun setResizeMode(mode: String?) {
+        val resizeMode = when (mode) {
+            "AUTO" -> ShopLiveResizeMode.AUTO
+            "CENTER_CROP" -> ShopLiveResizeMode.CENTER_CROP
+            "FIT" -> ShopLiveResizeMode.FIT
+            else -> return
+        }
+        ShopLive.setResizeMode(resizeMode)
     }
 
     private fun setEnterPipModeOnBackPressed(isEnterPipMode: Boolean?) {

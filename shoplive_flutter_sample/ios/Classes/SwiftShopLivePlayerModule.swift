@@ -137,6 +137,9 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         case "player_setNextActionOnHandleNavigation" :
             setNextActionOnHandleNavigation(type: args?["type"] as? Int)
             break
+        case "player_setResizeMode" :
+            setResizeMode(mode: args?["mode"] as? String)
+            break
         case "player_setEnterPipModeOnBackPressed" :
             setEnterPipModeOnBackPressed(isEnterPipMode: args?["isEnterPipMode"] as? Bool)
             break
@@ -415,6 +418,25 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         ShopLive.setNextActionOnHandleNavigation(actionType: actionType)
     }
     
+    private func setResizeMode(mode: String?) {
+        guard let mode = mode else {
+            return
+        }
+        let resizeMode: ShopLiveResizeMode
+        switch mode {
+        case "AUTO":
+            resizeMode = .AUTO
+        case "CENTER_CROP":
+            resizeMode = .CENTER_CROP
+        case "FIT":
+            resizeMode = .FIT
+        default:
+            return
+        }
+
+        ShopLive.setResizeMode(mode: resizeMode)
+    }
+
     private func setEnterPipModeOnBackPressed(isEnterPipMode: Bool?) {
         // Do nothing
     }
