@@ -1,3 +1,10 @@
+## 1.8.14
+* Add `ShopLivePlayer.setResizeMode()` — passes through the native `setResizeMode` API for the live player (`ShopLiveResizeMode.auto` / `centerCrop` / `fit`)
+* Update Shoplive iOS/Android SDK to 1.8.13
+
+## 1.8.13
+* Update Shoplive iOS/Android SDK to 1.8.11
+
 ## 1.8.12
 * Bump version to v1.8.12
 
