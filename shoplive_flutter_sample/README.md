@@ -155,7 +155,7 @@ A method the platform does not implement fails with `MissingPluginException`. Ev
 
 ## Migrating from 1.x
 
-3.0.2 is a rewrite. The 1.x Dart API, the Shortform API and `ShopLiveCommon` have been removed.
+3.0.2 is a rewrite. The 1.x Dart API (up to 1.8.14), the Shortform API and `ShopLiveCommon` have been removed. Rows marked 1.8.x cover APIs added in 1.7.1–1.8.14.
 
 | 1.x | 3.0.2 |
 |---|---|
@@ -166,7 +166,7 @@ A method the platform does not implement fails with `MissingPluginException`. Ev
 | guest (`guestUid`) | `Shoplive.setUser(const ShopliveUser.guest())` |
 | `ShopLiveCommon.clearAuth` | `Shoplive.logout()` |
 | `ShopLivePlayer.play(ShopLivePlayerData)` | `ShoplivePlayer.instance.start(campaignKey, playOptions: …, configuration: …)`. Use `play` to switch campaigns while running |
-| `showPreview(ShopLivePlayerPreviewData)` | `start(campaignKey, playOptions: ShoplivePlayOptions(presentationStyle: ShoplivePresentationStyle.pip), configuration: ShoplivePlayerConfiguration(type: ShoplivePlayerType.preview, pip: ShoplivePipOptions(isInAppPipEnabled: true)))`. Preview UI details depend on SDK 3.x; check them on a device |
+| `showPreview(ShopLivePlayerPreviewData)` (≤1.7) / `showPreview(campaignKey)` + `setPreviewOption(...)` (1.8.x) | `start(campaignKey, playOptions: ShoplivePlayOptions(presentationStyle: ShoplivePresentationStyle.pip), configuration: ShoplivePlayerConfiguration(type: ShoplivePlayerType.preview, pip: ShoplivePipOptions(isInAppPipEnabled: true)))`. Preview UI details depend on SDK 3.x; check them on a device |
 | Share handling (the 1.x Android bridge overrode `handleShare` and ran the SDK default share after 100 ms) | No share handler in SDK 3.x. Set `configuration.navigation.shareScheme` |
 | `setShareScheme` | `configuration.navigation.shareScheme` |
 | `setNextActionOnHandleNavigation` | `configuration.navigation.actionOnNavigation` |
@@ -177,6 +177,16 @@ A method the platform does not implement fails with `MissingPluginException`. Ev
 | `startPictureInPicture` / `stopPictureInPicture` | `enterPictureInPicture` / `exitPictureInPicture` |
 | `sendCommandMessage` | `send(command, payload)` |
 | `useCloseButton`, `setEndpoint`, tablet aspect ratio, transparent status bar | No equivalent in SDK 3.0.2 |
+| 1.8.x `setPreviewOption` margins / `position` | `configuration.pip.padding` (`ShopliveInsets`) / `configuration.pip.defaultPosition` (`ShoplivePipPosition`) |
+| 1.8.x `setPreviewOption` `pipRadius`, `enableSwipeOut`, `pipMaxSize` | No equivalent in SDK 3.0.2 (closest: `pip.scale`, `pip.aspectRatio`) |
+| 1.8.x `closeButtonConfig` (`ShopLiveCloseButtonConfig`) | No equivalent in SDK 3.0.2 |
+| 1.8.x `hidePreview()` | No separate API. `close()` ends the session (whether it matches 1.8.x hide-only behavior is unverified) |
+| 1.8.x `previewClose` stream and its `reason` (`close_button`, `swipe_out`, `broadcast_ended`, `programmatic`) | No equivalent event. `stateChanged(closed)` tells that it closed, `campaignStatusChanged(ended)` that the broadcast ended; the close reason is not available |
+| 1.8.x `setResizeMode(auto / centerCrop / fit)` | `setResizeMode(ShopliveResizeMode.fill / fit)`. `auto` and `centerCrop` do not exist in SDK 3.0.2; `centerCrop` users should try `fill` (closest, check on a device) |
+| 1.8.x `sendDownloadCouponResult` / `sendCustomActionResult` | `couponRequests` / `customWebActionRequests` and `request.respond(...)` |
+| 1.8.x `getSdkVersion()` | `Shoplive.getSdkVersion()` |
+| 1.8.x `getPluginVersion()` | `ShoplivePlayer.instance.getPluginVersion()` (or `ShoplivePlayer.pluginVersion`) |
+| `ShopLiveActionType` `show` / `hide` / `keep` (≤1.7: sent as 0/1/2 and matched to the SDK's `PIP`/`KEEP`/`CLOSE` order on Android) | `configuration.navigation.actionOnNavigation`: `show` → `ShopliveNavigationAction.pip`, `hide` → `.keep`, `keep` → `.close` (the actual Android 1.x behavior). In 1.8.x the Android bridge always fell back to `pip`. iOS 1.x mapping is unverified |
 | 10 event streams (`handleNavigation`, `handleDownloadCoupon`, `changeCampaignStatus`, `campaignInfo`, `handleCustomAction`, `changedPlayerStatus`, `userInfo`, `error`, `receivedCommand`, `log`) | `events` (sealed `ShoplivePlayerEvent`) plus `navigationRequests`, `couponRequests` and `customWebActionRequests` |
 | `log` stream | No confirmed equivalent. `webCommandReceived` / `analytics` may cover some uses (unverified) |
 | `ShopLive*` class names | `Shoplive*` |

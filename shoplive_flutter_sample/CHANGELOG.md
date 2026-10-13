@@ -9,6 +9,8 @@ Rewrite on Shoplive Android SDK 3.0.2 (`cloud.shoplive:shoplive-player-sdk:3.0.2
 * New channel contract. The method channel is `shoplive_player`, and events come on `shoplive_player/events` and `shoplive_player/requests` as typed maps. The 10 per-event channels of 1.x are gone.
 * Every method now returns a `Future` and throws `PlatformException` (`INVALID_ARGUMENT`, `NO_HOST_SCREEN`, `NOT_RUNNING`, `SDK_ERROR`). Previously `void` methods swallowed errors.
 * Class names changed from `ShopLive*` to `Shoplive*`. See the migration table in README.
+* 1.8.x APIs without an SDK 3.0.2 equivalent are removed: `closeButtonConfig` (`ShopLiveCloseButtonConfig`), `hidePreview`, the `previewClose` stream and its close reasons, and the preview options `pipRadius`, `enableSwipeOut`, `pipMaxSize`. `setResizeMode` keeps only `fill` / `fit` (no `auto` / `centerCrop`). See the migration table in README.
+* `getPluginVersion()` is kept as `ShoplivePlayer.instance.getPluginVersion()`; `getSdkVersion()` moved to `Shoplive.getSdkVersion()`. `sendDownloadCouponResult` / `sendCustomActionResult` are replaced by `respond` on the request objects.
 
 ### Behavior changes
 * Custom web actions are no longer answered with success automatically. Without a listener, or without a `respond` before the timeout (default 10 s, configurable 1–120 s), the SDK receives `success: false, status: keep, alertType: toast`.
