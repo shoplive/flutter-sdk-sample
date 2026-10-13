@@ -16,4 +16,5 @@ First release of `shoplive_core`, built on Shoplive Android SDK 3.0.2 (`cloud.sh
 * Flutter 3.22 / Dart 3.4 or later.
 * Android: AGP 8.7, Gradle 8.9, JDK 17, minSdk 23, compileSdk 36.
 * Android SDK artifacts come from `https://sdk.shoplive.cloud/maven-repo`. The `cloud.shoplive` group is restricted to that repository with `exclusiveContent`, because Maven Central hosts a conflicting `shoplive-media3:1.10.1.2`. See README.
-* iOS is not supported in this version.
+* iOS 15.0 (Shoplive iOS SDK 3.0.2, XCFrameworks downloaded and sha256-verified during `pod install` - see README "iOS setup"). Set `platform :ios, '15.0'` in your Podfile. When you run `pod install` manually, use a UTF-8 locale.
+* Upgrading from 1.x: run `flutter clean` once; stale 1.x iOS build products otherwise fail with "'ShoplivePlayerPlugin' has different definitions in different modules".

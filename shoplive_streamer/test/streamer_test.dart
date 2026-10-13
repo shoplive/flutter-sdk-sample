@@ -69,11 +69,20 @@ void main() {
     });
 
     // case: B-02
+    // case: D-1 (DRAFT-flutter-sdk-302-ios) — iOS SDK에는 rehearsal 정보가 없어 키가 생략된다
+    test('stateChanged without isRehearsal (iOS) → isRehearsal null', () {
+      final s = p({'type': 'stateChanged', 'state': 'live'}) as ShopliveStreamerStateChanged;
+      expect(s.state, ShopliveBroadcastState.live);
+      expect(s.isRehearsal, isNull);
+      final n = p({'type': 'stateChanged', 'state': 'idle', 'isRehearsal': null}) as ShopliveStreamerStateChanged;
+      expect(n.isRehearsal, isNull);
+    });
+
     test('unknown / malformed never throw', () {
       expect((p({'type': 'unknown', 'rawType': 'x'}) as ShopliveStreamerUnknownEvent).rawType, 'x');
       expect(p({'type': 'zzz'}), isA<ShopliveStreamerUnknownEvent>());
       expect(p({'type': 'error', 'error': 'bad'}), isA<ShopliveStreamerUnknownEvent>());
-      expect(p({'type': 'stateChanged', 'state': 'live'}), isA<ShopliveStreamerUnknownEvent>());
+      expect(p({'type': 'stateChanged', 'state': 'live', 'isRehearsal': 'yes'}), isA<ShopliveStreamerUnknownEvent>());
       expect(p(42), isA<ShopliveStreamerUnknownEvent>());
     });
   });

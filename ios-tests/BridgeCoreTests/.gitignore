@@ -1,0 +1,4 @@
+# SwiftPM build products (dev-only test package)
+.build/
+.swiftpm/
+Package.resolved

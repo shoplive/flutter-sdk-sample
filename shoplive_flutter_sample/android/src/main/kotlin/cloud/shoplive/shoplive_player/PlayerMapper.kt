@@ -165,7 +165,7 @@ internal object PlayerMapper {
                     isVolumeKeyEnabled = if (android?.has("isVolumeKeyEnabled") == true) android.optBool("isVolumeKeyEnabled") else cs.isVolumeKeyEnabled,
                 ),
                 appearance = ca.copy(
-                    indicatorColor = nonNullInt(appearance, "indicatorColor") ?: ca.indicatorColor,
+                    indicatorColor = argbColor(appearance) ?: ca.indicatorColor,
                     isStatusBarVisible = nonNullBool(android, "isStatusBarVisible") ?: ca.isStatusBarVisible,
                     allowScreenCapture = nonNullBool(android, "allowScreenCapture") ?: ca.allowScreenCapture,
                 ),
@@ -185,6 +185,19 @@ internal object PlayerMapper {
         nonNullInt(a, "right") ?: cur.right,
         nonNullInt(a, "bottom") ?: cur.bottom,
     )
+
+    /**
+     * ARGB color as an unsigned 32-bit value (Dart `0xFF00FF00` = 4278255360 exceeds Int). Signed Int input is
+     * accepted too; anything outside -2^31..2^32-1 is INVALID_ARGUMENT. Output is always unsigned (contract, iOS same).
+     */
+    private fun argbColor(a: Args?): Int? {
+        val key = "indicatorColor"
+        val v = a?.optLong(key) ?: return requireNotExplicitNull(a, key, null)
+        if (v < Int.MIN_VALUE || v > ARGB_MASK) throw BridgeArgumentException(key, "ARGB 0..0xFFFFFFFF", "out of range")
+        return v.toInt()
+    }
+
+    private const val ARGB_MASK = 0xFFFFFFFFL
 
     private fun <T> requireNotExplicitNull(a: Args?, key: String, keep: T): T {
         if (a != null && a.has(key)) throw BridgeArgumentException(key, "non-null value", "null")
@@ -229,7 +242,7 @@ internal object PlayerMapper {
             "padding" to mapOf("left" to c.pip.padding.left, "top" to c.pip.padding.top, "right" to c.pip.padding.right, "bottom" to c.pip.padding.bottom),
         ),
         "sound" to mapOf("muteOnStart" to c.sound.muteOnStart, "mixWithOthers" to c.sound.mixWithOthers),
-        "appearance" to mapOf("indicatorColor" to c.appearance.indicatorColor),
+        "appearance" to mapOf("indicatorColor" to (c.appearance.indicatorColor.toLong() and ARGB_MASK)),
         "navigation" to mapOf("actionOnNavigation" to wireOf(c.navigation.actionOnNavigation, NAVIGATION_ACTION), "shareScheme" to c.navigation.shareScheme),
         "overlay" to mapOf("ui" to wireOf(c.overlay.ui, OVERLAY_UI)),
         "customParameters" to c.customParameters,

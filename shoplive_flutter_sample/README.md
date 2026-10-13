@@ -20,7 +20,7 @@ Apps that only play videos add `shoplive_player`, and streamer binaries stay out
 | Android Gradle Plugin / Gradle | 8.7 / 8.9 |
 | JDK | 17 |
 | Android minSdk / compileSdk | 23 / 36 |
-| iOS | Not supported in 3.0.2. Android only; iOS support will follow. |
+| iOS | 15.0 (Xcode with Swift 5.9 or later; set `platform :ios, '15.0'` in your Podfile) |
 
 ## Installation
 
@@ -83,6 +83,17 @@ allprojects {
 
 If your build resolves dependencies from `settings.gradle(.kts)` `dependencyResolutionManagement` (repositories mode `PREFER_SETTINGS`), put the same `exclusiveContent` block there and still set the flag. We have not verified this mode with Flutter builds. In Flutter's default mode (`PREFER_PROJECT`), project repositories win.
 
+## iOS setup
+
+- **Minimum iOS 15.** Set `platform :ios, '15.0'` in `ios/Podfile`. Flutter's template uses a lower value, and `pod install` fails with "higher minimum deployment target" until you change it.
+- **The Shoplive iOS SDK is downloaded during `pod install`.** The plugins fetch the SDK 3.0.2 XCFrameworks from the GitHub release `https://github.com/shoplive/shoplive-sdk-ios/releases/tag/3.0.2`. Every zip is checked against its sha256; if a checksum does not match, `pod install` stops and nothing unverified is linked. The frameworks are unpacked into the plugin's `ios/Frameworks/` folder and reused by later installs, so only the first install downloads. Anything that evaluates the podspec downloads too: `pod install`, `flutter build ios` / `flutter run` (which run `pod install`) and `pod spec lint`.
+  - Network: the first install needs access to `github.com` and its download host. `curl` honours `HTTPS_PROXY`, `ALL_PROXY` and `NO_PROXY`.
+  - Mirror: set `SHOPLIVE_IOS_SDK_BASE_URL` to a server that serves `<base>/3.0.2/<Name>.xcframework.zip`.
+  - Offline / CI: set `SHOPLIVE_IOS_SDK_DIR` to a folder that contains the five release zips (`ShopliveCore`, `ShoplivePlayerSDK`, `ShopliveStreamerSDK`, `ShopLiveWebRTCHelperSDK`, `WebRTC` `.xcframework.zip`). To avoid downloading on every CI run, cache the pub cache (key it by SDK version).
+  - The plugin folder must be writable, because the frameworks have to live inside it. With a read-only pub cache, point `PUB_CACHE` at a writable folder and run `flutter pub get` again.
+- If you run `pod install` yourself, use a UTF-8 locale (`export LANG=en_US.UTF-8`); CocoaPods fails otherwise.
+- **Upgrading from 1.x:** run `flutter clean` once. Stale 1.x build products otherwise cause "'ShoplivePlayerPlugin' has different definitions in different modules".
+
 ## Usage
 
 ```dart
@@ -140,6 +151,21 @@ await player.close();           // always succeeds
 - Add-to-app: if the PIP return host is a native Activity (not the Flutter one), make it an androidx `ComponentActivity` (e.g. `AppCompatActivity`); the plugin only patches the Activity the Flutter engine is attached to.
 - `shoplive_core` declares `androidx.constraintlayout:constraintlayout:2.2.1` to override the `2.0.1` that the SDK pulls in through `material`. If your app pins an older ConstraintLayout with `force`/`strictly`, in-app PIP layout fails.
 
+## iOS differences
+
+The Dart API and channel contract are the same on both platforms. The iOS SDK differs in a few places:
+
+| Topic | iOS behavior |
+|---|---|
+| `start` | The plugin creates the SDK player view controller and presents it over the top-most screen. Calling `start` while a session is open (fullscreen or in-app PIP) switches the campaign in the same player instead of opening a second one |
+| `configuration.type` | No type field on iOS: `preview` / `live` select the SDK `.preview` / `.default` configuration preset, then the other fields are applied |
+| Ignored on iOS | `configuration.android.*`, `pip.aspectRatio`, `initialize(appVersion:)`, `setUser(profile.custom)` - accepted and ignored (no iOS SDK counterpart) |
+| Not exposed yet | iOS-only SDK options: `sound.autoResumeOnCallEnded`, `pip.fixedWidth` / `floatingOffset` / `windowProvider`, `appearance.allowScreenCapture`, loading images, chat fonts, `attribution.advertisingId` - the SDK defaults apply |
+| Events | `playback` `failed`: `code` / `message` are `null`. `error`: `rawCode` is `null` except for unknown SDK codes. Streamer `stateChanged.isRehearsal` is `null` (the iOS SDK has no rehearsal flag) |
+| Coupon / custom-action respond | `alertType` defaults to `toast` when omitted (the iOS SDK requires a value) |
+| `indicatorColor` | ARGB as an unsigned 32-bit value (`0xFF00FF00`), same on Android |
+| Removed 1.x iOS options | `setKeepAspectOnTabletPortrait`, `setEnabledPipSwipeOut`, preview close events and the close-button handlers have no 3.0.2 counterpart. The 1.x sample app's `CLICK_BACK_BUTTON` workaround (switch to in-app PIP) was app code; with 3.0.2, handle such commands from `webCommandReceived` if your app still needs it |
+
 ## Errors
 
 Every API returns a `Future` and fails with `PlatformException`. The codes are:
@@ -147,7 +173,7 @@ Every API returns a `Future` and fails with `PlatformException`. The codes are:
 | `code` | Meaning |
 |---|---|
 | `INVALID_ARGUMENT` | Missing or blank required value, wrong type, unknown enum value, out-of-range value, or a value rejected by SDK validation |
-| `NO_HOST_SCREEN` | No foreground screen (Activity) to show the player or broadcast UI |
+| `NO_HOST_SCREEN` | No foreground screen to show the player or broadcast UI (Android: no Activity; iOS: no foreground window/root view controller) |
 | `NOT_RUNNING` | A session command was sent while no player session is running |
 | `SDK_ERROR` | The SDK call failed. `details` contains the exception class name and, when available, the SDK error code |
 
@@ -195,11 +221,11 @@ A method the platform does not implement fails with `MissingPluginException`. Ev
 
 ## Known limitations
 
+- **iOS: deferred presentation reports success early.** If `start` is called while another screen transition is running, the player is presented when that transition ends; `start` has already returned success, so a later presentation failure is not reported (only logged).
 - **Nullable settings cannot be reset from Dart.** `navigation.shareScheme` and `android.isVolumeKeyEnabled` cannot be set back to `null`: an omitted field keeps its current value.
 - **Sessions do not survive an engine restart.** After the Flutter engine is detached and attached again (add-to-app, multiple engines), the new plugin instance cannot control or observe a session that the previous engine left open (for example with `closeWhenAppDestroyed: false`). Requests from that session are answered with the fallback result.
 - **Only synchronous listener errors are handled.** If a request listener throws synchronously, that request is answered with the fallback result immediately. Errors thrown after an `await` in an async listener are not caught. If you never respond, the request falls back when the timeout expires.
 - **Silent SDK rejections cannot be detected.** If the launch Activity is gone or is not a `LifecycleOwner`, the SDK rejects `start` with a log message only. `start` still completes successfully.
-- **iOS** is not supported in 3.0.2.
 - Calling `Shoplive.initialize` more than once (hot restart, multiple engines) behaves however the SDK does. The bridge does not guard it.
 
 ## Links

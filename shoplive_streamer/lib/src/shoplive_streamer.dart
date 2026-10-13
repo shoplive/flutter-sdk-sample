@@ -51,11 +51,12 @@ sealed class ShopliveStreamerEvent {
     if (type is! String) return const ShopliveStreamerUnknownEvent(rawType: '');
     switch (type) {
       case 'stateChanged':
+        // isRehearsal은 선택 필드: iOS SDK에는 rehearsal 정보가 없어 키를 생략한다(DRAFT-flutter-sdk-302-ios D-1).
         final rehearsal = raw['isRehearsal'];
-        if (rehearsal is! bool) return ShopliveStreamerUnknownEvent(rawType: type);
+        if (rehearsal != null && rehearsal is! bool) return ShopliveStreamerUnknownEvent(rawType: type);
         return ShopliveStreamerStateChanged(
           state: parseWireEnum(ShopliveBroadcastState.values, raw['state'], unknown: ShopliveBroadcastState.unknown),
-          isRehearsal: rehearsal,
+          isRehearsal: rehearsal as bool?,
         );
       case 'error':
         final error = ShopliveError.tryParse(raw['error']);
@@ -70,9 +71,11 @@ sealed class ShopliveStreamerEvent {
 }
 
 class ShopliveStreamerStateChanged extends ShopliveStreamerEvent {
-  const ShopliveStreamerStateChanged({required this.state, required this.isRehearsal});
+  const ShopliveStreamerStateChanged({required this.state, this.isRehearsal});
   final ShopliveBroadcastState state;
-  final bool isRehearsal;
+
+  /// 리허설 방송 여부. 플랫폼이 제공하지 않으면 null(iOS SDK 3.0.2는 제공하지 않음).
+  final bool? isRehearsal;
 }
 
 class ShopliveStreamerErrorEvent extends ShopliveStreamerEvent {

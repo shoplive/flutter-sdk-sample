@@ -11,7 +11,7 @@ It is re-exported by `shoplive_player` and `shoplive_streamer`. Add it directly 
 | Android Gradle Plugin / Gradle | 8.7 / 8.9 |
 | JDK | 17 |
 | Android minSdk / compileSdk | 23 / 36 |
-| iOS | Not supported in 3.0.2. Android only; iOS support will follow. |
+| iOS | 15.0 (Xcode with Swift 5.9 or later; set `platform :ios, '15.0'` in your Podfile) |
 
 ## Installation
 
@@ -74,6 +74,17 @@ allprojects {
 
 If your build resolves dependencies from `settings.gradle(.kts)` `dependencyResolutionManagement` (repositories mode `PREFER_SETTINGS`), put the same `exclusiveContent` block there and still set the flag. We have not verified this mode with Flutter builds. In Flutter's default mode (`PREFER_PROJECT`), project repositories win.
 
+## iOS setup
+
+- **Minimum iOS 15.** Set `platform :ios, '15.0'` in `ios/Podfile`. Flutter's template uses a lower value, and `pod install` fails with "higher minimum deployment target" until you change it.
+- **The Shoplive iOS SDK is downloaded during `pod install`.** The plugins fetch the SDK 3.0.2 XCFrameworks from the GitHub release `https://github.com/shoplive/shoplive-sdk-ios/releases/tag/3.0.2`. Every zip is checked against its sha256; if a checksum does not match, `pod install` stops and nothing unverified is linked. The frameworks are unpacked into the plugin's `ios/Frameworks/` folder and reused by later installs, so only the first install downloads. Anything that evaluates the podspec downloads too: `pod install`, `flutter build ios` / `flutter run` (which run `pod install`) and `pod spec lint`.
+  - Network: the first install needs access to `github.com` and its download host. `curl` honours `HTTPS_PROXY`, `ALL_PROXY` and `NO_PROXY`.
+  - Mirror: set `SHOPLIVE_IOS_SDK_BASE_URL` to a server that serves `<base>/3.0.2/<Name>.xcframework.zip`.
+  - Offline / CI: set `SHOPLIVE_IOS_SDK_DIR` to a folder that contains the five release zips (`ShopliveCore`, `ShoplivePlayerSDK`, `ShopliveStreamerSDK`, `ShopLiveWebRTCHelperSDK`, `WebRTC` `.xcframework.zip`). To avoid downloading on every CI run, cache the pub cache (key it by SDK version).
+  - The plugin folder must be writable, because the frameworks have to live inside it. With a read-only pub cache, point `PUB_CACHE` at a writable folder and run `flutter pub get` again.
+- If you run `pod install` yourself, use a UTF-8 locale (`export LANG=en_US.UTF-8`); CocoaPods fails otherwise.
+- **Upgrading from 1.x:** run `flutter clean` once. Stale 1.x build products otherwise cause "'ShoplivePlayerPlugin' has different definitions in different modules".
+
 ## Usage
 
 ```dart
@@ -103,7 +114,7 @@ Every API returns a `Future` and fails with `PlatformException`. The codes are:
 | `code` | Meaning |
 |---|---|
 | `INVALID_ARGUMENT` | Missing or blank required value, wrong type, unknown enum value, out-of-range value, or a value rejected by SDK validation |
-| `NO_HOST_SCREEN` | No foreground screen (Activity) to show the player or broadcast UI |
+| `NO_HOST_SCREEN` | No foreground screen to show the player or broadcast UI (Android: no Activity; iOS: no foreground window/root view controller) |
 | `NOT_RUNNING` | A session command was sent while no player session is running |
 | `SDK_ERROR` | The SDK call failed. `details` contains the exception class name and, when available, the SDK error code |
 
@@ -115,5 +126,4 @@ A method the platform does not implement fails with `MissingPluginException`. Ev
 
 ## Known limitations
 
-- iOS is not supported in 3.0.2.
 - Calling `Shoplive.initialize` more than once (hot restart, multiple engines) behaves however the SDK does. The bridge does not guard it.

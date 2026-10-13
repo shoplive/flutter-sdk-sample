@@ -138,7 +138,7 @@ class _ShopliveSamplePageState extends State<ShopliveSamplePage> {
     switch (e) {
       case ShopliveStreamerStateChanged(:final state, :final isRehearsal):
         setState(() => _broadcastState = state);
-        _append('broadcast → ${state.name}${isRehearsal ? ' (rehearsal)' : ''}');
+        _append('broadcast → ${state.name}${isRehearsal == true ? ' (rehearsal)' : ''}');
       case ShopliveStreamerErrorEvent(:final error):
         _append('streamer error → ${error.code}');
       case ShopliveStreamerUnknownEvent(:final rawType):

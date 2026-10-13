@@ -13,6 +13,8 @@ Rewrite on Shoplive Android SDK 3.0.2 (`cloud.shoplive:shoplive-player-sdk:3.0.2
 * `getPluginVersion()` is kept as `ShoplivePlayer.instance.getPluginVersion()`; `getSdkVersion()` moved to `Shoplive.getSdkVersion()`. `sendDownloadCouponResult` / `sendCustomActionResult` are replaced by `respond` on the request objects.
 
 ### Behavior changes
+* `configuration.appearance.indicatorColor` takes an unsigned 32-bit ARGB value such as `0xFF00FF00` (previously rejected on Android as out of range) and `getConfiguration` returns it unsigned.
+* iOS: see README "iOS differences" (ignored Android-only fields, `type` presets, nullable playback/error fields, default `alertType`).
 * Custom web actions are no longer answered with success automatically. Without a listener, or without a `respond` before the timeout (default 10 s, configurable 1–120 s), the SDK receives `success: false, status: keep, alertType: toast`.
 * Coupon requests now have a response protocol: `couponRequests` + `respond`. In 1.x, coupon requests were never answered.
 * Share handling changed: the 1.x Android bridge overrode `handleShare` and ran the SDK default share after a 100 ms delay. SDK 3.x has no share handler, so configure sharing with `configuration.navigation.shareScheme`.
@@ -38,7 +40,8 @@ Rewrite on Shoplive Android SDK 3.0.2 (`cloud.shoplive:shoplive-player-sdk:3.0.2
 * Flutter 3.22 / Dart 3.4 or later.
 * Android: AGP 8.7, Gradle 8.9, JDK 17, minSdk 23, compileSdk 36.
 * Android SDK artifacts come from `https://sdk.shoplive.cloud/maven-repo`. The `cloud.shoplive` group is restricted to that repository with `exclusiveContent`, because Maven Central hosts a conflicting `shoplive-media3:1.10.1.2`. See README.
-* iOS is not supported in this version.
+* iOS 15.0 (Shoplive iOS SDK 3.0.2, XCFrameworks downloaded and sha256-verified during `pod install` - see README "iOS setup"). Set `platform :ios, '15.0'` in your Podfile. When you run `pod install` manually, use a UTF-8 locale.
+* Upgrading from 1.x: run `flutter clean` once; stale 1.x iOS build products otherwise fail with "'ShoplivePlayerPlugin' has different definitions in different modules".
 
 ## 1.9.0
 * Update Shoplive iOS/Android SDK to 1.9.0. Android artifacts resolve from `https://sdk.shoplive.cloud/maven-repo`, with ExoPlayer `2.19.1.20`. Minimum iOS is 15.0

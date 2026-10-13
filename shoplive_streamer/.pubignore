@@ -1,0 +1,2 @@
+# Shoplive iOS SDK XCFrameworks are downloaded at pod install, never published
+ios/Frameworks/

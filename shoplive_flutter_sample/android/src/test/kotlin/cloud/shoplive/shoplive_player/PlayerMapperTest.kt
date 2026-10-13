@@ -85,6 +85,21 @@ class PlayerMapperTest {
         assertEquals(ShoplivePlayerPresentationStyle.PIP, o.presentationStyle)
     }
 
+    @Test // case: B-06 (DRAFT-flutter-sdk-302-ios: Dart 0xFF00FF00 is 4278255360, beyond Int)
+    fun indicatorColor_unsignedArgb_roundTrips() {
+        val merged = PlayerMapper.mergeConfiguration(
+            ShoplivePlayerConfiguration(),
+            Args.of(mapOf("appearance" to mapOf("indicatorColor" to 0xFF00FF00L))),
+        )
+        assertEquals(0xFF00FF00.toInt(), merged.appearance.indicatorColor)
+        assertEquals(0xFF00FF00L, (PlayerMapper.configurationToWire(merged)["appearance"] as Map<*, *>)["indicatorColor"])
+        val signed = PlayerMapper.mergeConfiguration(ShoplivePlayerConfiguration(), Args.of(mapOf("appearance" to mapOf("indicatorColor" to -16711936))))
+        assertEquals(0xFF00FF00.toInt(), signed.appearance.indicatorColor)
+        assertThrows(BridgeArgumentException::class.java) {
+            PlayerMapper.mergeConfiguration(ShoplivePlayerConfiguration(), Args.of(mapOf("appearance" to mapOf("indicatorColor" to 0x1_0000_0000L))))
+        }
+    }
+
     @Test // case: B-03
     fun playOptions_keyWithNull_forNonNullField_isInvalid() {
         val e = assertThrows(BridgeArgumentException::class.java) {

@@ -27,3 +27,6 @@ migrate_working_dir/
 **/doc/api/
 .dart_tool/
 build/
+
+# Shoplive iOS SDK XCFrameworks downloaded at pod install (DRAFT-flutter-sdk-302-ios)
+/ios/Frameworks/
