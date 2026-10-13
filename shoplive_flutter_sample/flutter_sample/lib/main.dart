@@ -8,7 +8,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shoplive_player/shoplive_common.dart';
 import 'package:shoplive_player/shoplive_player.dart';
-import 'package:shoplive_player/shoplive_shortform.dart';
 
 void main() {
   runApp(const MyApp());
@@ -45,7 +44,6 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
   final String _campaignKey = "2551fcb165c3";
   late final _shopLiveCommonPlugin = ShopLiveCommon();
   late final _shopLivePlayerPlugin = ShopLivePlayer();
-  late final _shopLiveShortformPlugin = ShopLiveShortform();
   late final _accessKeyController =
       TextEditingController(text: _accessKey); // For testing AccessKey
   late final _campaignKeyController =
@@ -139,32 +137,6 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
     _shopLivePlayerPlugin.previewClose.listen((data) {
       debugPrint("previewClose : ${data.campaignKey}, ${data.reason.toReasonString()}");
     }).addTo(_compositeSubscription);
-
-    //shortform event listener
-    _shopLiveShortformPlugin.onClickProduct.listen((data) {
-      debugPrint("onClickProduct : ${data.productId} ");
-    }).addTo(_compositeSubscription);
-
-    _shopLiveShortformPlugin.onClickBanner.listen((data) {
-      debugPrint("onClickBanner : ${data.url} ");
-    }).addTo(_compositeSubscription);
-
-    _shopLiveShortformPlugin.onShare.listen((data) {
-      debugPrint("onClickShare : ${data.shortsId}, ${data.title}  ");
-    }).addTo(_compositeSubscription);
-
-    _shopLiveShortformPlugin.onStart.listen((data) {
-      debugPrint("onShortformStarted");
-    }).addTo(_compositeSubscription);
-
-    _shopLiveShortformPlugin.onClose.listen((data) {
-      debugPrint("onShortformClosed");
-    }).addTo(_compositeSubscription);
-
-    _shopLiveShortformPlugin.log.listen((data) {
-      debugPrint("onShortformEventLog : ${data.command}, ${data.payload} ");
-    }).addTo(_compositeSubscription);
-    //shortform event listener end
   }
 
   @override
@@ -325,33 +297,6 @@ class _ShopLiveTestPageState extends State<ShopLiveTestPage> {
                   _shopLivePlayerPlugin.hidePreview();
                 },
                 child: const Text('HidePreview'),
-              ),
-              TextButton(
-                onPressed: () {
-                  if (_accessKeyController.text.isEmpty) {
-                    _showToast("Required to accessKey");
-                    return;
-                  }
-
-                  // _shopLiveCommonPlugin.setUser(
-                  //     accessKey: _accessKeyController.text,
-                  //     user: ShopLiveCommonUser(
-                  //       userId: "userId",
-                  //       userName: "TestUser",
-                  //       userScore: 0,
-                  //       gender: ShopLiveCommonUserGender.NEUTRAL,
-                  //       age: 20,
-                  //       custom: {"key": "value"},
-                  //     ));
-
-                  _shopLiveCommonPlugin.setAccessKey(
-                    accessKey: _accessKeyController.text,
-                  );
-
-                  _shopLiveShortformPlugin.play(
-                      data: ShopLiveShortformCollectionData());
-                },
-                child: const Text('Shortform PLAY'),
               ),
             ],
           ),

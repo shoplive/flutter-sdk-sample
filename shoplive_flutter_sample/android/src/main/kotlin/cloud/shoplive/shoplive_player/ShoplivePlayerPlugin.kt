@@ -15,7 +15,6 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
     private val shopliveCommonModule = ShopliveCommonModule()
     private val shoplivePlayerModule = ShoplivePlayerModule()
-    private val shopliveShortformModule = ShopliveShortformModule()
 
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
@@ -27,7 +26,6 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         shopliveCommonModule.onAttachedToActivity(binding)
         shoplivePlayerModule.onAttachedToActivity(binding)
-        shopliveShortformModule.onAttachedToActivity(binding)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -46,7 +44,6 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         shopliveCommonModule.onAttachedToEngine(flutterPluginBinding)
         shoplivePlayerModule.onAttachedToEngine(flutterPluginBinding)
-        shopliveShortformModule.onAttachedToEngine(flutterPluginBinding)
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "shoplive_player")
         channel.setMethodCallHandler(this)
     }
@@ -54,7 +51,6 @@ class ShoplivePlayerPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onMethodCall(call: MethodCall, result: Result) {
         shopliveCommonModule.onMethodCall(call, result)
         shoplivePlayerModule.onMethodCall(call, result)
-        shopliveShortformModule.onMethodCall(call, result)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {

@@ -18,20 +18,21 @@ rootProject.allprojects {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://sdk.shoplive.cloud/maven-repo' }
     }
 }
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
-def shoplive_sdk_version = "1.8.13"
-def shoplive_exoplayer_version = "2.19.1.19"
+def shoplive_sdk_version = "1.9.0"
+def shoplive_exoplayer_version = "2.19.1.20"
 
 // pubspec.yaml에서 버전 가져오기
 def pubspecFile = file('../pubspec.yaml')
 def pubspecContent = pubspecFile.text
 def versionMatch = pubspecContent =~ /version:\s*(.+)/
-def plugin_version = versionMatch ? versionMatch[0][1].trim() : "1.8.14"
+def plugin_version = versionMatch ? versionMatch[0][1].trim() : "1.9.0"
 
 android {
     namespace "cloud.shoplive.shoplive_player"
@@ -82,9 +83,9 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.google.code.gson:gson:2.9.1'
 
-    implementation "cloud.shoplive:shoplive-common:$shoplive_sdk_version" // must required
-    implementation "cloud.shoplive:shoplive-exoplayer:$shoplive_exoplayer_version" // must required
-    implementation "cloud.shoplive:shoplive-sdk-core:$shoplive_sdk_version" // for live player
-    implementation "cloud.shoplive:shoplive-network:$shoplive_sdk_version" // for shot-form player && editor
-    implementation "cloud.shoplive:shoplive-short-form:$shoplive_sdk_version" // for short-form player
+    // 1.9.0 POMs have no transitive Shoplive artifacts. sdk-core references common, network, and exoplayer.
+    implementation "cloud.shoplive:shoplive-common:$shoplive_sdk_version"
+    implementation "cloud.shoplive:shoplive-network:$shoplive_sdk_version"
+    implementation "cloud.shoplive:shoplive-exoplayer:$shoplive_exoplayer_version"
+    implementation "cloud.shoplive:shoplive-sdk-core:$shoplive_sdk_version"
 }

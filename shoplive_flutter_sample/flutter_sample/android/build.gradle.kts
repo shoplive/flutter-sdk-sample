@@ -2,6 +2,7 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("https://sdk.shoplive.cloud/maven-repo") }
     }
 }
 
