@@ -1,75 +1,79 @@
-group 'cloud.shoplive.shoplive_player'
-version '1.0-SNAPSHOT'
+group = "cloud.shoplive.shoplive_player"
+version = "3.0.2"
 
 buildscript {
-    ext.kotlin_version = '1.6.10'
+    // 버전 정합: Kotlin 1.9.25 = shoplive-*-3.0.2 POM의 kotlin-stdlib 버전 (DRAFT-flutter-sdk-302-android S11)
+    ext.kotlin_version = "1.9.25"
     repositories {
         google()
-        jcenter()
         mavenCentral()
     }
-
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath("com.android.tools.build:gradle:8.7.3")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
     }
 }
 
-rootProject.allprojects {
-    repositories {
-        google()
-        jcenter()
-        mavenCentral()
+// cloud.shoplive 그룹은 Shoplive 저장소에서만 받는다: Maven Central에 같은 좌표·다른 내용의 artifact가 있음
+// (예: shoplive-media3:1.10.1.2 — Central판에는 player-sdk 3.0.2가 참조하는 ShopLiveHlsPlayerFactory가 없음, sha256 52a464c0… vs 728bfeb8…).
+// exclusiveContent는 같은 그룹에 한 번만 선언해야 하므로(중복 시 해석 실패) 3개 플러그인·호스트 앱 중 먼저 선언한 쪽만 적용한다.
+// TODO(SDP-VERIFY): 3.0.4에서 shoplive-media3가 player-sdk에 흡수되면 exclusiveContent 가드 제거 · 근거 DRAFT-flutter-sdk-302-android/PKG-02
+// 값이 true일 때만 "이미 구성됨"으로 본다(ext 또는 gradle.properties; "false"/미지정이면 플러그인이 선언)
+def shopliveRepoAlreadyConfigured = rootProject.findProperty("shopliveMavenRepoConfigured")?.toString()?.toBoolean() ?: false
+if (!shopliveRepoAlreadyConfigured) {
+    rootProject.ext.shopliveMavenRepoConfigured = true
+    rootProject.allprojects {
+        repositories {
+            google()
+            mavenCentral()
+            exclusiveContent {
+                forRepository { maven { url "https://sdk.shoplive.cloud/maven-repo" } }
+                filter { includeGroup "cloud.shoplive" }
+            }
+        }
     }
 }
 
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
 
 android {
-    namespace "cloud.shoplive.shoplive_player"
-    compileSdkVersion 34
+    namespace = "cloud.shoplive.shoplive_player"
+    compileSdk = 36
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = "17"
     }
 
     sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
+        main.java.srcDirs += "src/main/kotlin"
+        test.java.srcDirs += "src/test/kotlin"
     }
 
     defaultConfig {
-        minSdkVersion 19
-        targetSdkVersion 34
+        minSdk = 23
     }
 
-    buildTypes {
-        debug {
-            debuggable true
-        }
-        release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
+    // release minify 없음: 라이브러리 모듈에서 R8은 무의미. SDK AAR 3종이 consumer proguard.txt로 공개 표면을 keep하고,
+    // 브릿지는 리플렉션·Gson 직렬화를 쓰지 않으므로(StandardMessageCodec + 명시 매핑) 별도 consumer rules 불필요(pair #2).
+
+    testOptions {
+        unitTests.returnDefaultValues = true
     }
 }
 
 dependencies {
-    implementation(fileTree(dir: "libs", include: ["*.jar", "*.aar"]))
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.google.code.gson:gson:2.9.1'
+    // FIXME(SDP-VERIFY): 요확인 — shoplive_core/player/streamer 3플러그인의 Shoplive SDK 버전은 같은 값(3.0.2)으로 맞춰야 함. 어긋나면 Gradle이 가장 높은 shoplive-core를 골라 바이너리가 어긋날 수 있음. 완화책(strictly/BOM)은 미결 · 근거 DRAFT-flutter-sdk-302-android/PKG-01 · 자동 통과 금지(:app:dependencies 확인)
+    implementation("cloud.shoplive:shoplive-player-sdk:3.0.2")
+    // HostLifecycleShim: ViewTreeLifecycleOwner(2.3.0+). SDK가 이미 2.5.1+를 끌어오므로 버전을 올리지 않는 하한으로 선언.
+    implementation("androidx.lifecycle:lifecycle-runtime:2.5.1")
 
-    def shoplive_sdk_version = "1.6.7"
-    def shoplive_exoplayer_version = "2.19.1.8"
-
-    implementation "cloud.shoplive:shoplive-common:$shoplive_sdk_version" // must required
-    implementation "cloud.shoplive:shoplive-exoplayer:$shoplive_exoplayer_version" // must required
-    implementation "cloud.shoplive:shoplive-sdk-core:$shoplive_sdk_version" // for live player
-    implementation "cloud.shoplive:shoplive-network:$shoplive_sdk_version" // for shot-form player && editor
-    implementation "cloud.shoplive:shoplive-short-form:$shoplive_sdk_version" // for short-form player
+    testImplementation("junit:junit:4.13.2")
+    // android.jar의 org.json은 stub이라 정규화 테스트용 실구현을 둔다(테스트 전용)
+    testImplementation("org.json:json:20240303")
 }
