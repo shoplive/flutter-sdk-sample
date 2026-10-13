@@ -15,11 +15,48 @@ struct SwiftShoplivePlayerModuleEventName {
     static let EVENT_PLAYER_SET_USER_NAME = "event_player_set_user_name"
     static let EVENT_PLAYER_RECEIVED_COMMAND = "event_player_received_command"
     static let EVENT_PLAYER_LOG = "event_player_log"
+    static let EVENT_PLAYER_PREVIEW_CLOSE = "event_player_preview_close"
 }
 
 class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
 
     typealias eventName = SwiftShoplivePlayerModuleEventName
+    
+    // callback 객체를 임시 저장하는 Dictionary (id를 key로 사용)
+    private var pendingCallbacks: [String: Any] = [:]
+    
+    // 타임아웃 관리를 위한 타이머들
+    private var timeoutTimers: [String: Timer] = [:]
+    
+    // 타임아웃 시간 (5초)
+    private let callbackTimeoutSeconds: TimeInterval = 5.0
+
+    private var previewCloseInitiatedByApp = false
+    private var currentPreviewCampaignKey: String?
+    private var isPreviewShowing = false
+    private var lastPreviewCloseEmitAt: TimeInterval = 0
+    private let previewCloseDebounceInterval: TimeInterval = 0.3
+    private var previewCloseEmitted = false
+
+    private func resetPreviewCloseState(campaignKey: String?) {
+        currentPreviewCampaignKey = campaignKey
+        isPreviewShowing = true
+        previewCloseEmitted = false
+        previewCloseInitiatedByApp = false
+    }
+
+    private func finishPreviewClose(campaignKey: String, reason: String) {
+        guard !previewCloseEmitted else { return }
+        let now = Date().timeIntervalSince1970
+        if now - lastPreviewCloseEmitAt < previewCloseDebounceInterval {
+            return
+        }
+        lastPreviewCloseEmitAt = now
+        previewCloseEmitted = true
+        isPreviewShowing = false
+        previewCloseInitiatedByApp = false
+        emitPreviewClose(campaignKey: campaignKey, reason: reason)
+    }
 
     public static var eventHandleNavigation = ShopliveEventData(eventName: eventName.EVENT_PLAYER_HANDLE_NAVIGATION, flutterEventSink: nil)
     public static var eventHandleDownloadCoupon = ShopliveEventData(eventName: eventName.EVENT_PLAYER_HANDLE_DOWNLOAD_COUPON, flutterEventSink: nil)
@@ -31,7 +68,8 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
     public static var eventSetUserName = ShopliveEventData(eventName: eventName.EVENT_PLAYER_SET_USER_NAME, flutterEventSink: nil)
     public static var eventReceivedCommand = ShopliveEventData(eventName: eventName.EVENT_PLAYER_RECEIVED_COMMAND, flutterEventSink: nil)
     public static var eventLog = ShopliveEventData(eventName: eventName.EVENT_PLAYER_LOG, flutterEventSink: nil)
-    
+    public static var eventPreviewClose = ShopliveEventData(eventName: eventName.EVENT_PLAYER_PREVIEW_CLOSE, flutterEventSink: nil)
+
     
     override var eventPairs: [String] {
         get {
@@ -45,7 +83,8 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
                 eventName.EVENT_PLAYER_CHANGED_PLAYER_STATUS,
                 eventName.EVENT_PLAYER_SET_USER_NAME,
                 eventName.EVENT_PLAYER_RECEIVED_COMMAND,
-                eventName.EVENT_PLAYER_LOG
+                eventName.EVENT_PLAYER_LOG,
+                eventName.EVENT_PLAYER_PREVIEW_CLOSE
             ]
         }
         set {
@@ -74,14 +113,20 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         case "player_play" :
             play(
                 campaignKey: args?["campaignKey"] as? String,
-                keepWindowStateOnPlayExecuted: args?["keepWindowStateOnPlayExecuted"] as? Bool
+                keepWindowStateOnPlayExecuted: args?["keepWindowStateOnPlayExecuted"] as? Bool,
+                referrer: args?["referrer"] as? String
             )
             break
+        case "player_setPreviewOption" :
+            setPreviewOption(args: args)
+            result(nil)
+            break
+
         case "player_showPreview" :
-            showPreview(
-                campaignKey: args?["campaignKey"] as? String,
-                closeButton: args?["useCloseButton"] as? Bool
-            )
+            showPreview(campaignKey: args?["campaignKey"] as? String)
+            break
+        case "player_hidePreview" :
+            hidePreview()
             break
         case "player_setShareScheme" :
             setShareScheme(shareSchemeUrl: args?["shareSchemeUrl"] as? String)
@@ -91,6 +136,9 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
             break
         case "player_setNextActionOnHandleNavigation" :
             setNextActionOnHandleNavigation(type: args?["type"] as? Int)
+            break
+        case "player_setResizeMode" :
+            setResizeMode(mode: args?["mode"] as? String)
             break
         case "player_setEnterPipModeOnBackPressed" :
             setEnterPipModeOnBackPressed(isEnterPipMode: args?["isEnterPipMode"] as? Bool)
@@ -122,33 +170,227 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         case "player_removeParameter" :
             removeParameter(key: args?["key"] as? String)
             break
+        case "player_downloadCouponResult" :
+            let couponId = args?["couponId"] as? String ?? ""
+            let success = args?["success"] as? Bool ?? true
+            let message = args?["message"] as? String ?? "Success"
+            let popupStatus = args?["popupStatus"] as? String ?? "HIDE"
+            let alertType = args?["alertType"] as? String ?? "TOAST"
+            
+            // 저장된 callback 가져오기
+            if let callback = pendingCallbacks.removeValue(forKey: couponId) as? (ShopLiveCouponResult) -> Void {
+                // 타임아웃 타이머 취소
+                timeoutTimers[couponId]?.invalidate()
+                timeoutTimers.removeValue(forKey: couponId)
+                
+                // Flutter에서 받은 값으로 callback 호출
+                let couponResult = ShopLiveCouponResult(
+                    couponId: couponId,
+                    success: success,
+                    message: message,
+                    status: popupStatus == "SHOW" ? ShopLiveResultStatus.SHOW :
+                        popupStatus == "HIDE" ? ShopLiveResultStatus.HIDE :
+                        popupStatus == "KEEP" ? ShopLiveResultStatus.KEEP : ShopLiveResultStatus.HIDE,
+                    alertType: alertType == "TOAST" ? ShopLiveResultAlertType.TOAST :
+                        alertType == "ALERT" ? ShopLiveResultAlertType.ALERT : ShopLiveResultAlertType.TOAST
+                )
+                callback(couponResult)
+            }
+            
+            result(nil)
+            break
+        case "player_customActionResult" :
+            let id = args?["id"] as? String ?? ""
+            let success = args?["success"] as? Bool ?? true
+            let message = args?["message"] as? String ?? "Success"
+            let popupStatus = args?["popupStatus"] as? String ?? "HIDE"
+            let alertType = args?["alertType"] as? String ?? "TOAST"
+
+            // 저장된 callback 가져오기
+            if let callback = pendingCallbacks.removeValue(forKey: id) as? (ShopLiveCustomActionResult) -> Void {
+                // 타임아웃 타이머 취소
+                timeoutTimers[id]?.invalidate()
+                timeoutTimers.removeValue(forKey: id)
+                
+                // Flutter에서 받은 값으로 callback 호출
+                let customActionResult = ShopLiveCustomActionResult(
+                    id: id,
+                    success: success,
+                    message: message,
+                    status: popupStatus == "SHOW" ? ShopLiveResultStatus.SHOW :
+                        popupStatus == "HIDE" ? ShopLiveResultStatus.HIDE :
+                        popupStatus == "KEEP" ? ShopLiveResultStatus.KEEP : ShopLiveResultStatus.HIDE,
+                    alertType: alertType == "TOAST" ? ShopLiveResultAlertType.TOAST :
+                        alertType == "ALERT" ? ShopLiveResultAlertType.ALERT : ShopLiveResultAlertType.TOAST
+                )
+                callback(customActionResult)
+            }
+            
+            result(nil)
+            break
+        case "player_getSdkVersion" :
+            result(ShopLive.sdkVersion)
+            break
+        case "player_getPluginVersion" :
+            result(Self.pluginVersion)
+            break
         default : break
         }
     }
-    
-    
-    // region ShopLive Public class
-    private func play(campaignKey: String?, keepWindowStateOnPlayExecuted: Bool?) {
-        guard campaignKey != nil else { return }
-        
-        ShopLive.delegate = self
-        
-        setOption()
-        guard let keepWindowStateOnPlayExecuted = keepWindowStateOnPlayExecuted else {
-            ShopLive.play(with: campaignKey)
-            return
-        }
-        ShopLive.play(with: campaignKey, keepWindowStateOnPlayExecuted: keepWindowStateOnPlayExecuted)
+
+    static var pluginVersion: String {
+        Bundle(for: SwiftShopLivePlayerModule.self).infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
     }
 
-    private func showPreview(campaignKey: String?, closeButton: Bool?) {
+    // region ShopLive Public class
+    private func play(campaignKey: String?, keepWindowStateOnPlayExecuted: Bool?, referrer: String?) {
         guard campaignKey != nil else { return }
 
         ShopLive.delegate = self
 
         setOption()
-        useCloseButton(use: closeButton)
+        guard let keepWindowStateOnPlayExecuted = keepWindowStateOnPlayExecuted else {
+            ShopLive.play(with: campaignKey, referrer: referrer)
+            return
+        }
+        ShopLive.play(with: campaignKey, keepWindowStateOnPlayExecuted: keepWindowStateOnPlayExecuted, referrer: referrer)
+    }
+
+    private func setPreviewOption(args: [String: Any]?) {
+        let positionString = args?["position"] as? String ?? "TOP_LEFT"
+        
+        let pipPosition: ShopLive.PipPosition = {
+            switch positionString {
+            case "TOP_LEFT": return .topLeft
+            case "TOP_RIGHT": return .topRight
+            case "BOTTOM_LEFT": return .bottomLeft
+            case "BOTTOM_RIGHT": return .bottomRight
+            default: return .bottomRight
+            }
+        }()
+
+        let marginTop = args?["marginTop"] as? CGFloat ?? 0
+        let marginBottom = args?["marginBottom"] as? CGFloat ?? 0
+        let marginLeft = args?["marginLeft"] as? CGFloat ?? 0
+        let marginRight = args?["marginRight"] as? CGFloat ?? 0
+        
+        let closeButtonConfigMap = (args?["closeButtonConfig"] as? [String: Any]) ?? [:]
+        let closeButtonPositionString = closeButtonConfigMap["position"] as? String ?? "TOP_LEFT"
+        let closeButtonPosition: ShopLive.PreviewCloseButtonPositionConfig = {
+            switch closeButtonPositionString {
+            case "TOP_LEFT": return .topLeft
+            case "TOP_RIGHT": return .topRight
+            default: return .topLeft
+            }
+        }()
+        
+        let width = closeButtonConfigMap["width"] as? CGFloat
+        let height = closeButtonConfigMap["height"] as? CGFloat
+        let offsetX = closeButtonConfigMap["offsetX"] as? CGFloat ?? 0
+        let offsetY = closeButtonConfigMap["offsetY"] as? CGFloat ?? 0
+        
+        let colorString = closeButtonConfigMap["color"] as? String
+        let color: UIColor? = colorString != nil ? UIColor(hexString: colorString!) : .white
+        
+        let shadowOffsetX = closeButtonConfigMap["shadowOffsetX"] as? CGFloat ?? 0
+        let shadowOffsetY = closeButtonConfigMap["shadowOffsetY"] as? CGFloat ?? 0
+        let shadowBlur = closeButtonConfigMap["shadowBlur"] as? CGFloat ?? 0
+        
+        let shadowBlurStyle: ShopLiveBlurMaskStyle? = {
+            if let styleInt = closeButtonConfigMap["shadowBlurStyle"] as? Int {
+                return ShopLiveBlurMaskStyle(rawValue: styleInt)
+            }
+            if let styleNumber = closeButtonConfigMap["shadowBlurStyle"] as? NSNumber {
+                return ShopLiveBlurMaskStyle(rawValue: styleNumber.intValue)
+            }
+            if let styleString = closeButtonConfigMap["shadowBlurStyle"] as? String {
+                guard !styleString.isEmpty, styleString != "NORMAL" else {
+                    return nil
+                }
+                switch styleString {
+                case "SOLID": return .solid
+                case "OUTER": return .outer
+                case "INNER": return .inner
+                default: return nil
+                }
+            }
+            return nil
+        }()
+        
+        let shadowColorString = closeButtonConfigMap["shadowColor"] as? String
+        let shadowColor: UIColor? = shadowColorString != nil ? UIColor(hexString: shadowColorString!) : nil
+        
+        let imageStr = closeButtonConfigMap["imageStr"] as? String
+        
+        let closeButtonConfig = ShopLiveCloseButtonConfig(
+            position: closeButtonPosition,
+            width: width,
+            height: height,
+            offsetX: offsetX,
+            offsetY: offsetY,
+            color: color,
+            shadowOffsetX: shadowOffsetX,
+            shadowOffsetY: shadowOffsetY,
+            shadowBlur: shadowBlur,
+            shadowBlurStyle: shadowBlurStyle,
+            shadowColor: shadowColor,
+            imageStr: imageStr
+        )
+        
+        let inAppPipConfig = ShopLiveInAppPipConfiguration(
+            useCloseButton: args?["useCloseButton"] as? Bool ?? false,
+            pipPosition: pipPosition,
+            enableSwipeOut: args?["enableSwipeOut"] as? Bool ?? true,
+            pipSize: .init(pipMaxSize: args?["pipMaxSize"] as? CGFloat ?? 300),
+            pipRadius: args?["pipRadius"] as? CGFloat ?? 0,
+            closeButtonConfig: closeButtonConfig
+        )
+        
+        ShopLive.setPictureInPicturePadding(padding: .init(top: marginTop, left: marginLeft, bottom: marginBottom, right: marginRight))
+        ShopLive.setInAppPipConfiguration(config: inAppPipConfig)
+    }
+
+    private func showPreview(campaignKey: String?) {
+        guard campaignKey != nil else { return }
+
+        ShopLive.delegate = self
+
+        setOption()
+        ShopLive.setCloseHandler { [weak self] actionType in
+            self?.handlePreviewCloseAction(actionType: actionType)
+        }
+        resetPreviewCloseState(campaignKey: campaignKey)
         ShopLive.preview(with: campaignKey)
+    }
+
+    private func handlePreviewCloseAction(actionType: ShopLiveViewHiddenActionType) {
+        guard ShopLive.playerMode == .preview else { return }
+
+        let reason: String
+        if previewCloseInitiatedByApp {
+            reason = "programmatic"
+        } else {
+            switch actionType {
+            case .onBtnTapped:
+                reason = "close_button"
+            case .onSwipeOut:
+                reason = "swipe_out"
+            case .onBroadcastEnded:
+                reason = "broadcast_ended"
+            default:
+                reason = "unknown"
+            }
+        }
+
+        let campaignKey = currentPreviewCampaignKey ?? ""
+        finishPreviewClose(campaignKey: campaignKey, reason: reason)
+    }
+
+    private func hidePreview() {
+        previewCloseInitiatedByApp = true
+        let campaignKey = currentPreviewCampaignKey ?? ""
+        ShopLive.close()
+        scheduleProgrammaticPreviewCloseFallback(campaignKey: campaignKey)
     }
 
     private func setShareScheme(shareSchemeUrl: String?) {
@@ -176,6 +418,25 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
         ShopLive.setNextActionOnHandleNavigation(actionType: actionType)
     }
     
+    private func setResizeMode(mode: String?) {
+        guard let mode = mode else {
+            return
+        }
+        let resizeMode: ShopLiveResizeMode
+        switch mode {
+        case "AUTO":
+            resizeMode = .AUTO
+        case "CENTER_CROP":
+            resizeMode = .CENTER_CROP
+        case "FIT":
+            resizeMode = .FIT
+        default:
+            return
+        }
+
+        ShopLive.setResizeMode(mode: resizeMode)
+    }
+
     private func setEnterPipModeOnBackPressed(isEnterPipMode: Bool?) {
         // Do nothing
     }
@@ -202,7 +463,14 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
     }
     
     private func close() {
-        ShopLive.close()
+        if ShopLive.playerMode == .preview {
+            previewCloseInitiatedByApp = true
+            let campaignKey = currentPreviewCampaignKey ?? ""
+            ShopLive.close()
+            scheduleProgrammaticPreviewCloseFallback(campaignKey: campaignKey)
+        } else {
+            ShopLive.close()
+        }
     }
 
     private func startPictureInPicture() {
@@ -365,6 +633,86 @@ class SwiftShopLivePlayerModule : SwiftShopliveBaseModule {
             try container.encode(payload, forKey: .payload)
         }
     }
+
+    private struct PreviewClose: Codable {
+        let campaignKey: String
+        let reason: String
+    }
+
+    private func emitPreviewClose(campaignKey: String, reason: String) {
+        if let json = try? JSONEncoder().encode(PreviewClose(campaignKey: campaignKey, reason: reason)) {
+            if let eventSink = Self.eventPreviewClose.flutterEventSink {
+                eventSink(String(data: json, encoding: .utf8))
+            }
+        }
+    }
+
+    private func scheduleProgrammaticPreviewCloseFallback(campaignKey: String) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+            guard let self = self, self.previewCloseInitiatedByApp, !self.previewCloseEmitted else { return }
+            self.finishPreviewClose(campaignKey: campaignKey, reason: "programmatic")
+        }
+    }
+
+    private func resolvePreviewCloseReason(command: String, actionType: String?) -> String? {
+        if previewCloseInitiatedByApp {
+            return "programmatic"
+        }
+
+        if actionType == "onBroadcastEnded" {
+            return "broadcast_ended"
+        }
+        if actionType == "onBtnTapped" {
+            return "close_button"
+        }
+        if actionType == "onSwipeOut" {
+            return "swipe_out"
+        }
+        if command == "CLOSE_FROM_PREVIEW" {
+            return "swipe_out"
+        }
+        if command == "viewDidDisAppear" || command == "viewDidDisappear" {
+            return actionType == nil ? "unknown" : nil
+        }
+        return nil
+    }
+
+    private func tryHandlePreviewClose(command: String, payload: [String: Any]) {
+        let actionType = payload["viewHiddenActionType"] as? String
+        let isPreviewCloseCommand = command == "CLOSE_FROM_PREVIEW"
+            || command == "viewDidDisAppear"
+            || command == "viewDidDisappear"
+            || actionType == "onBtnTapped"
+            || actionType == "onSwipeOut"
+
+        guard isPreviewCloseCommand else { return }
+        guard isPreviewShowing || previewCloseInitiatedByApp else { return }
+
+        guard let reason = resolvePreviewCloseReason(command: command, actionType: actionType) else {
+            return
+        }
+
+        let campaignKey = (payload["campaignKey"] as? String)
+            ?? currentPreviewCampaignKey
+            ?? ""
+        finishPreviewClose(campaignKey: campaignKey, reason: reason)
+    }
+
+    private func forwardReceivedCommand(command: String, payload: [String: Any]) {
+        if let json = try? JSONEncoder().encode(ReceivedCommand(command: command, data: payload)) {
+            if let eventSink = Self.eventReceivedCommand.flutterEventSink {
+                eventSink(String(data: json, encoding: .utf8))
+            }
+        }
+    }
+
+    private func processCommand(_ command: String, payload: [String: Any]) {
+        if command == ShopLiveViewTrackEvent.fullScreenWillAppear.name {
+            isPreviewShowing = false
+        }
+        tryHandlePreviewClose(command: command, payload: payload)
+        forwardReceivedCommand(command: command, payload: payload)
+    }
     
     private func setOption() {
         // tablet 화면 비율
@@ -383,17 +731,37 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
         }
     }
     
-    public func handleDownloadCoupon(with couponId: String, result: @escaping (ShopLiveSDK.ShopLiveCouponResult) -> Void) {
+    public func handleDownloadCoupon(with couponId: String, result: @escaping (ShopLiveCouponResult) -> Void) {
+        // callback을 임시 저장 (couponId를 key로 사용)
+        pendingCallbacks[couponId] = result
+        
+        // 타임아웃 설정: 5초 후 자동 정리
+        let timer = Timer.scheduledTimer(withTimeInterval: callbackTimeoutSeconds, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+            
+            if let removedCallback = self.pendingCallbacks.removeValue(forKey: couponId) as? (ShopLiveCouponResult) -> Void {
+                // 타임아웃으로 인한 실패 처리
+                let timeoutResult = ShopLiveCouponResult(
+                    couponId: couponId,
+                    success: false,
+                    message: "",
+                    status: ShopLiveResultStatus.KEEP,
+                    alertType: ShopLiveResultAlertType.TOAST
+                )
+                removedCallback(timeoutResult)
+            }
+            self.timeoutTimers.removeValue(forKey: couponId)
+        }
+        timeoutTimers[couponId] = timer
+        
+        // Flutter에 다운로드 쿠폰 이벤트 전송
         if let json = try? JSONEncoder().encode(HandleDownloadCoupon(couponId: couponId)) {
             if let eventSink = Self.eventHandleDownloadCoupon.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }
         
-        DispatchQueue.main.async {
-            let couponResult = ShopLiveCouponResult(couponId: couponId, success: true, message: "Success", status: ShopLiveSDK.ShopLiveResultStatus.HIDE, alertType: ShopLiveSDK.ShopLiveResultAlertType.TOAST)
-            result(couponResult)
-        }
+        // Flutter에서 응답을 받을 때까지 대기 (callback.couponResult는 나중에 호출)
     }
     
     public func handleCustomActionResult(with id: String, type: String, payload: Any?, completion: @escaping (ShopLiveSDK.CustomActionResult) -> Void) {
@@ -407,15 +775,49 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
         }
     }
     
-    public func handleCustomAction(with id: String, type: String, payload: Any?, result: @escaping (ShopLiveSDK.ShopLiveCustomActionResult) -> Void) {
-        guard let payload = payload as? String else {
-            return
+    public func handleCustomAction(with id: String, type: String, payload: Any?, result: @escaping (ShopLiveCustomActionResult) -> Void) {
+        
+        let payloadString: String
+        if let dictPayload = payload as? [String: Any],
+           let jsonData = try? JSONSerialization.data(withJSONObject: dictPayload),
+           let jsonString = String(data: jsonData, encoding: .utf8) {
+            payloadString = jsonString
+        } else if let stringPayload = payload as? String {
+            payloadString = stringPayload
+        } else {
+            payloadString = String(describing: payload ?? "")
         }
-        if let json = try? JSONEncoder().encode(HandleCustomAction(id: id, type: type, payload: payload)) {
+        
+        // callback을 임시 저장 (id를 key로 사용)
+        pendingCallbacks[id] = result
+        
+        // 타임아웃 설정: 5초 후 자동 정리
+        let timer = Timer.scheduledTimer(withTimeInterval: callbackTimeoutSeconds, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+
+            if let removedCallback = self.pendingCallbacks.removeValue(forKey: id) as? (ShopLiveCustomActionResult) -> Void {
+                // 타임아웃으로 인한 실패 처리
+                let timeoutResult = ShopLiveCustomActionResult(
+                    id: id,
+                    success: false,
+                    message: "",
+                    status: ShopLiveResultStatus.KEEP,
+                    alertType: ShopLiveResultAlertType.TOAST
+                )
+                removedCallback(timeoutResult)
+            }
+            self.timeoutTimers.removeValue(forKey: id)
+        }
+        timeoutTimers[id] = timer
+        
+        // Flutter에 커스텀 액션 이벤트 전송
+        if let json = try? JSONEncoder().encode(HandleCustomAction(id: id, type: type, payload: payloadString)) {
             if let eventSink = Self.eventHandleCustomAction.flutterEventSink {
                 eventSink(String(data: json, encoding: .utf8))
             }
         }
+        
+        // Flutter에서 응답을 받을 때까지 대기 (callback.customActionResult는 나중에 호출)
     }
     
     public func handleCustomAction(with id: String, type: String, payload: Any?, completion: @escaping () -> Void) {
@@ -457,12 +859,7 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
         guard let payload = (payload ?? [String: Any]()) as? Dictionary<String, Any> else {
             return
         }
-        
-        if let json = try? JSONEncoder().encode(ReceivedCommand(command: command, data: payload)) {
-            if let eventSink = Self.eventReceivedCommand.flutterEventSink {
-                eventSink(String(data: json, encoding: .utf8))
-            }
-        }
+        processCommand(command, payload: payload)
     }
     
     public func onSetUserName(_ payload: [String : Any]) {
@@ -477,12 +874,12 @@ extension SwiftShopLivePlayerModule: ShopLiveSDKDelegate {
         guard let payload = (payload ?? [String: Any]()) as? Dictionary<String, Any> else {
             return
         }
-        
-        if let json = try? JSONEncoder().encode(ReceivedCommand(command: command, data: payload)) {
-            if let eventSink = Self.eventReceivedCommand.flutterEventSink {
-                eventSink(String(data: json, encoding: .utf8))
-            }
-        }
+        processCommand(command, payload: payload)
+    }
+
+    public func handleReceivedCommand(_ command: String, data: [String: Any]?) {
+        let payload = data ?? [:]
+        processCommand(command, payload: payload)
     }
     
     public func handleChangedPlayerStatus(status: String) {
@@ -546,6 +943,9 @@ fileprivate class StreamHandler: NSObject, FlutterStreamHandler {
         case eventName.EVENT_PLAYER_LOG :
             module.eventLog.flutterEventSink = events
             break
+        case eventName.EVENT_PLAYER_PREVIEW_CLOSE :
+            module.eventPreviewClose.flutterEventSink = events
+            break
         default: return nil
         }
         return nil
@@ -556,4 +956,32 @@ fileprivate class StreamHandler: NSObject, FlutterStreamHandler {
     }
 }
 
-
+extension UIColor {
+    convenience init?(hexString: String) {
+        var hexSanitized = hexString.trimmingCharacters(in: .whitespacesAndNewlines)
+        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+        
+        var rgb: UInt64 = 0
+        
+        guard Scanner(string: hexSanitized).scanHexInt64(&rgb) else {
+            return nil
+        }
+        
+        let red, green, blue, alpha: CGFloat
+        if hexSanitized.count == 8 {
+            alpha = CGFloat((rgb & 0xFF000000) >> 24) / 255.0
+            red = CGFloat((rgb & 0x00FF0000) >> 16) / 255.0
+            green = CGFloat((rgb & 0x0000FF00) >> 8) / 255.0
+            blue = CGFloat(rgb & 0x000000FF) / 255.0
+        } else if hexSanitized.count == 6 {
+            alpha = 1.0
+            red = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
+            green = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
+            blue = CGFloat(rgb & 0x0000FF) / 255.0
+        } else {
+            return nil
+        }
+        
+        self.init(red: red, green: green, blue: blue, alpha: alpha)
+    }
+}

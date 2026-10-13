@@ -38,6 +38,55 @@ Rewrite on Shoplive Android SDK 3.0.2 (`cloud.shoplive:shoplive-player-sdk:3.0.2
 * Android SDK artifacts come from `https://sdk.shoplive.cloud/maven-repo`. The `cloud.shoplive` group is restricted to that repository with `exclusiveContent`, because Maven Central hosts a conflicting `shoplive-media3:1.10.1.2`. See README.
 * iOS is not supported in this version.
 
+## 1.8.14
+* Add `ShopLivePlayer.setResizeMode()` — passes through the native `setResizeMode` API for the live player (`ShopLiveResizeMode.auto` / `centerCrop` / `fit`)
+* Update Shoplive iOS/Android SDK to 1.8.13
+
+## 1.8.13
+* Update Shoplive iOS/Android SDK to 1.8.11
+
+## 1.8.12
+* Bump version to v1.8.12
+
+## 1.8.11
+* Bump version to v1.8.11
+
+## 1.8.10
+* Bump version to v1.8.10
+
+## 1.8.9
+* Bump version to v1.8.9
+
+## 1.8.8
+* Bump version to v1.8.8
+
+## 1.8.4
+* Bump version to v1.8.4
+
+## 1.8.2
+* Bump version to v1.8.2
+
+## 1.8.0
+* Bump version to v1.8.0
+
+## 1.7.9
+* Bump version to v1.7.9
+
+## 1.7.5
+* Bump version to v1.7.5
+
+## 1.7.4
+* Bump version to v1.7.4
+
+## 1.7.3
+* Bump version to v1.7.3
+
+## 1.7.2
+* Bump version to v1.7.2
+
+## 1.7.1
+* Bump version to v1.7.1
+
 ## 1.7.0+2
 * Bump version to v1.7.0+2
 
