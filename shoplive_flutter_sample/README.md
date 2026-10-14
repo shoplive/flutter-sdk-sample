@@ -232,5 +232,6 @@ A method the platform does not implement fails with `MissingPluginException`. Ev
 
 ## Links
 
-- Android release notes: https://docs.shoplive.cloud/docs/en/android-changelog
+- Android release notes: https://github.com/shoplive/shoplive-sdk-android/releases
+- iOS release notes: https://github.com/shoplive/shoplive-sdk-ios/releases
 - Contact: ask@shoplive.cloud

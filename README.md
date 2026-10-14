@@ -77,5 +77,6 @@ For local development, `pubspec_overrides.yaml` resolves `shoplive_core` from th
 ## Links
 
 - Integration guide: https://developer.shoplive.cloud/mobile
-- Android release notes: https://docs.shoplive.cloud/docs/en/android-changelog
+- Android release notes: https://github.com/shoplive/shoplive-sdk-android/releases
+- iOS release notes: https://github.com/shoplive/shoplive-sdk-ios/releases
 - Contact: ask@shoplive.cloud
