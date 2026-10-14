@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:shoplive_player_example/main.dart';
+import 'package:shoplive_player_example/studio_login.dart';
+
+import 'studio_login_test.dart' show FakeTransport;
 
 void main() {
   // case: CS-02
@@ -77,13 +80,16 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1));
   });
 
-  // case: C-6 — 스트리머는 방송자 토큰을 설정한 뒤에만 송출을 시작한다(토큰 없으면 SDK가 송출 실패 팝업).
-  testWidgets('Streamer START sets the stream token before starting, and requires it', (WidgetTester tester) async {
+  // case: C-6 / STUDIO-LOGIN — 스튜디오 로그인으로 받은 JWT를 setStreamToken에 넣은 뒤에만 송출을 시작한다.
+  testWidgets('Streamer START logs in, sets the stream token, then starts', (WidgetTester tester) async {
     final messenger = tester.binding.defaultBinaryMessenger;
     final calls = <String>[];
+    Object? streamTokenArg;
     for (final ch in ['shoplive_core', 'shoplive_streamer']) {
       messenger.setMockMethodCallHandler(MethodChannel(ch), (call) async {
         calls.add('$ch.${call.method}');
+        if (call.method == 'setStreamToken') streamTokenArg = (call.arguments as Map)['token'];
+        if (call.method == 'getSdkVersion') return '3.0.2';
         return null;
       });
     }
@@ -92,29 +98,76 @@ void main() {
         messenger.setMockMethodCallHandler(MethodChannel(ch), null);
       }
     });
+    final transport = FakeTransport(const StudioResponse(200, '{"accessToken":"studio-jwt"}'));
 
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(MaterialApp(home: ShopliveSamplePage(studioLogin: StudioLogin(transport: transport))));
     await tester.pump();
     final scrollable = find.byType(Scrollable).first;
     final start = find.text('Streamer START');
     await tester.scrollUntilVisible(start, 200, scrollable: scrollable);
     await tester.enterText(find.widgetWithText(TextField, 'Broadcast campaign key'), 'broadcast');
 
+    // 로그인 정보 없이 누르면 요청 없이 안내만.
     await tester.ensureVisible(start);
     await tester.pumpAndSettle();
     await tester.tap(start);
     await tester.pumpAndSettle();
-    expect(find.text('Required to stream token'), findsOneWidget);
+    expect(find.text('Required to studio login (ID / password)'), findsOneWidget);
+    expect(transport.calls, 0);
     expect(calls, isEmpty);
 
     await tester.pump(const Duration(seconds: 5));
     await tester.pumpAndSettle();
-    await tester.enterText(find.widgetWithText(TextField, 'Stream token (broadcaster)'), 'token');
+    await tester.enterText(find.widgetWithText(TextField, 'Studio ID (broadcaster)'), 'user');
+    await tester.enterText(find.widgetWithText(TextField, 'Studio password'), 'pw');
     await tester.ensureVisible(start);
     await tester.pumpAndSettle();
     await tester.tap(start);
     await tester.pumpAndSettle();
-    expect(calls, ['shoplive_core.initialize', 'shoplive_core.setStreamToken', 'shoplive_streamer.start']);
+
+    expect(transport.calls, 1);
+    expect(calls.where((c) => c != 'shoplive_core.getSdkVersion').toList(),
+        ['shoplive_core.initialize', 'shoplive_core.setStreamToken', 'shoplive_streamer.start']);
+    expect(streamTokenArg, 'studio-jwt');
+    expect(find.text('Studio logout'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(milliseconds: 1));
+  });
+
+  // case: STUDIO-LOGIN — 로그인이 실패하면 initialize·setStreamToken·start를 호출하지 않는다.
+  testWidgets('Streamer START stops when studio login fails', (WidgetTester tester) async {
+    final messenger = tester.binding.defaultBinaryMessenger;
+    final calls = <String>[];
+    for (final ch in ['shoplive_core', 'shoplive_streamer']) {
+      messenger.setMockMethodCallHandler(MethodChannel(ch), (call) async {
+        calls.add('$ch.${call.method}');
+        return call.method == 'getSdkVersion' ? '3.0.2' : null;
+      });
+    }
+    addTearDown(() {
+      for (final ch in ['shoplive_core', 'shoplive_streamer']) {
+        messenger.setMockMethodCallHandler(MethodChannel(ch), null);
+      }
+    });
+    final transport = FakeTransport(const StudioResponse(401, '{"_s":401,"_e":"Invalid password"}'));
+
+    await tester.pumpWidget(MaterialApp(home: ShopliveSamplePage(studioLogin: StudioLogin(transport: transport))));
+    await tester.pump();
+    final start = find.text('Streamer START');
+    await tester.scrollUntilVisible(start, 200, scrollable: find.byType(Scrollable).first);
+    await tester.enterText(find.widgetWithText(TextField, 'Broadcast campaign key'), 'broadcast');
+    await tester.enterText(find.widgetWithText(TextField, 'Studio ID (broadcaster)'), 'user');
+    await tester.enterText(find.widgetWithText(TextField, 'Studio password'), 'wrong');
+    await tester.ensureVisible(start);
+    await tester.pumpAndSettle();
+    await tester.tap(start);
+    await tester.pumpAndSettle();
+
+    expect(transport.calls, 1);
+    expect(calls.where((c) => c != 'shoplive_core.getSdkVersion'), isEmpty);
+    expect(find.text('Studio login failed: Invalid password (HTTP 401)'), findsOneWidget);
+    expect(find.text('Studio logout'), findsNothing);
 
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(milliseconds: 1));

@@ -12,6 +12,8 @@ import 'package:shoplive_streamer/shoplive_streamer.dart'
         ShopliveStreamerErrorEvent,
         ShopliveStreamerUnknownEvent;
 
+import 'studio_login.dart';
+
 // Shoplive 3.0.2 데모(DRAFT-flutter-sdk-302-android S9): shoplive_core · shoplive_player · shoplive_streamer.
 //
 // 빌드 설정(Android): Shoplive SDK는 https://sdk.shoplive.cloud/maven-repo 에서 받는다. Maven Central에 같은 좌표의
@@ -31,7 +33,7 @@ const String _defaultCampaignKey = '2551fcb165c3';
 const String _accessKeyFromEnv = String.fromEnvironment('SHOPLIVE_ACCESS_KEY');
 const String _campaignKeyFromEnv = String.fromEnvironment('SHOPLIVE_CAMPAIGN_KEY', defaultValue: _defaultCampaignKey);
 
-/// 방송자 인증 토큰. 스트리머는 이 토큰으로 서버에서 송출 주소를 받아오므로 송출 전에 반드시 설정해야 한다.
+/// 방송자(스튜디오) JWT를 미리 알고 있으면 --dart-define=SHOPLIVE_STREAM_TOKEN 으로 넣을 수 있다(로그인 생략).
 const String _streamTokenFromEnv = String.fromEnvironment('SHOPLIVE_STREAM_TOKEN');
 
 void main() {
@@ -55,7 +57,10 @@ class MyApp extends StatelessWidget {
 }
 
 class ShopliveSamplePage extends StatefulWidget {
-  const ShopliveSamplePage({super.key});
+  const ShopliveSamplePage({super.key, this.studioLogin});
+
+  /// 테스트에서 가짜 로그인 서버를 넣기 위한 주입점. null이면 실제 스튜디오 로그인.
+  final StudioLogin? studioLogin;
 
   static const String title = 'Shoplive SDK 3.0.2 sample';
 
@@ -70,7 +75,12 @@ class _ShopliveSamplePageState extends State<ShopliveSamplePage> {
   final _campaignKey = TextEditingController(text: _campaignKeyFromEnv);
   final _shareScheme = TextEditingController();
   final _streamerKey = TextEditingController();
-  final _streamToken = TextEditingController(text: _streamTokenFromEnv);
+  final _studioId = TextEditingController();
+  final _studioPassword = TextEditingController();
+  late final StudioLogin _studioLogin = widget.studioLogin ?? StudioLogin();
+
+  /// 방송자 JWT. 메모리에만 둔다(로그·디스크 저장 안 함).
+  String? _studioJwt = _streamTokenFromEnv.isEmpty ? null : _streamTokenFromEnv;
   final _userId = TextEditingController(text: 'sample-user');
   final _jwt = TextEditingController();
 
@@ -104,7 +114,7 @@ class _ShopliveSamplePageState extends State<ShopliveSamplePage> {
     for (final s in _subscriptions) {
       s.cancel();
     }
-    for (final c in [_accessKey, _campaignKey, _shareScheme, _streamerKey, _streamToken, _userId, _jwt]) {
+    for (final c in [_accessKey, _campaignKey, _shareScheme, _streamerKey, _studioId, _studioPassword, _userId, _jwt]) {
       c.dispose();
     }
     super.dispose();
@@ -244,17 +254,53 @@ class _ShopliveSamplePageState extends State<ShopliveSamplePage> {
     );
   }
 
+  /// 네이티브 데모 앱과 같은 순서: 스튜디오 로그인(JWT 없을 때만) → initialize → setStreamToken(JWT) → start.
+  /// 토큰이 없으면 서버가 송출 주소를 내주지 않아 SDK가 "방송 송출에 실패했습니다" 팝업을 띄운다.
   Future<void> _quickBroadcast() async {
     final accessKey = _accessKey.text.trim();
     final broadcastKey = _streamerKey.text.trim();
     if (accessKey.isEmpty) return _toast('Required to accessKey');
-    final streamToken = _streamToken.text.trim();
     if (broadcastKey.isEmpty) return _toast('Required to broadcast campaignKey');
-    // 토큰이 없으면 서버가 송출 주소를 내주지 않아 SDK가 "방송 송출에 실패했습니다" 팝업을 띄운다.
-    if (streamToken.isEmpty) return _toast('Required to stream token');
+    final jwt = _studioJwt ?? await _loginStudio();
+    if (jwt == null) return;
     if (!await _run('initialize', () => Shoplive.initialize(ShopliveConfiguration(accessKey: accessKey)))) return;
-    if (!await _run('setStreamToken', () => Shoplive.setStreamToken(streamToken))) return;
+    if (!await _run('setStreamToken', () => Shoplive.setStreamToken(jwt))) {
+      setState(() => _studioJwt = null);
+      return;
+    }
     await _run('Streamer START', () => _streamer.start(broadcastKey));
+  }
+
+  Future<String?> _loginStudio() async {
+    final id = _studioId.text.trim();
+    final password = _studioPassword.text;
+    if (id.isEmpty || password.isEmpty) {
+      _toast('Required to studio login (ID / password)');
+      return null;
+    }
+    try {
+      final sdkVersion = await Shoplive.getSdkVersion().catchError((Object _) => '');
+      final jwt = await _studioLogin.login(
+        id: id,
+        password: password,
+        headers: StudioLogin.defaultHeaders(sdkVersion: sdkVersion),
+      );
+      _studioPassword.clear();
+      setState(() => _studioJwt = jwt);
+      _append('studio login ✓');
+      return jwt;
+    } on StudioLoginException catch (e) {
+      _append('studio login ✗ ${e.statusCode ?? ''}');
+      _toast('Studio login failed: $e');
+      return null;
+    }
+  }
+
+  /// 앱에 보관한 JWT만 버린다. SDK에 이미 설정된 stream token은 다음 setStreamToken 때 교체된다
+  /// (Shoplive.setStreamToken은 빈 값을 받지 않아 SDK 쪽을 비울 공개 API가 없다).
+  void _logoutStudio() {
+    setState(() => _studioJwt = null);
+    _append('studio logout');
   }
 
   void _toast(String message) {
@@ -299,7 +345,23 @@ class _ShopliveSamplePageState extends State<ShopliveSamplePage> {
                   ),
                   const SizedBox(height: 12),
                   _outlinedField(_streamerKey, 'Broadcast campaign key'),
-                  _outlinedField(_streamToken, 'Stream token (broadcaster)'),
+                  if (_studioJwt == null) ...[
+                    _outlinedField(_studioId, 'Studio ID (broadcaster)'),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: TextField(
+                        controller: _studioPassword,
+                        obscureText: true,
+                        decoration: const InputDecoration(border: OutlineInputBorder(), labelText: 'Studio password'),
+                      ),
+                    ),
+                  ] else
+                    Row(
+                      children: [
+                        const Expanded(child: Text('Studio: logged in (stream token set on START)')),
+                        TextButton(onPressed: _logoutStudio, child: const Text('Studio logout')),
+                      ],
+                    ),
                   FilledButton.tonal(onPressed: _quickBroadcast, child: const Text('Streamer START')),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
