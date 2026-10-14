@@ -74,11 +74,6 @@ For configuration, events, coupon and custom-action requests, PIP, error codes a
 
 For local development, `pubspec_overrides.yaml` resolves `shoplive_core` from the sibling folder. Publish `shoplive_core` first, then `shoplive_player` and `shoplive_streamer`.
 
-## Native samples
-
-- [iOS Native Sample](https://github.com/shoplive/ios-sdk-sample)
-- [Android Native Sample](https://github.com/shoplive/android-sdk-sample)
-
 ## Links
 
 - Integration guide: https://developer.shoplive.cloud/mobile
