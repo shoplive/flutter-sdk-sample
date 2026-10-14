@@ -22,6 +22,9 @@ class ShopliveStreamer {
   ShopliveStreamerPlatform get _platform => ShopliveStreamerPlatform.instance;
 
   /// 방송 키로 방송 화면을 연다. 호출마다 새 방송 세션을 만든다(ST-01).
+  ///
+  /// Call `Shoplive.setStreamToken` with the broadcaster token first. Without it the server returns no ingest
+  /// address and the broadcast screen shows a "failed to start" retry dialog.
   Future<void> start(String campaignKey) =>
       _platform.invokeMethod<void>(ShopliveStreamerContract.start, {'campaignKey': campaignKey});
 

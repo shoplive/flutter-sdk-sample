@@ -31,6 +31,9 @@ const String _defaultCampaignKey = '2551fcb165c3';
 const String _accessKeyFromEnv = String.fromEnvironment('SHOPLIVE_ACCESS_KEY');
 const String _campaignKeyFromEnv = String.fromEnvironment('SHOPLIVE_CAMPAIGN_KEY', defaultValue: _defaultCampaignKey);
 
+/// 방송자 인증 토큰. 스트리머는 이 토큰으로 서버에서 송출 주소를 받아오므로 송출 전에 반드시 설정해야 한다.
+const String _streamTokenFromEnv = String.fromEnvironment('SHOPLIVE_STREAM_TOKEN');
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   if (_accessKeyFromEnv.isNotEmpty) {
@@ -67,6 +70,7 @@ class _ShopliveSamplePageState extends State<ShopliveSamplePage> {
   final _campaignKey = TextEditingController(text: _campaignKeyFromEnv);
   final _shareScheme = TextEditingController();
   final _streamerKey = TextEditingController();
+  final _streamToken = TextEditingController(text: _streamTokenFromEnv);
   final _userId = TextEditingController(text: 'sample-user');
   final _jwt = TextEditingController();
 
@@ -100,7 +104,7 @@ class _ShopliveSamplePageState extends State<ShopliveSamplePage> {
     for (final s in _subscriptions) {
       s.cancel();
     }
-    for (final c in [_accessKey, _campaignKey, _shareScheme, _streamerKey, _userId, _jwt]) {
+    for (final c in [_accessKey, _campaignKey, _shareScheme, _streamerKey, _streamToken, _userId, _jwt]) {
       c.dispose();
     }
     super.dispose();
@@ -244,8 +248,12 @@ class _ShopliveSamplePageState extends State<ShopliveSamplePage> {
     final accessKey = _accessKey.text.trim();
     final broadcastKey = _streamerKey.text.trim();
     if (accessKey.isEmpty) return _toast('Required to accessKey');
+    final streamToken = _streamToken.text.trim();
     if (broadcastKey.isEmpty) return _toast('Required to broadcast campaignKey');
+    // 토큰이 없으면 서버가 송출 주소를 내주지 않아 SDK가 "방송 송출에 실패했습니다" 팝업을 띄운다.
+    if (streamToken.isEmpty) return _toast('Required to stream token');
     if (!await _run('initialize', () => Shoplive.initialize(ShopliveConfiguration(accessKey: accessKey)))) return;
+    if (!await _run('setStreamToken', () => Shoplive.setStreamToken(streamToken))) return;
     await _run('Streamer START', () => _streamer.start(broadcastKey));
   }
 
@@ -291,6 +299,7 @@ class _ShopliveSamplePageState extends State<ShopliveSamplePage> {
                   ),
                   const SizedBox(height: 12),
                   _outlinedField(_streamerKey, 'Broadcast campaign key'),
+                  _outlinedField(_streamToken, 'Stream token (broadcaster)'),
                   FilledButton.tonal(onPressed: _quickBroadcast, child: const Text('Streamer START')),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,

@@ -76,4 +76,47 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(milliseconds: 1));
   });
+
+  // case: C-6 — 스트리머는 방송자 토큰을 설정한 뒤에만 송출을 시작한다(토큰 없으면 SDK가 송출 실패 팝업).
+  testWidgets('Streamer START sets the stream token before starting, and requires it', (WidgetTester tester) async {
+    final messenger = tester.binding.defaultBinaryMessenger;
+    final calls = <String>[];
+    for (final ch in ['shoplive_core', 'shoplive_streamer']) {
+      messenger.setMockMethodCallHandler(MethodChannel(ch), (call) async {
+        calls.add('$ch.${call.method}');
+        return null;
+      });
+    }
+    addTearDown(() {
+      for (final ch in ['shoplive_core', 'shoplive_streamer']) {
+        messenger.setMockMethodCallHandler(MethodChannel(ch), null);
+      }
+    });
+
+    await tester.pumpWidget(const MyApp());
+    await tester.pump();
+    final scrollable = find.byType(Scrollable).first;
+    final start = find.text('Streamer START');
+    await tester.scrollUntilVisible(start, 200, scrollable: scrollable);
+    await tester.enterText(find.widgetWithText(TextField, 'Broadcast campaign key'), 'broadcast');
+
+    await tester.ensureVisible(start);
+    await tester.pumpAndSettle();
+    await tester.tap(start);
+    await tester.pumpAndSettle();
+    expect(find.text('Required to stream token'), findsOneWidget);
+    expect(calls, isEmpty);
+
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextField, 'Stream token (broadcaster)'), 'token');
+    await tester.ensureVisible(start);
+    await tester.pumpAndSettle();
+    await tester.tap(start);
+    await tester.pumpAndSettle();
+    expect(calls, ['shoplive_core.initialize', 'shoplive_core.setStreamToken', 'shoplive_streamer.start']);
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(milliseconds: 1));
+  });
 }

@@ -90,6 +90,9 @@ If your build resolves dependencies from `settings.gradle(.kts)` `dependencyReso
 import 'package:shoplive_streamer/shoplive_streamer.dart';
 
 await Shoplive.initialize(const ShopliveConfiguration(accessKey: 'YOUR_ACCESS_KEY'));
+// Required before start: the broadcaster token. Without it the server returns no ingest address and the
+// broadcast screen shows "Failed to start the broadcast" (logcat: "stream/status failed: Token does not exist").
+await Shoplive.setStreamToken('BROADCASTER_STREAM_TOKEN');
 final streamer = ShopliveStreamer.instance;
 streamer.events.listen((event) {
   switch (event) {

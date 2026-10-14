@@ -2,6 +2,9 @@
 
 First release of `shoplive_streamer`, built on Shoplive Android SDK 3.0.2 (`cloud.shoplive:shoplive-streamer-sdk:3.0.2`). Re-exports `shoplive_core`.
 
+### Usage note
+* Set the broadcaster token with `Shoplive.setStreamToken(token)` before `start`. Without it the server returns no ingest address and the broadcast screen shows a "failed to start" retry dialog (logcat: `stream/status failed: Token does not exist`).
+
 ### BREAKING (from shoplive_player 1.x)
 * The broadcast feature moved out of `shoplive_player` into this package. The channels are `shoplive_streamer` and `shoplive_streamer/events`.
 * `start(campaignKey)` returns a `Future` and throws `PlatformException` (`INVALID_ARGUMENT`, `NO_HOST_SCREEN`, `SDK_ERROR`).
