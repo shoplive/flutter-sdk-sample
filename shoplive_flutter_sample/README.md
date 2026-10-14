@@ -6,8 +6,6 @@ Shoplive SDK sample for Flutter
 
 - Live docs : https://docs.shoplive.cloud/docs/en/flutter-live-api
 
-- Shortform docs : https://docs.shoplive.cloud/docs/en/flutter-shortform-api
-
 - Common docs : https://docs.shoplive.cloud/docs/en/flutter-common-api
 
 

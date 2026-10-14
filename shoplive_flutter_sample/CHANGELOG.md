@@ -1,3 +1,7 @@
+## 1.9.0
+* Update Shoplive iOS/Android SDK to 1.9.0. Android artifacts resolve from `https://sdk.shoplive.cloud/maven-repo`, with ExoPlayer `2.19.1.20`. Minimum iOS is 15.0
+* Remove the shortform API and the Shoplive shortform SDK dependency
+
 ## 1.8.14
 * Add `ShopLivePlayer.setResizeMode()` — passes through the native `setResizeMode` API for the live player (`ShopLiveResizeMode.auto` / `centerCrop` / `fit`)
 * Update Shoplive iOS/Android SDK to 1.8.13

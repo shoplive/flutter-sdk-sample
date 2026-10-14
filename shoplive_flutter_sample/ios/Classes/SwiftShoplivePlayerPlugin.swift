@@ -39,7 +39,6 @@ public class SwiftShoplivePlayerPlugin: NSObject {
     
     private static var playerModule = SwiftShopLivePlayerModule()
     private static var commonModule = SwiftShopliveCommonModule()
-    private static var shortformModule = SwiftShopliveShortformModule()
     
     
 }
@@ -49,7 +48,6 @@ extension SwiftShoplivePlayerPlugin : FlutterPlugin {
         SwiftShopLiveNotification.shared.registerCallback = {  registrar in
             self.playerModule.register(registrar : registrar)
             self.commonModule.register(registrar : registrar)
-            self.shortformModule.register(registrar: registrar)
             let channel = FlutterMethodChannel(name: "shoplive_player", binaryMessenger: registrar.messenger())
             registrar.addMethodCallDelegate(SwiftShoplivePlayerPlugin(), channel: channel)
         }
@@ -59,7 +57,6 @@ extension SwiftShoplivePlayerPlugin : FlutterPlugin {
     public func handle(_ call : FlutterMethodCall, result: @escaping FlutterResult ) {
         Self.playerModule.handleMethodCall(call: call , result : result)
         Self.commonModule.handleMethodCall(call: call , result : result)
-        Self.shortformModule.handleMethodCall(call: call, result: result)
     }
     
 }
