@@ -76,6 +76,14 @@ If your build resolves dependencies from `settings.gradle(.kts)` `dependencyReso
 ## iOS setup
 
 - **Minimum iOS 15.** Set `platform :ios, '15.0'` in `ios/Podfile`. Flutter's template uses a lower value, and `pod install` fails with "higher minimum deployment target" until you change it.
+- **Camera and microphone usage descriptions are required.** Add `NSCameraUsageDescription` and `NSMicrophoneUsageDescription` to `ios/Runner/Info.plist`. Without them iOS terminates the app as soon as the broadcast screen asks for the camera (crash report: TCC "attempted to access privacy-sensitive data without a usage description"). Android needs no extra setup; the SDK declares its permissions.
+
+  ```xml
+  <key>NSCameraUsageDescription</key>
+  <string>Used to broadcast live video.</string>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>Used to broadcast live audio.</string>
+  ```
 - **The Shoplive iOS SDK is downloaded during `pod install`.** The plugins fetch the SDK 3.0.2 XCFrameworks from the GitHub release `https://github.com/shoplive/shoplive-sdk-ios/releases/tag/3.0.2`. Every zip is checked against its sha256; if a checksum does not match, `pod install` stops and nothing unverified is linked. The frameworks are unpacked into the plugin's `ios/Frameworks/` folder and reused by later installs, so only the first install downloads. Anything that evaluates the podspec downloads too: `pod install`, `flutter build ios` / `flutter run` (which run `pod install`) and `pod spec lint`.
   - Network: the first install needs access to `github.com` and its download host. `curl` honours `HTTPS_PROXY`, `ALL_PROXY` and `NO_PROXY`.
   - Mirror: set `SHOPLIVE_IOS_SDK_BASE_URL` to a server that serves `<base>/3.0.2/<Name>.xcframework.zip`.

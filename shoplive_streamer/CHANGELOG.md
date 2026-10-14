@@ -3,6 +3,7 @@
 First release of `shoplive_streamer`, built on Shoplive Android SDK 3.0.2 (`cloud.shoplive:shoplive-streamer-sdk:3.0.2`). Re-exports `shoplive_core`.
 
 ### Usage note
+* iOS: add `NSCameraUsageDescription` and `NSMicrophoneUsageDescription` to the app's `Info.plist`; iOS terminates the app when the broadcast screen requests the camera without them.
 * Set the broadcaster token with `Shoplive.setStreamToken(token)` before `start`. Without it the server returns no ingest address and the broadcast screen shows a "failed to start" retry dialog (logcat: `stream/status failed: Token does not exist`).
 
 ### BREAKING (from shoplive_player 1.x)
