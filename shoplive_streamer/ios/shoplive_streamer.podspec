@@ -29,7 +29,9 @@ Pod::Spec.new do |s|
   s.source           = { :path => '.' }
   s.source_files     = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'shoplive_core' # ShopliveCore, ShopLiveWebRTCHelperSDK and WebRTC are vendored by shoplive_core
+  # Same version as this pod (the three packages are released together). ShopliveCore, ShopLiveWebRTCHelperSDK and
+  # WebRTC are vendored by shoplive_core.
+  s.dependency 'shoplive_core', s.version.to_s
   s.vendored_frameworks = shoplive_ios_sdk_artifacts.keys.map { |name| "Frameworks/#{name}.xcframework" }
   s.platform         = :ios, '15.0'
   s.swift_version    = '5.0'
