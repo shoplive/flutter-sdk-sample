@@ -1,7 +1,7 @@
 name: shoplive_streamer
 description: Shoplive streamer (broadcast) plugin for Flutter on Shoplive SDK 3.x. To use Shoplive, please contact ask@shoplive.cloud.
 version: 3.0.2
-homepage: https://github.com/shoplive/flutter-sdk-sample/tree/main/shoplive_streamer
+homepage: https://github.com/shoplive/shoplive-sdk-flutter/tree/main/shoplive_streamer
 
 environment:
   sdk: ">=3.4.0 <4.0.0"

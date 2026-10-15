@@ -25,7 +25,7 @@ Pod::Spec.new do |s|
   s.version          = pubspec['version']
   s.summary          = 'Shoplive core plugin for Flutter (initialize, user, conversion).'
   s.description      = 'Shoplive core plugin for Flutter (initialize, user, conversion). Built on Shoplive iOS SDK ' + shoplive_ios_sdk_version + '.'
-  s.homepage         = 'https://github.com/shoplive/flutter-sdk-sample/tree/main/shoplive_core'
+  s.homepage         = 'https://github.com/shoplive/shoplive-sdk-flutter/tree/main/shoplive_core'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Shoplive' => 'ask@shoplive.cloud' }
   s.source           = { :path => '.' }
