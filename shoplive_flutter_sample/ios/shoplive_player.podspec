@@ -23,7 +23,7 @@ Pod::Spec.new do |s|
   s.version          = pubspec['version']
   s.summary          = 'Shoplive player plugin for Flutter (live/VOD fullscreen player).'
   s.description      = 'Shoplive player plugin for Flutter (live/VOD fullscreen player). Built on Shoplive iOS SDK ' + shoplive_ios_sdk_version + '.'
-  s.homepage         = 'https://github.com/shoplive/flutter-sdk-sample/tree/main/shoplive_flutter_sample'
+  s.homepage         = 'https://github.com/shoplive/shoplive-sdk-flutter/tree/main/shoplive_flutter_sample'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Shoplive' => 'ask@shoplive.cloud' }
   s.source           = { :path => '.' }

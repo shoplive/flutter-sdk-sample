@@ -1,7 +1,7 @@
 name: shoplive_player
 description: Shoplive player plugin for Flutter (live/VOD fullscreen player) on Shoplive SDK 3.x. To use Shoplive, please contact ask@shoplive.cloud.
 version: 3.0.2
-homepage: https://github.com/shoplive/flutter-sdk-sample/tree/main/shoplive_flutter_sample
+homepage: https://github.com/shoplive/shoplive-sdk-flutter/tree/main/shoplive_flutter_sample
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
