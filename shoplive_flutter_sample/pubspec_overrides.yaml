@@ -1,0 +1,4 @@
+# Local development only (excluded from the published package): use the sibling shoplive_core checkout.
+dependency_overrides:
+  shoplive_core:
+    path: ../shoplive_core

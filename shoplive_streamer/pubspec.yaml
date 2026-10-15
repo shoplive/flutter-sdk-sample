@@ -1,0 +1,30 @@
+name: shoplive_streamer
+description: Shoplive streamer (broadcast) plugin for Flutter on Shoplive SDK 3.x. To use Shoplive, please contact ask@shoplive.cloud.
+version: 3.0.2
+homepage: https://github.com/shoplive/flutter-sdk-sample/tree/main/shoplive_streamer
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  plugin_platform_interface: ^2.0.2
+  # Pinned to the exact same version: the three packages wrap the same SDK release and are released together
+  # (publish shoplive_core first). Local development resolves it from ../shoplive_core via pubspec_overrides.yaml.
+  shoplive_core: 3.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: cloud.shoplive.shoplive_streamer
+        pluginClass: ShopliveStreamerPlugin
+      ios:
+        pluginClass: ShopliveStreamerPlugin

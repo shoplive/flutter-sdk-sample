@@ -1,0 +1,1 @@
+../../../../shoplive_flutter_sample/ios/Classes/BridgeCore.swift

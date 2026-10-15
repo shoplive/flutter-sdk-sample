@@ -1,5 +1,5 @@
 name: shoplive_player_example
-description: Demonstrates how to use the shoplive_player plugin.
+description: Sample app that depends on the published shoplive_player / shoplive_streamer 3.0.2 from pub.dev.
 version: 1.0.0
 
 # The following line prevents the package from being accidentally published to
@@ -7,7 +7,7 @@ version: 1.0.0
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 environment:
-  sdk: ">=2.17.1 <4.0.0"
+  sdk: ">=3.4.0 <4.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -19,19 +19,13 @@ dependencies:
   flutter:
     sdk: flutter
 
-  shoplive_player: ^1.9.0
-    # When depending on this package from a real application you should use:
-    #   shoplive_player: ^x.y.z
-    # See https://dart.dev/tools/pub/dependencies#version-constraints
-    # The example app is bundled with the plugin so we use a path dependency on
-    # the parent directory to use the current plugin's version.
-#    path: ../
+  # Hosted packages from pub.dev (no path override) — verifies the published 3.0.2 release.
+  shoplive_player: 3.0.2
+  shoplive_streamer: 3.0.2
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2   # For icon
-  fluttertoast: ^8.0.9      # For Toast
-  rxdart: ^0.27.5           # For CompositeSubscription
 
 dev_dependencies:
   flutter_test:
@@ -42,7 +36,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
+  flutter_lints: ^3.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

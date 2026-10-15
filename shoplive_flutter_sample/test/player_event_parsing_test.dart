@@ -1,0 +1,51 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shoplive_player/shoplive_player.dart';
+
+void main() {
+  ShoplivePlayerEvent p(Object? raw) => ShoplivePlayerEvent.fromWire(raw);
+
+  // case: N-03
+  test('nine event types', () {
+    expect((p({'type': 'stateChanged', 'state': 'playing'}) as ShoplivePlayerStateChanged).state, ShoplivePlayerState.playing);
+    expect((p({'type': 'campaignStatusChanged', 'status': 'ended'}) as ShopliveCampaignStatusChanged).status, ShopliveCampaignStatus.ended);
+    final info = (p({'type': 'campaignInfoReceived', 'campaignKey': 'k', 'title': 't', 'status': null}) as ShopliveCampaignInfoReceived).info;
+    expect([info.campaignKey, info.title, info.status], ['k', 't', null]);
+    expect((p({'type': 'connectionStateChanged', 'state': 'reconnecting'}) as ShopliveConnectionStateChanged).state, ShopliveConnectionState.reconnecting);
+    final pb = p({'type': 'playback', 'event': 'failed', 'timestampMs': 5, 'code': 7, 'message': 'x'}) as ShoplivePlaybackEvent;
+    expect([pb.kind, pb.timestampMs, pb.code, pb.message], [ShoplivePlaybackEventKind.failed, 5, 7, 'x']);
+    final err = (p({'type': 'error', 'error': {'code': 'CONNECTION_ISSUE', 'message': 'm', 'rawCode': null, 'recoverable': true}}) as ShoplivePlayerErrorEvent).error;
+    expect([err.code, err.recoverable], ['CONNECTION_ISSUE', true]);
+    final an = p({
+      'type': 'analytics', 'campaignKey': 'k', 'isPlaying': true, 'isMuted': false, 'durationMs': 10,
+      'campaign': {'title': 't', 'status': 'live'}, 'brand': null,
+    }) as ShopliveAnalyticsEvent;
+    expect([an.campaignKey, an.isPlaying, an.isMuted, an.durationMs, an.campaign!.status, an.brand], ['k', true, false, 10, ShopliveCampaignStatus.live, null]);
+    final wc = p({'type': 'webCommandReceived', 'name': 'n', 'payload': {'a': 1}}) as ShopliveWebCommandReceived;
+    expect([wc.name, wc.payload], ['n', {'a': 1}]);
+    expect((p({'type': 'userNameUpdateRequested', 'payload': {'x': 'y'}}) as ShopliveUserNameUpdateRequested).payload, {'x': 'y'});
+  });
+
+  // case: N-03
+  test('playback kinds incl. unknown', () {
+    for (final k in ['requested', 'started', 'audioLoaded', 'rendering', 'buffering', 'rebufferingStarted', 'rebufferingEnded', 'ended']) {
+      expect((p({'type': 'playback', 'event': k, 'timestampMs': null}) as ShoplivePlaybackEvent).kind.name, k);
+    }
+    expect((p({'type': 'playback', 'event': 'stalled'}) as ShoplivePlaybackEvent).kind, ShoplivePlaybackEventKind.unknown);
+  });
+
+  // case: B-02
+  test('unknown enum values → unknown member (B-02)', () {
+    expect((p({'type': 'stateChanged', 'state': 'zombie'}) as ShoplivePlayerStateChanged).state, ShoplivePlayerState.unknown);
+  });
+
+  // case: N-03, B-02
+  test('unknown type / native unknown / malformed → ShoplivePlayerUnknownEvent (no throw)', () {
+    expect((p({'type': 'unknown', 'rawType': 'newEvent'}) as ShoplivePlayerUnknownEvent).rawType, 'newEvent');
+    expect((p({'type': 'brandNew'}) as ShoplivePlayerUnknownEvent).rawType, 'brandNew');
+    expect(p({'type': 'error', 'error': {'code': 1}}), isA<ShoplivePlayerUnknownEvent>());
+    expect(p({'type': 'campaignInfoReceived'}), isA<ShoplivePlayerUnknownEvent>());
+    expect(p({'type': 'webCommandReceived', 'name': 'n'}), isA<ShoplivePlayerUnknownEvent>());
+    expect(p('not a map'), isA<ShoplivePlayerUnknownEvent>());
+    expect(p(null), isA<ShoplivePlayerUnknownEvent>());
+  });
+}

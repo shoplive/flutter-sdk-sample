@@ -1,0 +1,6 @@
+# 1.x standalone sample app (not part of the published plugin)
+flutter_sample/
+
+# Shoplive iOS SDK XCFrameworks are downloaded at pod install, never published
+ios/Frameworks/
+pubspec_overrides.yaml

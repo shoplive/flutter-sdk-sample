@@ -1,4 +1,9 @@
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  exclude:
+    # 1.x standalone sample app (depends on hosted shoplive_player 1.8.x); analyzed in its own package.
+    - flutter_sample/**
+
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
